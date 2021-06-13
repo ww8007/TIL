@@ -33,3 +33,31 @@
 - DOM 시뮬레이션을 위한 JSDOM 이라는 도구를 사용하여 document.body에 리액트 컴포넌트를 렌더링 함
 - clean-up-after-each를 불러오면 각 테스트 케이스가 끝날 때 마다 기존에 가상의 화면에 남아있는 UI 정리
 - jest-dom/extend-expect를 불러와서 jest에서 DOM 관련 matcher를 사용 할 수 있게 해줌
+
+### 스냅샷 테스팅
+
+- 렌더링된 결과가 이전에 렌더링한 결과와 일치하는지 확인하는 작업
+- 컴포넌트가 렌더링 됐을 때 이 스냅샷과 일치하지 않으면 테스트가 실패함
+- 스냅샷을 업데이트 하고 싶다면 테스트가 실행되고 있는 콘솔창에서
+- press u
+
+```js
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Profile> matches snapshot 1`] = `
+<div>
+  <div>
+    <b>
+      ww8007
+    </b>
+    <span>
+      (
+      장동현
+      )
+    </span>
+  </div>
+</div>
+`;
+```
+
+###
