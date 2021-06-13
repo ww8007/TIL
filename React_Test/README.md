@@ -198,3 +198,17 @@ exports[`<Profile> matches snapshot 1`] = `
 8. getByTestId
 
 - DOM의 querySelector 를 사용가능하지만 이것 보다는 data-testid 를 설정하는 것이 좋음
+
+### 이벤트 다루기
+
+- fireEvent() 함수
+  - 이벤트를 발생 시켜주는 특징이 있다.
+
+> fireEvent.이벤트 이름(DOM, 이벤트객체);
+
+- click 이벤트의 경우에는 이벤트 객체를 따로 넣어주지 않아도 된지만
+- change 이벤트의 경우에는 다음과 같이 넣어줘야함
+
+```js
+fireEvent.change(myInput, { target: { value: "hello world" } });
+```
