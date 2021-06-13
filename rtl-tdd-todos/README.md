@@ -18,3 +18,24 @@
 
 -  jest.fn() jest에서 제공하는 mock 함수
 -  toBeCalled 또는 toBeCalledWith 같은 matcher를 사용해서 함수가 호출 됐는지, 호출 됐다면 어떤 파라미터로 호출 됐는지 이런 것들을 쉽게 확인 가능
+
+### 리펙토링
+
+-  아래와 같이 props가 존재하면 props를 넘겨주도록 코딩이 가능
+-  input과 button이 반복 되므로 return 같으로 넘겨주어 비구조화 할당으로 사용이 가능하도록 리펙토링
+
+```js
+const setup = (props = {}) => {
+   const utils = render(<TodoForm {...props} />);
+   const { getByPlaceholderText, getByText } = utils;
+   const input = getByPlaceholderText("할 일을 입력하세요");
+   const button = getByText("등록");
+   return {
+      ...utils,
+      input,
+      button,
+   };
+};
+```
+
+-  꼭 필요한 작업은 아니고 자신의 코딩 취향을 따라서 작성을 하면 된다.
