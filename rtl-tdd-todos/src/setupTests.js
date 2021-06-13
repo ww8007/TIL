@@ -7,3 +7,4 @@ import "@testing-library/react/dont-cleanup-after-each";
 import "@testing-library/user-event";
 import "@testing-library/react/dont-cleanup-after-each";
 import "@testing-library/jest-dom";
+import "@testing-library/user-event/dist";
