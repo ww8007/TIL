@@ -343,3 +343,14 @@ import React, { useCallback } from 'react';
 const onIncrease = useCallback(() => dispatch(increase()), [dispatch]);
 const onDecrease = useCallback(() => dispatch(decrease()), [dispatch]);
 ```
+
+## useStore를 사용하여 리덕스 스토어 사용하기
+
+- useStore Hooks 를 사용하면 내부에서 리덕스 스토어 객체를 직접 사용 가능
+- 직접 스토어에 접근할 일은 흔치 않으니 필요할 때만 사용
+
+```js
+const store = useStore();
+store.dispatch({ type: 'SAMPLE_ACTION' });
+store.getState();
+```
