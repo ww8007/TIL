@@ -321,6 +321,11 @@ const action = myAction('hello world');
 const 결과 = useSelector(상태 선택 함수);
 ```
 
+```js
+import { useSelector, useDispatch } from 'react-redux';
+const number = useSelector((state) => state.counter.number);
+```
+
 ## useDispatch 를 사용하여 액션 디스패치
 
 - 컴포넌트 내부에서 스토어의 내장 함수 dispatch 를 사용할 수 있게 해줌
@@ -328,4 +333,13 @@ const 결과 = useSelector(상태 선택 함수);
 ```js
 const dispatch = useDispatch();
 dispatch({ type: 'SAMPLE_ACTION' });
+```
+
+- 그러나 이렇게만 만들면 리렌더링 될 때 마다 함수가 새롭게 만들어짐
+  - 여기서 사용할 수 있는게 useCallback()
+
+```js
+import React, { useCallback } from 'react';
+const onIncrease = useCallback(() => dispatch(increase()), [dispatch]);
+const onDecrease = useCallback(() => dispatch(decrease()), [dispatch]);
 ```
