@@ -308,3 +308,24 @@ const action = myAction('hello world');
 
 - createAction 으로 만든 액션 생성 함수는 파라미터로 받아 온 값을 객체 안에 넣어주는 것이 아닌 action.payload 라는 이름을 공통적으로 넣어줌
 - handleActions 라는 의미가 사용된다고 보면 될 것 같음!!!
+
+## Hooks를 사용하여 컨테이너 컴포넌트 만들기
+
+- 리덕스 스토어와 연동된 컨테이너 컴포넌트 만들 때 connect 함수를 사용하는 대신 react-redux에서 제공하는 Hooks를 사용 가능
+
+## useSelector 로 상태 조회하기
+
+- useSelector 훅을 사용하면 connect 함수를 사용하지 않고 리덕스의 상태를 조회 가능
+
+```js
+const 결과 = useSelector(상태 선택 함수);
+```
+
+## useDispatch 를 사용하여 액션 디스패치
+
+- 컴포넌트 내부에서 스토어의 내장 함수 dispatch 를 사용할 수 있게 해줌
+
+```js
+const dispatch = useDispatch();
+dispatch({ type: 'SAMPLE_ACTION' });
+```
