@@ -290,3 +290,21 @@ const counter = handleActions({
   initialState,
 });
 ```
+
+## todos 모듈에 적용
+
+- 액션 생성 함수에서 파라미터가 필요한 경우
+
+  - 액션에 필요한 추가 데이터는 payload 라는 이름을 사용
+
+- 액션 생성 함수에서 받아 온 파라미터를 변형을 주어서 넣고 싶은경우
+  - 두번째 파라미터에 payload를 정의하는 함수로 따로 선언하여 넣어주면 됨
+
+```js
+const MY_ACTION = 'sample/MY_ACTION';
+const myAction = createAction(MY_ACTION, (text) => `${text}`);
+const action = myAction('hello world');
+```
+
+- createAction 으로 만든 액션 생성 함수는 파라미터로 받아 온 값을 객체 안에 넣어주는 것이 아닌 action.payload 라는 이름을 공통적으로 넣어줌
+- handleActions 라는 의미가 사용된다고 보면 될 것 같음!!!
