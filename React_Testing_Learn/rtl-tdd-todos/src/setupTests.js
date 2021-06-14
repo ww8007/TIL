@@ -8,3 +8,4 @@ import "@testing-library/user-event";
 import "@testing-library/react/dont-cleanup-after-each";
 import "@testing-library/jest-dom";
 import "@testing-library/user-event/dist";
+import "@testing-library/jest-dom/extend-expect";
