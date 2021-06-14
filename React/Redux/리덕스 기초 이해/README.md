@@ -256,3 +256,6 @@ export default connect(
 - redux-actions 라는 라이브러리와 immer 라이브러리 사용해서 더 편하게 작성이 가능
 
 ## redux-actions
+
+- 액션 생성 함수를 더 짧은 코드로 작성이 가능
+- 리듀서를 작성할 때도 switch/case 문이 아닌 handleActions라는 함수를 사용하여 각 액션 마다 업데이트 함수를 설정하는 형식으로 작성 가능
