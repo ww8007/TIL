@@ -354,3 +354,16 @@ const store = useStore();
 store.dispatch({ type: 'SAMPLE_ACTION' });
 store.getState();
 ```
+
+## useActions 유틸 Hook 만들어서 사용하기
+
+- useActions는 원래 react-redux에 내장된 상태로 릴리즈될 계획이었으나 개발 팀에서 꼭 필요하지 않다고 생각하여 제외돈 Hook
+- 여러 개의 액션을 사용해야 하는 경우 코드를 훨씬 깔끔하게 정리 가능
+
+> Array.isArray -> 배열인지 확인 하는 방법
+
+    typeof 를 사용하면 object가 나오기 때문에 확실하게 확인 불가
+
+- 액션 생성 함수를 액션을 디스패치하는 함수로 변환해줌
+- 액션 생성 함수를 사용하여 액션 객체 생성
+- 스토어에 디스패치하는 작업을 해주는 함수를 자동으로 생성
