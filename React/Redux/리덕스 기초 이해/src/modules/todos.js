@@ -9,7 +9,7 @@ const REMOVE = 'todos/REMOVE';
 
 export const changeInput = createAction(CHANGE_INPUT, (input) => input);
 let id = 3;
-export const insert = createAction(CHANGE_INPUT, (text) => ({
+export const insert = createAction(INSERT, (text) => ({
   id: id++,
   text,
   done: false,
@@ -35,23 +35,23 @@ const initialState = {
 
 const todos = handleActions(
   {
-    [CHANGE_INPUT]: (state, action) => ({
+    [CHANGE_INPUT]: (state, { payload: input }) => ({
       ...state,
-      input: action.payload,
+      input,
     }),
-    [INSERT]: (state, action) => ({
+    [INSERT]: (state, { payload: todo }) => ({
       ...state,
-      todos: state.todos.concat(action.payload),
+      todos: state.todos.concat(todo),
     }),
-    [TOGGLE]: (state, action) => ({
+    [TOGGLE]: (state, { payload: id }) => ({
       ...state,
       todos: state.todos.map((todo) =>
-        todo.id === action.payload ? { ...todo, done: !todo.done } : todo
+        todo.id === id ? { ...todo, done: !todo.done } : todo
       ),
     }),
-    [REMOVE]: (state, action) => ({
+    [REMOVE]: (state, { payload: id }) => ({
       ...state,
-      todos: state.todos.filter((todo) => todo.id !== action.payload),
+      todos: state.todos.filter((todo) => todo.id !== id),
     }),
   },
   initialState
