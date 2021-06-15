@@ -5,6 +5,30 @@
 - react-redux 에서 제공하는 유틸 함수
   - connect, Provider 사용
 
+## 목차
+
+- [리덕스 기초 이해](#%EB%A6%AC%EB%8D%95%EC%8A%A4-%EA%B8%B0%EC%B4%88-%EC%9D%B4%ED%95%B4)
+  - [Ducks 패턴 적용](#ducks-%ED%8C%A8%ED%84%B4-%EC%A0%81%EC%9A%A9)
+  - [액션 타입 정의](#%EC%95%A1%EC%85%98-%ED%83%80%EC%9E%85-%EC%A0%95%EC%9D%98)
+  - [액션 생성 함수 만들기](#%EC%95%A1%EC%85%98-%EC%83%9D%EC%84%B1-%ED%95%A8%EC%88%98-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+  - [초기 상태 및 리듀서 함수 작성](#%EC%B4%88%EA%B8%B0-%EC%83%81%ED%83%9C-%EB%B0%8F-%EB%A6%AC%EB%93%80%EC%84%9C-%ED%95%A8%EC%88%98-%EC%9E%91%EC%84%B1)
+  - [초기 상태 및 리듀서 함수 만들기](#%EC%B4%88%EA%B8%B0-%EC%83%81%ED%83%9C-%EB%B0%8F-%EB%A6%AC%EB%93%80%EC%84%9C-%ED%95%A8%EC%88%98-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+  - [루트 리듀서 생성](#%EB%A3%A8%ED%8A%B8-%EB%A6%AC%EB%93%80%EC%84%9C-%EC%83%9D%EC%84%B1)
+  - [리덕스 적용하기](#%EB%A6%AC%EB%8D%95%EC%8A%A4-%EC%A0%81%EC%9A%A9%ED%95%98%EA%B8%B0)
+  - [스토어 만들기](#%EC%8A%A4%ED%86%A0%EC%96%B4-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+  - [Provider 컴포넌트를 사용하여 프로젝트에 리덕스 적용](#provider-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EC%97%AC-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EC%97%90-%EB%A6%AC%EB%8D%95%EC%8A%A4-%EC%A0%81%EC%9A%A9)
+  - [Redux DevTools 설치 및 사용](#redux-devtools-%EC%84%A4%EC%B9%98-%EB%B0%8F-%EC%82%AC%EC%9A%A9)
+  - [컨테이너 컴포넌트 만들기](#%EC%BB%A8%ED%85%8C%EC%9D%B4%EB%84%88-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+  - [리덕스 더 편하게 사용하기](#%EB%A6%AC%EB%8D%95%EC%8A%A4-%EB%8D%94-%ED%8E%B8%ED%95%98%EA%B2%8C-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+  - [redux-actions](#redux-actions)
+  - [counter 모듈에 적용](#counter-%EB%AA%A8%EB%93%88%EC%97%90-%EC%A0%81%EC%9A%A9)
+  - [todos 모듈에 적용](#todos-%EB%AA%A8%EB%93%88%EC%97%90-%EC%A0%81%EC%9A%A9)
+  - [Hooks를 사용하여 컨테이너 컴포넌트 만들기](#hooks%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EC%97%AC-%EC%BB%A8%ED%85%8C%EC%9D%B4%EB%84%88-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+  - [useSelector 로 상태 조회하기](#useselector-%EB%A1%9C-%EC%83%81%ED%83%9C-%EC%A1%B0%ED%9A%8C%ED%95%98%EA%B8%B0)
+  - [useDispatch 를 사용하여 액션 디스패치](#usedispatch-%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EC%97%AC-%EC%95%A1%EC%85%98-%EB%94%94%EC%8A%A4%ED%8C%A8%EC%B9%98)
+  - [useStore를 사용하여 리덕스 스토어 사용하기](#usestore%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EC%97%AC-%EB%A6%AC%EB%8D%95%EC%8A%A4-%EC%8A%A4%ED%86%A0%EC%96%B4-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+  - [useActions 유틸 Hook 만들어서 사용하기](#useactions-%EC%9C%A0%ED%8B%B8-hook-%EB%A7%8C%EB%93%A4%EC%96%B4%EC%84%9C-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)%
+
 ## Ducks 패턴 적용
 
 - 액션 타입, 액션 생성 함수, 리듀서 함수를 한 파일에 작성
