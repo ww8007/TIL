@@ -145,3 +145,108 @@ export const decreaseAsync = () => (dispatch) => {
 > axios 를 사용하므로 axios를 설치해준다.
 
     yarn add axios
+
+1. 액션 타입 선언
+
+```js
+// 액션 타입 선언
+const GET_POST = 'sample/GET_POST';
+const GET_POST_SUCCESS = 'sample/GET_POST_SUCCESS';
+const GET_POST_FAILURE = 'sample/GET_POST_FAILURE';
+
+const GET_USERS = 'sample/GET_USERS';
+const GET_USERS_SUCCESS = 'sample/GET_USERS_SUCCESS';
+const GET_USERS_FAILURE = 'sample/GET_USERS_FAILURE';
+```
+
+2. thunk 함수 생성
+
+```js
+export const getPost = (id) => async (dispatch) => {
+  dispatch({ type: GET_POST }); //요청 시작 알림
+  try {
+    const response = await api.getPost(id);
+    dispatch({
+      type: GET_POST_SUCCESS,
+      payload: response.data,
+    });
+  } catch (e) {
+    dispatch({
+      typ: GET_POST_FAILURE,
+      payload: e,
+      error: true,
+    });
+    throw e;
+  }
+};
+```
+
+3. 액션 생성함수 생성 - with handleActions
+
+- 성공과 실패 상태에 따라서 다른 결과를 도출하도록 작성한다.
+- loading 상태를 두어서 데이터가 통신 중인지 아니면 결과가 나온 값인지에 대한 판단을 하도록 도와준다.
+
+```js
+const sample = handleActions(
+  {
+    [GET_POST]: (state) => ({
+      ...state,
+      loading: {
+        ...state.loading,
+        GET_POST: true,
+      },
+    }),
+    [GET_POST_SUCCESS]: (state, action) => ({
+      ...state,
+      loading: {
+        ...state.loading,
+        GET_POST: false,
+      },
+      post: action.payload,
+    }),
+    [GET_POST_FAILURE]: (state, action) => ({
+      ...state,
+      loading: {
+        ...state.loading,
+        GET_POST: false,
+      },
+    }),
+  },
+  initialState
+);
+```
+
+4. 컨테이너 컴포넌트 생성
+
+> 이 과정에서는 로딩중 인지 아닌지에 대한 판별이 되게 중요하다.
+
+    이 과정을 빼 먹는 경우가 있는데 비동기 처리 이기 때문에 이를 표현 시켜주는 것은 매우 중요한 과정이므로 잘 알아두도록 한다.
+
+5. createRequestThunk Hook 생성
+
+- 매 번 thunk 함수를 작성하는 것과 로딩 상태를 리듀서에서 관리하는 작업은 귀찮을 뿐 만 아니라 코드를 길어지게 만든다. 그러므로 따로 분ㄴ리해서 관리하도록 생성
+
+```js
+export default function createRequestThunk(type, request) {
+  const SUCCESS = `${type}_SUCCESS`;
+  const FAILURE = `${type}_FAILURE`;
+  return (params) => async (dispatch) => {
+    dispatch({ type });
+    try {
+      const response = await request(params);
+      dispatch({
+        type: SUCCESS,
+        payload: response.data,
+      });
+    } catch (e) {
+      dispatch({
+        type: FAILURE,
+        payload: e,
+        error: true,
+      });
+      throw e;
+    }
+  };
+}
+// 사용법 : createRequestThunk('GET_USERS', api.getUsers)
+```
