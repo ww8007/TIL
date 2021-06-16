@@ -141,3 +141,7 @@ export const decreaseAsync = () => (dispatch) => {
 - JSONplaceholder(https://jsonplaceholder.typicode.com)
 - 포스트 읽기
   - GET https://jsonplaceholder.typicode.com/posts/:id
+
+> axios 를 사용하므로 axios를 설치해준다.
+
+    yarn add axios
