@@ -1,0 +1,12 @@
+{
+  "name": "generator",
+  "version": "1.0.0",
+  "description": "- redux-saga 에서 이용되는 문법 중 하나 - ES6 제너레이터(generator) 함수 문법 사용",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
