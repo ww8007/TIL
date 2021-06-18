@@ -105,3 +105,26 @@ export default rootReducer;
 
     Promise 를 반환하는 함수를 호출하고 기다릴 수 있음
     첫 번째는 파라미터 함수, 나머지는 파라미터에는 해당 함수에 넣을 인수
+
+- saga 함수 생성
+  - startLoading, endLoading을 다른 모듈로 생성해서 로딩의 시작과 끝을 알리는 용으로 사용한다.
+
+```js
+function* getPostSaga(action) {
+  yield put(startLoading(GET_POST));
+  try {
+    const post = yield call(api.getPost, action.payload);
+    yield put({
+      type: GET_POST_SUCCESS,
+      payload: post.data,
+    });
+  } catch (e) {
+    yield put({
+      type: GET_POST_FAILURE,
+      payload: e,
+      error: true,
+    });
+  }
+  yield put(endLoading(GET_POST));
+}
+```
