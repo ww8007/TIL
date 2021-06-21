@@ -87,7 +87,37 @@
 - align -> justify 순서로 작성
 - 하나만 적어도 동시 적용
 
-### align-content
+### align-content-아이템 세로 정렬
+
+- 아이템 세로 정렬
 
 - Grid 아이템들의 높이를 모두 합한 값이 Grid 컨테이너의 높이보다 작을 때 Grid 아이템들을 통째로 정렬
 - Grid 컨테이너의 아이템 값들이 고정값일 경우 적용이 됨
+
+### justify-content
+
+- 아이템 그룹 가로 정렬
+- grid 아이템
+
+```css
+.container {
+  justify-content: stretch;
+  /* justify-content: start; */
+  /* justify-content: center; */
+  /* justify-content: end; */
+  /* justify-content: space-between; */
+  /* justify-content: space-around; */
+  /* justify-content: space-evenly; */
+}
+```
+
+### place-content
+
+- align-content, justify-content
+- align -> justify 순서로 작성
+
+```css
+.container {
+  place-content: space-between center;
+}
+```
