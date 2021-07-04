@@ -195,3 +195,16 @@
 > 실행 명령어
 
     docker build -t app .
+    docker run -p -8000:8080 -d app
+    포트 : 외부 -> 내부
+
+## 실행중인 도커 중지 및 쉘 접근
+
+- 도커 중지
+
+sudo docker stop [id]
+
+- 도커 쉘로 접근
+
+docker exec -it [id] /bin/bash
+docker exec -it 5f7ab000cc5f /bin/bash
