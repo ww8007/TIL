@@ -99,3 +99,30 @@ module.exports = { presets, plugins };
     npx babel src/code.js --out-file dist.js
     2. 폴더 단위 처리
     npx babel src --out-dir dist
+
+## 웹펙의 babel-loader로 실행하기
+
+> 설치
+
+    npm i webpack webpack-cli babel-loader
+
+```js
+const path = require('path');
+
+module.exports = {
+  entry: './src/code.js',
+    - 웹펙으로 번들링할 파일을 지정
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'code.bundle.js',
+  },
+    - 번들링된 결과를 dist/code.bundle.js
+  module: {
+    rules: [{ test: /\.js$/, use: 'babel-loader' }],
+    - 자바스크립트 파일을 babel-loader가 처리하도록 설정
+    - 이전에 만들었던 Babel.config.js 파일의 내용을 설정값으로 사용
+  },
+  optimizer: { minimizer: [] },
+    - 원래는 파일을 압축하는 것이 통상적이지만 실행되었는지 확을 위해 꺼둠
+};
+```
