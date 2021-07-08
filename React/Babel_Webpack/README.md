@@ -276,3 +276,30 @@ console.log(code);
 - exclude 로 설정한 파일들은 플러그인을 따로 설정할 수 있다는 것이 특징이다.
 
 > overrides -> 파일별로 다른 설정이 가능하다는 것이 특징적
+
+## 전체 설정 파일과 지역 설정 파일
+
+- 바벨 설정 파일 종류
+  1. 전체(project-wide) 설정 파일 : 모든 js 파일에 적용
+  1. 지역(file-relative) 설정 파일 : 파일의 경로에 따라 결정
+
+> 설치
+
+    npm i @babel/core @babel/cli
+    npm i @babel/plugin-transform-template-literals
+    npm i @babel/plugin-transform-arrow-functions
+    npm i @babel/preset-react
+
+> .babelrc, .babelrc.js, package.json 이 지역 설정 파일
+
+> 지역 바벨 설정의 특징
+
+    package.json, babelrc, .babelrc.js 파일을 만날 때 까지 부모 폴더로 이동한다.
+    src/service1/.babelrc 파일을 만났고 그 파일이 지역 설정 파일
+
+> 프로젝트 루트 바벨
+
+    루트 경로의 babel.config.js 파일이 전체 설정 파일
+
+- 전체 설정 파일과 지역 설정 파일을 병합하게 됨
+  이 경우 지역 설정 파일이 전체 설정을 덮어쓰게 된다.
