@@ -126,3 +126,153 @@ module.exports = {
     - 원래는 파일을 압축하는 것이 통상적이지만 실행되었는지 확을 위해 꺼둠
 };
 ```
+
+## @babel/core 직접 이용
+
+```js
+const babel = require('@babel/core');
+const fs = require('fs');
+
+const filename = './src/code.js';
+const source = fs.readFileSync(filename, 'utf-8');
+// 컴파일할 파일의 내용을 가져온다.
+const presets = ['@babel/preset-react'];
+const plugins = [
+  '@babel/plugin-transform-template-literals',
+  '@babel/plugin-transform-arrow-functions',
+];
+// 바벨 플러그인과 프리셋을 설정
+const { code } = babel.transformSync(source, {
+  // transformSync 함수를 호출해서 바벨을 실행
+  filename,
+  presets,
+  plugins,
+  configFile: false,
+  // babel.config.file을 사용하지 않도록함
+});
+console.log(code);
+//로그로 출력
+```
+
+- 특징
+
+  - 자유도가 높다는 장점을 가지고 있음
+  - 같은 코드에 대해 두가지를 적용한다고 생각
+
+- @babel/cli, babel-loader를 이용한다면 바벨을 두 번 실행해야함
+- 하지만 @babel/core를 사용하면 **좀 더 효율적 코드** 작성 가능
+
+> 바벨 컴파일 3단계
+
+    1. 파싱(parsing) : 입력된 코드로부터 AST(abstract syntax tree) 생성
+    1. 변환(transform) : AST를 원하는 형태로 변환
+    1. 생성(generate) : AST를 코드로 출력
+
+- AST
+  - 코드의 구문(syntax)이 분석된 결과를 담고 잇는 구조체
+  - 코드가 같다면 AST도 같기 때문에 같은 코드에 대해서 하나의 AST 만들어놓고 재사용 가능
+
+## 확장성과 유연성을 고려한 바벨 설정 방법
+
+- 바벨 설정 파일에서 사용할 수 있는 extends, env, overrides
+
+- extends 속성을 이용하면 다른 설정 파일을 가져와서 확장 가능
+- env, overrides 속성을 이용하면 환경별 또는 파일별로 다른 설정 가능
+
+> npm i @babel/core @babel/cli @babel/plugin-transform-arrow-functions @babel/plugin-transform-template-literals @babel/preset-react babel-preset-minify
+
+## extends 속성으로 다른 설정 파일 가져오기
+
+- 먼저 프로젝트 루트에 common 폴더를 만들고 그 밑에 .babelrc 파일을 만든다.
+
+```js
+{
+  "presets": ["@babel/preset-react"],
+  "plugins": [
+    [
+      "@babel/plugin-transform-template-literals",
+      {
+        "loose": true
+      }
+    ]
+  ]
+}
+```
+
+- 플러그인에 옵션을 설정할 때는 배열로 만들어서 두 번째 자리에 옵션을 넣음
+- 템플릿 리터럴 플러그인에 loose 옵션을 주면 문자열을 연결할 때 concat 메스드 대신 + 연산자를 사용한다.
+- 프로젝트 루트에 src 폴더를 만들고 src 폴더 밑에 example-extends 생성
+
+```js
+{
+  "extends": "../../common/.babelrc",
+  "plugins": [
+    "@babel/plugin-transform-arrow-function",
+    "@babel/plugin-template-literals"
+  ]
+}
+```
+
+- extends 속성을 이용해서 다른 파일에 있는 설정을 가져온다.
+- 가져온 설정에 플러그인을 추가한다.
+- 템플릿 리터럴 플러그인은 가져온 설정에 이미 존재한다.
+- 이때 플러그인 옵션은 현재 파일의 옵션으로 결정된다.
+
+> extends로 가져온 플러그인을 재 사용하면 플러그인 사라짐
+
+## env 속성으로 환경별로 설정하기
+
+```js
+{
+  "presets": ["@babel/preset-react"],
+  "plugins": [
+    "@babel/plugin-transform-template-literals",
+    "@babel/plugin-transform-arrow-functions"
+  ],
+  "env": {
+    "production": {
+      "presets": ["minify"]
+    }
+  }
+}
+
+```
+
+- env 속성을 이용하면 환경별로 다른 설정을 줄 수 있음
+- 프로덕션 환경에서는 압축 프리셋을 사용하도록 설정
+
+  - "presets" : ["minify"]
+  - 앞에서 추가한 프리셋은 유지되고 압축 프리셋이 추가되는 형태
+
+- 바벨에서 현재 환경은 다음과 같이 결정됨
+  - process.env.BABEL_ENV || process.env.NODE_ENV || "development"
+
+> 개발 모드의 압축 프리셋 사용
+
+    NODE_ENV=production npx babel ./src/example-env
+
+- 위의 경우 압축 프리셋이 적용이 되어서 코드를 읽기 힘들다.
+
+## overrides 속성으로 파일별로 설정하기
+
+- src 폴더 밑에 example-overrides 폴더를 만든다.
+- example-overrides 폴더 밑에 .babelrc 파일을 만든 다음 내용을 입력
+
+```js
+{
+    // 리액트 프리셋, 템플릿 리터럴 플러그인 설정
+  "presets": ["@babel/preset-react"],
+  "plugins": ["@babel/plugin-template-transform-template-literals"],
+
+  "overrides": {
+    "include": "./service1",
+    "exclude": "./service1/code2.js",
+    "plugins": ["@babel/plugin-transform-arrow-functions"]
+  }
+}
+```
+
+- example-overrides : 폴더 밑에 .babelrc 파일을 만든 다음 내용을 입력
+- exclude 로 설정한 파일들은 플러그인을 따로 설정할 수 있다는 것이 특징이다.
+
+> overrides -> 파일별로 다른 설정이 가능하다는 것이 특징적
