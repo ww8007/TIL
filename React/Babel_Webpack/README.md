@@ -460,3 +460,239 @@ const exist = arr.includes(20);
 ## 바벨 플러그인 제작하기
 
 - 바벨은 프리셋과 플러그인을 누구나 제작할 수 있도록 API 제공
+
+### AST 문자 구조 들여다 보기
+
+- 바벨은 문자열로 입력되는 코드를 AST(abstract syntax tree)라는 구조체로 만들어서 처리
+- 플러그인에서는 AST를 기반으로 코드를 변경
+- 플러그인 제작 -> AST 구조를 이해해야 가능
+
+[astexplore](https://astexplorer.net/)
+
+> 위의 사이트에 가서 원하는 문장을 입력 후 parser를 보면 됨
+
+- AST 각 노드는 type 속성이 있음
+  - 타입 종류는 너무 많기 때문에 모두 나열하는 것은 의미가 없고
+  - 필요할 때 마다 문서를 찾거나 사이트에서 직접 확인하는 식으로 사용하면 됨
+
+### 바벨 플러그인의 기본 구조
+
+- 바벨 플러그인은 하나의 자바스크립트 파일로 만들 수 있음
+
+```js
+module.exports = function ({ types: t }) {
+  -1;
+  const node = t.BinaryExpression('+', t.Identifier('a'), t.Identifier('b'));
+  console.log('isBinaryExpression: ', t.isBinaryExpression(node));
+  return {};
+};
+```
+
+1. types 매개변수를 가진 함수를 내보냄
+1. types 매개변수를 이용해서 AST 노드를 생성 가능
+   1. 위의 코드는 두 변수의 덧셈을 AST 노드로 만듬
+1. types 매개변수는 AST 노드의 타입을 검사하는 용도로 사용
+1. 빈 객체를 반환하면 아무일도 하지 않음
+
+```js
+module.exports = function ({ types: t }) {
+  return {
+    visitor: { -1
+      Identifier(path) { -2
+        console.log('Identifier name:', path.node.name);
+      },
+      BinaryExpression(path) {
+        console.log('BinaryExpression operator:', path.node.operator);
+      },
+    },
+  };
+};
+```
+
+1. visitor 객체 내부에서 노드의 타입 이름으로 된 함수를 정의 가능
+2. 해당 하는 타입의 노드가 생성되면 같은 이름의 함수가 호출
+   - const v1 = a + b;
+   - 3 번 호출
+3. Identifier
+   - const v1 = a + b;
+   - 한 번 호출
+
+> 설치
+
+    npm i @babel/core @babel/cli
+
+- 사이트에 들어가서 AST를 들어가서 다음과 같음
+
+1. 콘솔 로그 코드 : ExpressionStatement 노드로 시작
+2. 함수 또는 메서드를 호출하는 코드는 CallExpression 노드로 만들어줌
+3. 메서드 호출은 CallExpression 노드 내부에서 MemberExpression 노드로 만들어짐
+   AST 구조를 이용해 콘솔 로그를 제거하는 플러그인을 작성
+
+> 콘솔로그의 AST
+
+```json
+{
+  "type": "Program",
+  "start": 0,
+  "end": 18,
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "start": 0,
+      "end": 18,
+      "expression": {
+        "type": "CallExpression",
+        "start": 0,
+        "end": 18,
+        "callee": {
+          "type": "MemberExpression",
+          "start": 0,
+          "end": 11,
+          "object": {
+            "type": "Identifier",
+            "start": 0,
+            "end": 7,
+            "name": "console"
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 8,
+            "end": 11,
+            "name": "log"
+          },
+          "computed": false,
+          "optional": false
+        },
+        "arguments": [
+          {
+            "type": "Literal",
+            "start": 12,
+            "end": 17,
+            "value": "asd",
+            "raw": "'asd'"
+          }
+        ],
+        "optional": false
+      }
+    }
+  ],
+  "sourceType": "module"
+}
+```
+
+- 콘솔 로그를 제거하는 플러그인 코드
+
+```js
+module.exports = function ({ types: t }) {
+  return {
+    visitor: {
+      ExpressionStatement(path) {
+        if (t.isCallExpression(path.node.expression)) {
+          if (t.isMemberExpression(path.node.expression.callee)) {
+            const memberExp = path.node.expression.callee;
+            if (
+              memberExp.object.name === 'console' &&
+              memberExp.property.name === 'log'
+            ) {
+              path.remove();
+              // ... (모든 괄호 닫기)
+            }
+          }
+        }
+      },
+    },
+  };
+};
+```
+
+- 나오는 ast 설정을 가지고 플러그인을 설정하면 됨
+
+> function에 types를 제대로 설정해줘야함
+
+### 직접 제작한 플러그인을 사용하도록 설정하기
+
+- 모든 함수에 콘솔 로그를 추가해 주는 플러그인을 제작
+- AST 구조를 먼저 파악하는 것이 중요
+
+```json
+{
+  "type": "Program",
+  "sourceType": "script",
+  "body": [
+    {
+      "type": "FunctionDeclaration",
+      "id": {
+        "type": "Identifier",
+        "name": "f1"
+      },
+      "params": [
+        {
+          "type": "Identifier",
+          "name": "p1"
+        }
+      ],
+      "body": {
+        "type": "BlockStatement",
+        "body": [
+          {
+            "type": "VariableDeclaration",
+            "kind": "let",
+            "declarations": [
+              {
+                "type": "VariableDeclarator",
+                "id": {
+                  "type": "Identifier",
+                  "name": "v1"
+                },
+                "init": null
+              }
+            ]
+          }
+        ]
+      },
+      "async": false,
+      "generator": false
+    }
+  ]
+}
+```
+
+```js
+module.exports = function ({ types: t }) {
+  return {
+    visitor: {
+      FunctionDeclaration(path) { -1-
+        if (path.node.id.name.substr(0, 2) === 'on') { -2-
+          path
+            .get('body')
+            .unshiftContainer( -3-
+              'body',
+                -5-
+              t.expressionStatement(
+                t.callExpression(
+                  t.memberExpression(
+                    t.identifier('console'),
+                    t.identifier('log')
+                  ),
+                  [t.stringLiteral(`call ${path.node.id.name}`)]
+                )
+              )
+            );
+            -5-
+        }
+      },
+    },
+  };
+};
+```
+
+1. 노드 생성시 호출되는 함수를 정의
+1. 함수 이름이 on으로 시작하는지 검사
+   ```js
+   path.node.id.name.substr(0, 2) === 'on';
+   ```
+1. body 배여릐 앞쪽에 노드를 추가하기 위해 unshiftContainer 메서드 호출
+1. 콘솔 로드 노드 생성
+   ```js
+   console.log(`call ${함수 이름}`);
+   ```
