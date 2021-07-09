@@ -1,5 +1,28 @@
 # 웹펙과 바벨
 
+## 목차
+
+- [웹펙과 바벨](#%EC%9B%B9%ED%8E%99%EA%B3%BC-%EB%B0%94%EB%B2%A8)
+  - [기본 설명](#%EA%B8%B0%EB%B3%B8-%EC%84%A4%EB%AA%85)
+  - [바벨 실행 및 설정하기](#%EB%B0%94%EB%B2%A8-%EC%8B%A4%ED%96%89-%EB%B0%8F-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0)
+  - [바벨을 실행하는 여러 가지 방법](#%EB%B0%94%EB%B2%A8%EC%9D%84-%EC%8B%A4%ED%96%89%ED%95%98%EB%8A%94-%EC%97%AC%EB%9F%AC-%EA%B0%80%EC%A7%80-%EB%B0%A9%EB%B2%95)
+  - [예시](#%EC%98%88%EC%8B%9C)
+  - [웹펙의 babel-loader로 실행하기](#%EC%9B%B9%ED%8E%99%EC%9D%98-babel-loader%EB%A1%9C-%EC%8B%A4%ED%96%89%ED%95%98%EA%B8%B0)
+  - [@babel/core 직접 이용](#babelcore-%EC%A7%81%EC%A0%91-%EC%9D%B4%EC%9A%A9)
+  - [확장성과 유연성을 고려한 바벨 설정 방법](#%ED%99%95%EC%9E%A5%EC%84%B1%EA%B3%BC-%EC%9C%A0%EC%97%B0%EC%84%B1%EC%9D%84-%EA%B3%A0%EB%A0%A4%ED%95%9C-%EB%B0%94%EB%B2%A8-%EC%84%A4%EC%A0%95-%EB%B0%A9%EB%B2%95)
+  - [extends 속성으로 다른 설정 파일 가져오기](#extends-%EC%86%8D%EC%84%B1%EC%9C%BC%EB%A1%9C-%EB%8B%A4%EB%A5%B8-%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC-%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0)
+  - [env 속성으로 환경별로 설정하기](#env-%EC%86%8D%EC%84%B1%EC%9C%BC%EB%A1%9C-%ED%99%98%EA%B2%BD%EB%B3%84%EB%A1%9C-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0)
+  - [overrides 속성으로 파일별로 설정하기](#overrides-%EC%86%8D%EC%84%B1%EC%9C%BC%EB%A1%9C-%ED%8C%8C%EC%9D%BC%EB%B3%84%EB%A1%9C-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0)
+  - [전체 설정 파일과 지역 설정 파일](#%EC%A0%84%EC%B2%B4-%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC%EA%B3%BC-%EC%A7%80%EC%97%AD-%EC%84%A4%EC%A0%95-%ED%8C%8C%EC%9D%BC)
+  - [바벨과 폴리필](#%EB%B0%94%EB%B2%A8%EA%B3%BC-%ED%8F%B4%EB%A6%AC%ED%95%84)
+  - [core-js 모듈의 모든 폴리필 사용하기](#core-js-%EB%AA%A8%EB%93%88%EC%9D%98-%EB%AA%A8%EB%93%A0-%ED%8F%B4%EB%A6%AC%ED%95%84-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+  - [core-js 에서 필요한 폴리필을 직접 넣는 코드](#core-js-%EC%97%90%EC%84%9C-%ED%95%84%EC%9A%94%ED%95%9C-%ED%8F%B4%EB%A6%AC%ED%95%84%EC%9D%84-%EC%A7%81%EC%A0%91-%EB%84%A3%EB%8A%94-%EC%BD%94%EB%93%9C)
+  - [@babel/preset-env 프리셋 이용하기](#babelpreset-env-%ED%94%84%EB%A6%AC%EC%85%8B-%EC%9D%B4%EC%9A%A9%ED%95%98%EA%B8%B0)
+  - [바벨 플러그인 제작하기](#%EB%B0%94%EB%B2%A8-%ED%94%8C%EB%9F%AC%EA%B7%B8%EC%9D%B8-%EC%A0%9C%EC%9E%91%ED%95%98%EA%B8%B0)
+    - [AST 문자 구조 들여다 보기](#ast-%EB%AC%B8%EC%9E%90-%EA%B5%AC%EC%A1%B0-%EB%93%A4%EC%97%AC%EB%8B%A4-%EB%B3%B4%EA%B8%B0)
+    - [바벨 플러그인의 기본 구조](#%EB%B0%94%EB%B2%A8-%ED%94%8C%EB%9F%AC%EA%B7%B8%EC%9D%B8%EC%9D%98-%EA%B8%B0%EB%B3%B8-%EA%B5%AC%EC%A1%B0)
+    - [직접 제작한 플러그인을 사용하도록 설정하기](#%EC%A7%81%EC%A0%91-%EC%A0%9C%EC%9E%91%ED%95%9C-%ED%94%8C%EB%9F%AC%EA%B7%B8%EC%9D%B8%EC%9D%84-%EC%82%AC%EC%9A%A9%ED%95%98%EB%8F%84%EB%A1%9D-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0)
+
 ## 기본 설명
 
 - 웹 애플리케이션을 제작할 경우 없어서는 안 되는 기반 기술 중 하나
