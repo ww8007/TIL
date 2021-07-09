@@ -303,3 +303,160 @@ console.log(code);
 
 - 전체 설정 파일과 지역 설정 파일을 병합하게 됨
   이 경우 지역 설정 파일이 전체 설정을 덮어쓰게 된다.
+
+## 바벨과 폴리필
+
+- js의 최신 기능을 모두 사용하면서 오래된 브라우저를 지원하기 위해서는
+- 바벨로 코드 문법을 변환하는 동시에 **폴리필**도 사용해야함
+
+> 폴리필 - polyfill
+
+    런타임에 기능을 주입하는 것을 말함
+    런타임에 기능이 있는지 검사 -> 기능이 없는 경우에만 주입
+
+> 오해하기 쉬운 점!!!
+
+    바벨을 사용하더라도 폴리필에 대한 설정을 별도로 해야함
+    ES8에 추가된 String.padStart 메서드는 폴리필을 이용해서 추가가능
+    async await는 폴리필로 추가할 수 없음
+    컴파일 타밈에서 코드를 변환해야 함
+
+```js
+if (!String.prototype.padStart) {
+  String.prototype.padStart = func; // func는 padStart 폴리필 함수
+}
+```
+
+## core-js 모듈의 모든 폴리필 사용하기
+
+- core-js는 바벨에서 폴리필을 위해 공식적으로 지원하는 패키지
+- 간단한 사용법은 core-js 모듈을 자바스크립트 코드로 불러오는 것
+
+> core-js 모듈을 가져오면 해당 모듈의 모든 폴리필이 포함
+
+    낮은 버전의 브라우저에서도 promise, Object.values 배열의 includes 메서드를 사용할 수 있다.
+
+```js
+import 'core-js';
+
+const p = Promise.resolve(10);
+const obj = {
+  a: 10,
+  b: 20,
+  c: 30,
+};
+```
+
+> core-js 모듈을 가져오면 해당 모듈의 모든 폴리필이 포함
+
+    낮은 버전의 브라우저에서도 메서드 사용가능
+
+- core-js의 경우 사용법이 간단하지만 필요하지 않은 폴리필까지 포함됨
+  - 민감하지 않은 프로젝트에서 사용하기 좋다는 의미가 있음
+
+## core-js 에서 필요한 폴리필을 직접 넣는 코드
+
+```js
+import 'core-js/features/promise';
+import 'core-js/features/object/values';
+import 'core-js/features/array/includes';
+
+const p = Promise.resolve(10);
+const obj = {
+  a: 10,
+  b: 20,
+  c: 30,
+};
+const arr = Object.values(obj);
+const exist = arr.includes(20);
+```
+
+> core-js 모듈은 폴리필을 추가하는 과정이 번거롭다.
+
+    필요한 폴리필을 깜빡하고 포함시키지 않는 경우가 존재
+    그러므로 크기에 민감한 프로젝트에는 적합하다.
+
+## @babel/preset-env 프리셋 이용하기
+
+- @babel/preset-env 프리셋은 실행 환경에 대한 정보를 설정해주면 자동으로 필요한 기능을 주입해 줌
+- babel.config.js 파일에 필요한 내용을 입력하면 특정 버전의 브라우저를 위한 플러그인만 포함
+
+```js
+const presets = [
+  '@babel/preset-env',
+  {
+    targets: '> 0.25%, not dead',
+    // 0.25% 이상이고 업데이트가 종료되지 않은 브라우저를 입력
+  },
+];
+
+module.exports = { presets };
+```
+
+- browserslist 패키지의 문법을 사용하여 브라우저 정보를 포함
+
+> npm i @babel/core @babel/cli @babel/preset-env core-js
+
+```js
+const presets = [
+  [
+    // @babel/preset-env 프리셋을 사용
+    '@babel/preset-env',
+    {
+      targets: {
+        // 크롬 최소 버전 40
+        chrome: '40',
+      },
+      // 폴리필
+      useBuiltIns: 'entry',
+      // 바벨에게 필요한 core-js 버전을 알려줌
+      corejs: { version: 3, proposals: true },
+    },
+  ],
+];
+
+module.exports = { presets };
+```
+
+- useBuiltIns : 폴리필과 관련된 설정
+  - entry를 입력하면 지원하는 브라우저에서 필요한 폴리필만 포함
+
+```js
+import 'core-js';
+
+const p = Promise.resolve(10);
+const obj = {
+  a: 10,
+  b: 20,
+  c: 30,
+};
+
+const arr = Object.values(obj);
+const exist = arr.includes(20);
+```
+
+- 위의 코드를 그냥 core-js 를 사용하면 모듈을 가져오는 코드가 수십줄에 걸쳐서 출력
+- 출력 폴리필은 크롬 40 버전에서 없는 기능을 위함
+- 실제로 사용한 기능에 비해서 불필요하게 많은 폴리필 코드가 추가 됨
+- useBuiltIns 속성에 usage를 입력하면 코드에서 사용된 기능의 폴리필만 추가된다.
+
+> usage를 입력할 때는 core-js 모듈을 가져오는 코드가 필요하지 않다.
+
+    Babel.config.js 코드에 useBuiltIns -> usage
+    useBuiltIns: 'usage',
+
+- 파일에 코드와 관련된 세개의 폴리필 추가
+- includes -> 바벨이 코드에서 변수의 타입을 추론 불가
+
+  - typescript를 사용한다면 이 문제는 해결 될 수 있다.
+
+- 크롬 버전을 올려 보면서 바벨을 실행하면 폴리필의 개수가 줄어듬
+- 번들 파일의 크기를 최적화 할 목적이라면 필요한 폴리필을 직접 추가하는 방식이 가장 좋음
+
+> 적당한 번들 파일의 크기를 유지하면서 폴리필 추가를 깜빡하는 실수를 막고 싶다
+
+    @babel/preset-env 가 좋은 선택
+
+## 바벨 플러그인 제작하기
+
+- 바벨은 프리셋과 플러그인을 누구나 제작할 수 있도록 API 제공
