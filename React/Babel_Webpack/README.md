@@ -719,3 +719,144 @@ module.exports = function ({ types: t }) {
    ```js
    console.log(`call ${함수 이름}`);
    ```
+
+# 웹팩
+
+## 웹팩 초급편
+
+- 웹펙 = 모듈 번들러
+
+> 모듈 : 각 리소스 파일을 말함
+> 번들 : 웹팩 실행 후 나오는 결과 파일
+
+- 하나의 번들 파일은 여러 모듈로 만들어짐
+- 웹팩을 이용하면 우리가 제작한 여러가지 리소스를 사용자에게 전달하기 좋은 형태로 만들 수 있음
+
+> 웹팩 필요의 이유
+
+    2000년대 초반의 웹 페이지는 페이지가 바뀔 때 마다 새로운 HTML을 요청해서
+    화면에 그리는 방식이였음
+    자바스크립트는 돔을 조작하는 돔을 조작하는 간단한 역할 -> HTML script 태그에
+    넣는 것 만으로 모든 역할을 수행 가능
+
+- 다른 script를 이용해서 js 파일을 다운받게 할 경우 실수로 인해서 오작동을 일으킬 수 있다.
+
+### 웹팩 실행하기
+
+> 설치
+
+    npm i webpack webpack-cli
+
+- webpack-cli 를 이용하면 CLI(command line interface)에서 휍팩을 실행 가능
+
+> webpack-cli 를 이용하지 않고 코드를 통해 직접 실행할 수도 있음
+
+    cra나 next.js와 같은 프레임워크에서는 세밀하게 웹팩을 다뤄야 하므로
+    webpack-cli를 이용하지 않고 코드에서 직접 실행을 함
+
+### 설정 파일 이용하기
+
+- webpack.config.js
+
+```js
+const path = require('path');
+
+module.exports = {
+  entry: './src/index.js', -1-
+    -2-
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+    -2-
+  mode: 'production',    -3-
+  optimization: { minimizer: [] }, -4-
+};
+```
+
+1. index.js 모듈을 입력 파일로 사용
+1. dist 폴더 밑에 main.js 번들 파일을 생성
+1. 프로덕션 모드로 설정시 자바스크립트 코드 압축을 포함한 여러가지 최적화 기능이 기본으로 들어감
+1. 번들 파일의 내용을 쉽게 사용하기 위해 압축하지 않도록 설정
+
+> 웹팩의 경우 사용자의 실행환경에 따라서 달라질 수 있음
+
+### 로더 사용하기
+
+- 로더(loader)는 모듈을 입력으로 받아서 원하는 형태로 변환한 후 새로운 모듈을 출력
+- 자바스크립트 파일뿐만 아닌 이미지, css, csv 모든 파일 가능
+- 몇 가지 로더를 살펴보면서 다양한 형태의 모듈이 어떻게 처리될 수 학습
+
+> npm i webpack webpack-cli
+
+### 자바스크립트 파일 처리하기
+
+> 자바스크립트 파일 처리 -> babel-loader
+
+> 설치
+
+    npm i babel-loader @babel/core @babel/preset-react react react-dom
+
+- react 파일 만들기
+
+```js
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+function App() {
+  return (
+    <div className="container">
+      <h3 className="title">webpack example</h3>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+```
+
+- @babel/presets 설정
+
+```js
+const presets = ['@babel/preset-react'];
+module.exports = { presets };
+```
+
+- webpack.config.js 설정
+
+```js
+const path = require('path');
+
+module.exports = {
+  entry: './src/index.js',
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+-1-
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: 'babel-loader',
+      },
+    ],
+  },
+-1-
+  mode: 'production',
+};
+```
+
+1. js 확장자를 갖는 모듈은 babel-loader가 처리하도록 설정
+   - 웹팩을 실행하면 dist 폴더 밑 main.js 생김
+   - html 까지 설정을 해줘야 제대로 동작하게 됨
+
+- babel-loader를 설정하지 않고 웹팩을 실행하게 되면 웹팩이 jsx 문법을 이해하지 못해 오류가 생김
+
+### CSS 파일 처리하기
+
+> 설치
+
+    npm i css-loader
+
+> npm i css-loader
