@@ -902,3 +902,32 @@ module.exports = {
 > css-module : css-loader가 제공해주는 기능
 
     css-loader는 css 코드에서 사용된 @import, uri()등의 처리도 담당
+
+## 기타 파일 처리하기
+
+- Png, Json, txt 파일에 대한 처리
+
+- JSON의 경우 웹팩 모듈에서 기본적으로 처리해주기 때문에 별도의 로더를 설치하지 않아도 괜찮음
+- 하지만 txt, png 의 경우 file-loader, raw-loader 설치하여 처리
+
+> file-loader
+
+    모듈의 내용을 그대로 복사해서 dist 폴더 밑 복사본을 생성
+    모듈을 사용하는 쪽에는 해당 모듈의 경료를 넘겨줌
+
+> raw-loader
+
+    모듈의 내용을 그대로 자바스크립트 코드로 가져옴
+
+- webpack.config.js 에 해당 내용 추가
+
+```js
+      {
+        test: /\.(png|jpg|gif)$/,
+        use: 'file-loader',
+      },
+      {
+        test: /\.txt$/,
+        use: 'raw-loader',
+      },
+```
