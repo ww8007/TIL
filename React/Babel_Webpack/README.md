@@ -860,3 +860,45 @@ module.exports = {
     npm i css-loader
 
 > npm i css-loader
+
+- css를 처리 하는 모듈이 없으면 오류가 생기기 때문에
+  - webpack.config.js 파일에 코드 추가
+
+```js
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: 'babel-loader',
+      },
+      {
+        test: /\.css$/,
+        use: 'css-loader',
+      },
+    ],
+  },
+```
+
+- 위와 같이 설정하면 css의 모듈의 내용은 보이지만 적용이 되지 않은 상태
+- 스타일에 실제로 적용하기 위해서는 style-loader가 필요
+
+> 설치
+
+    npm i style-loader
+
+```js
+{
+  test: /\.css$/,
+  use: ['style-loader', 'css-loader'],
+},
+```
+
+- 로더를 배열로 입력하면 오른쪽 로더부터 실행
+- style-loader는 css-loader가 생성한 css 데이터를 style 태그로 만들어서 HTML, head에 삽입
+- 번들 파일이 실행되다가 에러가 발생 -> style 태그가 삽입되지 않을 수 있음
+- css module 을 사용하면 스타일 코드를 지역화 가능
+
+> css-module : css-loader가 제공해주는 기능
+
+    css-loader는 css 코드에서 사용된 @import, uri()등의 처리도 담당
