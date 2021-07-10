@@ -19,7 +19,14 @@ module.exports = {
       },
       {
         test: /\.(png|jpg|gif)$/,
-        use: 'file-loader',
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 100000000,
+            },
+          },
+        ],
       },
       {
         test: /\.txt$/,
