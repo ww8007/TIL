@@ -961,3 +961,128 @@ module.exports = {
   - 만약 파일 크기가 이 값보다 클 경우 다른 로더가 처리할 수 있도록 fallback 옵션 제공
   - fallback 옵션을 입력하지 않으면 file-loader가 처리하게 되어있음
   - limit 옵션에 파일 크기 보다 큰 값을 입력하면 파일의 경로가 아니라 데이터가 입력된 것을 확인 가능
+
+### 프러그인 사용하기
+
+- 플러그인은 로더보다 강력한 기능을 가짐
+- 로더 : 특정 모듈에 대한 처리만 담당
+- 플러그인 : 웹팩이 실행되는 전체 과정에 개입 가능
+
+> 설치
+
+    npm i webpack webpack-cli
+    npm i @babel/core @babel/preset-react babel-loader react react-dom
+
+- 바벨 로더를 사용하도록 설정하기
+
+```js
+const path = require('path');
+
+module.exports = {
+  entry: './src/index.js',
+  output: {
+    filename: '[name].[chunkhash].js',     -1-
+    path: path.resolve(__dirname, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        -2-
+        test: /\.js$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-react'],
+          },
+        -2-
+        },
+      },
+    ],
+  },
+  mode: 'production',
+};
+```
+
+1. chunkhash를 사용하면 파일의 내용이 수정될 때 마다 파일 이름이 변경되도록 가능
+1. 자바스크립트 모듈을 처리가능하게 babel-loader를 설정
+   - babel.config.js 파일로 바벨 설정 가능하지만
+   - babel-loader 에서 직접 바벨 설정도 가능
+   - babel.config.js 가 없어도 되는 장점이 존재!!!
+
+### html-webpack-plugin
+
+- 웹팩을 실행해서 나오는 결과물을 확인하기 위해서는 HTML 파일 수동 작성
+- 위에서 chunkhash 옵션을 설정하였기 때문에 파일 변경 -> HTML 변경
+- 이 작업 자동 : html-webpack-plugin
+
+> 설치
+
+    npm i clean-webpack-plugin html-webpack-plugin
+
+- clean-webpack-plugin : 웹팩을 실행할 때마다 dist 폴더를 정리
+
+  - 번들 파일의 내용이 변경될 때 마다 파일 이름도 변경되기 때문에
+  - 이전에 생성된 번들 파일을 정리하는 용도로 사용
+
+- 플러그인 옵션 추가
+
+```js
+  plugin: [
+    new CleanWebpackPlugin(), -1-
+    -2-
+    new HtmlWebpackPlugin({
+      template: './template/index.html',
+    }),
+    -2-
+  ],
+```
+
+1. 웹팩이 실행될 때 마다 dist 폴더를 정리 하도록 clean-webpack-plugin 설정
+1. index.html 파일이 자동으로 생성 되도록 html-webpack-plugin 설정
+   - 우리가 원하는 형태를 기반으로 index.html 파일이 생성되도록 template 옵션 설정
+
+- html 파일에 기타 필요한 태그를 파일에 추가하면 html-webpack-plugin 이 생성하는 새로운 HTML 파일에 같이 포함됨
+
+### DefinePlugin
+
+- 모듈 내부에 있는 문자열을 대체
+- 플러그인은 웹팩에 내장된 플러그인 -> 별도 설치가 필요없다.
+- DefinePlugin으로 대체할 문자열을 index.js 파일에 추가
+
+```js
+    new webpack.DefinePlugin({
+      APP_VERSION: '"1.2.3"',
+      TEN: '10',
+    }),
+```
+
+- 위와 같이 설정하고 싶은 문자열을 저렇게 집어 넣으면 된다.
+- 문자열의 경우 '"이런 형식"' 을 지키는 것을 유의
+
+### ProvidePlugin
+
+- 자주 사용하는 모듈은 import 키워드를 사용해서 가져오는 것이 귀찮을 수 있음
+
+```js
+import React from 'react';
+import $ from 'jquery';
+```
+
+> 착각하는 실수
+
+    JSX 모듈을 사용하면 리액트 모듈을 사용하지 않는다고 느낄 수 있음
+    But 바벨이 JSX 문법을 React.createElement 코드로 변환 -> 리액트 모듈 필요
+    JSX 문법을 사용하는 파일을 작성한다면 import React롤 적어야 함
+
+- ProvidePlugin 기능을 사용하면 미리 설정한 모듈을 자동으로 등록
+- 웹팩이 기본적으로 내장되어 있기 때문에 별도로 설치할 필요 없음
+- ProvidePlugin 기능을 확인하기 위해 index.js 수정
+
+- plugins 쪽 코드이다.
+
+```js
+    new webpack.ProvidePlugin({
+      React: 'react',
+      $: 'jquery',
+    }),
+```
