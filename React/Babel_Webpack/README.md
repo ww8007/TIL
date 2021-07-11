@@ -1099,3 +1099,177 @@ import $ from 'jquery';
       $: 'jquery',
     }),
 ```
+
+## 웹팩 고급편
+
+- 웹팩을 이용해 애플리케이션의 번들 파일 최적화
+- 로더와 플러그인 직접 제작하면서 웹팩이 내부적으로 어떻게 동작하는지 학습
+
+### 나무 흔들기
+
+- Tree shaking : 불필요한 코드를 제거해주는 기능
+- 웹팩은 기본적으로 나무 흔들기 기능을 제공
+  - but 웹팩이 기본적으로 모든 경우를 잘 처리 해주면 좋겠지만
+  - 아닌 경우가 존재 하므로 학습
+  - 나무 흔들기를 잘 이해하고 있어야 번들 파일의 크기를 최소로 유지할 수 있음
+
+> 설치
+
+    npm i webpack webpack-cli
+
+```js
+export function func1() {
+  console.log('func1');
+}
+export function func2() {
+  console.log('func2');
+}
+```
+
+- ESM(ECMA script Modules) 문법을 사용하는 코드
+- ESM은 자바스크립트 표준 모듈 시스템
+  - import export 등의 키워드를 사용
+
+```js
+function func1() {
+  console.log('func1');
+}
+function func2() {
+  console.log('func2');
+}
+
+module.exports(func1, func2);
+```
+
+- 위는 common.js
+- module.exports, require 등의 키워드를 많이 사용
+- commonJS 문법은 노드에서 많이 사용
+
+```js
+import { func1 } from './util_esm';
+
+func1();
+```
+
+- ESM 문법으로 작성된 모듈은 ESM 문법으로 가져오고 있음
+- func1 함수만 사용하고 func2에 대해서는 사용을 하지 않았음
+  - 그 결과 나무 흔들기로 func2 제거
+
+### 나무 흔들기가 실패하는 경우
+
+- index.js 파일에서 commonjs.js 사용
+
+- 둘 의 차이점
+  - common : module.exports
+  - export function
+
+> export function , export module 차이
+
+    commonJS와 esm 차이이다.
+    commonJS : module.export
+    ESM : ECMAscript Modules
+
+> 나무 흔들기가 동작되지 않는 경우
+
+    1. 사용되는 모듈이 ESM이 아닌 경우
+    2. 사용하는 쪽이 ESM이 아닌 다른 모듈 사용
+    3. 동적(dynamic import)를 사용하는 경우
+
+#### 동적 임포트 사용
+
+```js
+import('./util_esm').then((util) => util.func1());
+```
+
+- 동적 임포트를 사용 -> 동적으로 모듈을 가져올 수 있음
+- But 동적 임포트 사용 -> 나무 흔들기 동작 X
+
+- util_esm.js 모듈의 func2 함수를 사용하지 않는다고 무조건 제거시 문제 생김
+  - 모듈 내부에서 자신의 함수를 호출하는 경우 웹팩이 해당 함수 제거 x
+
+```js
+const arr = [];
+export function func1() {
+  console.log('func1', arr.length);
+}
+export function func2() {
+  arr.push(10); //  -1-
+  console.log('func2');
+}
+func2(); // -2-
+```
+
+1. func2 함수는 전역 변수를 변경
+2. 모듈이 평가(evaluation) 될 때 func2 함수가 실행
+   - 모듈은 최초로 사용될 때 한 번 평가
+   - 최초 평가 시 전역 변수 arr가 변경
+   - 만약 나무 흔들기 단계에서 func2가 제거되면 func1 의도대로 동작 x
+
+- 그러나 웹팩은 모듈이 평가되는 단계에서는 호출되는 함수를 제거 하지 X
+
+### 외부 패키지의 나무 흔들기
+
+- 외부 패키지에 대해서도 나무 흔들기가 적용됨
+- But 외부 패키지는 저마다 다양한 방식의 모듈 시스템을 사용하기 때문에
+- 나무 흔들기가 제대로 동작하지 않을 수 있음
+
+- 예로 로다시 패키지 -> ESM이 아님
+
+  - 나무 흔들기를 적용하여도 코드가 제거되지 않음
+
+- lodash의 잘못된 사용 예
+
+```js
+import { fill } from 'lodash'; // -1-
+const arr = [1, 2, 3];
+fill(arr, 'a');
+```
+
+1. 여기서는 로다시의 fill 함수만 사용되지만 웹팩으로 만들어진 번들 파일에는 모든 로다시의 코드가 포함
+   - 로다시는 각 함수를 별도의 파일로 만들어서 제공해줌
+   - 그러므로 다음과 같이 특정 함수 모듈 추출 가능
+
+- lodash 사용의 옮은 예
+
+```js
+import fill from 'lodash/fill';
+```
+
+> lodash 에서는 ESM 모듈 시스템을 사용하는 lodash-es 패키지를 별도로 제공
+
+    import {fill} from 'lodash-es';
+
+- lodash-es 모듈을 가져오는 경우에는 나무 흔들기가 제대로 적용
+
+> 자신이 사용하는 패키지에 적용된 모듈 시스템이 무엇인지
+
+    ESM이 아니라면 각 별도의 파일로 적용하는지의 여부를 파악해야 번들의 크기를 줄일 수 있음
+
+### 바벨 사용시 주의 점
+
+- 작성한 코드가 바벨로 컴파일 이후 ESM 문법으로 남아있어야함
+- @babel/preset-env 플러그인을 사용한다면 babel.config.js 에서 다음과 같이 설정
+
+```js
+const presets = [
+  [
+    '@babel/preset-env',
+    {
+      modules: false, // -1-
+    },
+  ],
+];
+```
+
+1. 모듈 시스템을 변경하지 않도록 설정
+   - ESM 문법으로 컴파일된 코드는 웹팩에서 자체적으로 사용후 제거
+   - 오래된 브라우저에 대한 걱정은 하지 않아도 괜찮음
+
+### 코드 분할
+
+- 애플리케이션의 전체 코드를 하나의 번들 파일로 만드는 것은 좋은 생각이 아닐 수 있음
+- 불필요한 코드까지 전송되어 사용자의 요청으로부터 페이지가 랜더링 될 때 까지 시간이 오래 소요가 될 수 있음
+
+> 번들 파일을 하나만 만들면 관리 부담이 적어지기 때문에 회사 내부 직원용 어플로는 적합
+
+> 많은 사용자를 타겟으로 하는 서비스라면 응답 시간을 최소화 하기 위해 코드를 분활하는게 좋음
