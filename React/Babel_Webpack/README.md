@@ -3,6 +3,7 @@
 ## 목차
 
 - [웹펙과 바벨](#%EC%9B%B9%ED%8E%99%EA%B3%BC-%EB%B0%94%EB%B2%A8)
+  - [목차](#%EB%AA%A9%EC%B0%A8)
   - [기본 설명](#%EA%B8%B0%EB%B3%B8-%EC%84%A4%EB%AA%85)
   - [바벨 실행 및 설정하기](#%EB%B0%94%EB%B2%A8-%EC%8B%A4%ED%96%89-%EB%B0%8F-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0)
   - [바벨을 실행하는 여러 가지 방법](#%EB%B0%94%EB%B2%A8%EC%9D%84-%EC%8B%A4%ED%96%89%ED%95%98%EB%8A%94-%EC%97%AC%EB%9F%AC-%EA%B0%80%EC%A7%80-%EB%B0%A9%EB%B2%95)
@@ -34,7 +35,32 @@
     - [프러그인 사용하기](#%ED%94%84%EB%9F%AC%EA%B7%B8%EC%9D%B8-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
     - [html-webpack-plugin](#html-webpack-plugin)
     - [DefinePlugin](#defineplugin)
-    - [ProvidePlugin](#provideplugin)%
+    - [ProvidePlugin](#provideplugin)
+  - [웹팩 고급편](#%EC%9B%B9%ED%8C%A9-%EA%B3%A0%EA%B8%89%ED%8E%B8)
+    - [나무 흔들기](#%EB%82%98%EB%AC%B4-%ED%9D%94%EB%93%A4%EA%B8%B0)
+    - [나무 흔들기가 실패하는 경우](#%EB%82%98%EB%AC%B4-%ED%9D%94%EB%93%A4%EA%B8%B0%EA%B0%80-%EC%8B%A4%ED%8C%A8%ED%95%98%EB%8A%94-%EA%B2%BD%EC%9A%B0)
+      - [동적 임포트 사용](#%EB%8F%99%EC%A0%81-%EC%9E%84%ED%8F%AC%ED%8A%B8-%EC%82%AC%EC%9A%A9)
+    - [외부 패키지의 나무 흔들기](#%EC%99%B8%EB%B6%80-%ED%8C%A8%ED%82%A4%EC%A7%80%EC%9D%98-%EB%82%98%EB%AC%B4-%ED%9D%94%EB%93%A4%EA%B8%B0)
+    - [바벨 사용시 주의 점](#%EB%B0%94%EB%B2%A8-%EC%82%AC%EC%9A%A9%EC%8B%9C-%EC%A3%BC%EC%9D%98-%EC%A0%90)
+    - [코드 분할](#%EC%BD%94%EB%93%9C-%EB%B6%84%ED%95%A0)
+    - [SplitChunksPlugin](#splitchunksplugin)
+    - [util.js 모듈도 분활되도록 설정](#utiljs-%EB%AA%A8%EB%93%88%EB%8F%84-%EB%B6%84%ED%99%9C%EB%90%98%EB%8F%84%EB%A1%9D-%EC%84%A4%EC%A0%95)
+    - [리액트 패키지 별도로 분할하도록 설정](#%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%8C%A8%ED%82%A4%EC%A7%80-%EB%B3%84%EB%8F%84%EB%A1%9C-%EB%B6%84%ED%95%A0%ED%95%98%EB%8F%84%EB%A1%9D-%EC%84%A4%EC%A0%95)
+    - [동적 임포트](#%EB%8F%99%EC%A0%81-%EC%9E%84%ED%8F%AC%ED%8A%B8)
+      - [webpack.config.js 내용 변경](#webpackconfigjs-%EB%82%B4%EC%9A%A9-%EB%B3%80%EA%B2%BD)
+      - [html 파일 작성](#html-%ED%8C%8C%EC%9D%BC-%EC%9E%91%EC%84%B1)
+      - [가독성 좋게 코드 변경](#%EA%B0%80%EB%8F%85%EC%84%B1-%EC%A2%8B%EA%B2%8C-%EC%BD%94%EB%93%9C-%EB%B3%80%EA%B2%BD)
+    - [분할된 파일을 prefetch, preload로 빠르게 가져오기](#%EB%B6%84%ED%95%A0%EB%90%9C-%ED%8C%8C%EC%9D%BC%EC%9D%84-prefetch-preload%EB%A1%9C-%EB%B9%A0%EB%A5%B4%EA%B2%8C-%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0)
+      - [preload, prefetch 설정하기](#preload-prefetch-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0)
+      - [html 결과](#html-%EA%B2%B0%EA%B3%BC)
+    - [로더 제작하기](#%EB%A1%9C%EB%8D%94-%EC%A0%9C%EC%9E%91%ED%95%98%EA%B8%B0)
+      - [csv 모듈을 사용하는 코드](#csv-%EB%AA%A8%EB%93%88%EC%9D%84-%EC%82%AC%EC%9A%A9%ED%95%98%EB%8A%94-%EC%BD%94%EB%93%9C)
+      - [웹팩 설정 webpack.config.js](#%EC%9B%B9%ED%8C%A9-%EC%84%A4%EC%A0%95-webpackconfigjs)
+      - [my-csv-loader 설정](#my-csv-loader-%EC%84%A4%EC%A0%95)
+    - [플러그인 제작하기](#%ED%94%8C%EB%9F%AC%EA%B7%B8%EC%9D%B8-%EC%A0%9C%EC%9E%91%ED%95%98%EA%B8%B0)
+      - [index 파일 작성](#index-%ED%8C%8C%EC%9D%BC-%EC%9E%91%EC%84%B1)
+      - [webpack.config.js 작성](#webpackconfigjs-%EC%9E%91%EC%84%B1)
+      - [플러그인 작성](#%ED%94%8C%EB%9F%AC%EA%B7%B8%EC%9D%B8-%EC%9E%91%EC%84%B1)
 
 ## 기본 설명
 
