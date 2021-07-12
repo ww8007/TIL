@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import About from './About';
-import Home from './Home';
 
-export default function App() {
-  const [page, setPage] = useState(page);
+import Home from './Home';
+import About from './About';
+
+export default function App({ pages }) {
+  const [page, setPage] = useState(pages);
   useEffect(() => {
     //  -1-
     window.onpopstate = (event) => {

@@ -1,24 +1,29 @@
 {
-  "name": "test-ssr",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@babel/preset-env": "^7.14.7",
-    "@babel/preset-react": "^7.14.5",
-    "babel-loader": "^8.2.2",
-    "html-webpack-plugin": "^5.3.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "webpack": "^5.44.0"
-  },
-  "devDependencies": {
-    "webpack-cli": "^4.7.2"
-  }
+    "name": "test-ssr",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build-server": "babel src --out-dir dist-server --config-file ./.babelrc.server.js",
+        "build": "npm run build-server && webpack",
+        "start": "node dist-server/server.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@babel/cli": "^7.14.5",
+        "@babel/plugin-proposal-class-properties": "^7.14.5",
+        "@babel/plugin-transform-modules-commonjs": "^7.14.5",
+        "@babel/preset-env": "^7.14.7",
+        "@babel/preset-react": "^7.14.5",
+        "babel-loader": "^8.2.2",
+        "clean-webpack-plugin": "^4.0.0-alpha.0",
+        "express": "^4.17.1",
+        "html-webpack-plugin": "^5.3.2",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
+        "webpack": "^5.44.0",
+        "webpack-cli": "^4.7.2"
+    }
 }
