@@ -1,0 +1,1 @@
+console.log("this is index2"),console.log("this size is bigger than index1");

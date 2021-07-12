@@ -1565,3 +1565,195 @@ myFunc();
     사실 preload는 첫 페이지 요청 시 전달된 HTML 태그 안에 미리 설정
     웹팩이 지원할 수 있는 기능은 아님
     page3.js 파일이 평가 -> 2.chunk.js 파일을 즉시 다운로드 하면서 preload 흉내
+
+### 로더 제작하기
+
+- 로더는 모듈을 입력으로 받아서 원하는 형태로 변경 후 자바스크립트 코드를 반환한다.
+- 로더가 자바스크립트 코드를 반환하기 때문에 웹팩은 CSS, PNG, CSV 확장자를 갖는 모듈로 처리 가능
+
+- 여러 로더가 협력 관계에 있을 경우 중간 과정에서 처리 되는 css-loader 처럼 자바스크립트가
+- 아닌 다른 형태의 데이터를 반환 가능
+
+> style-loader 처럼 가장 마지막에 처리되는 로더는 항상 자바스크립트 코드를 반환함
+
+> 설치
+
+    npm i webpack webpack-cli
+
+#### csv 모듈을 사용하는 코드
+
+```js
+import members from './member.csv';
+
+for (const row of members.rows) {
+  const name = row[1];
+  const age = row[2];
+  console.log(`${name} is ${age} years old`);
+}
+```
+
+#### 웹팩 설정 webpack.config.js
+
+```js
+const path = require('path');
+
+module.exports = {
+  entry: './src/index.js',
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.csv$/,
+        use: './my-csv-loader', // -1-
+      },
+    ],
+  },
+  mode: production,
+};
+```
+
+1. 다음에 만들 로더 파일의 이름, CSV 모듈을 처리
+
+#### my-csv-loader 설정
+
+- 아래에서 /n 으로 작성해서 오류 생겼었음
+- 다음부터는 \n /n 구분해서 잘 작성
+
+```js
+module.exports = function (source) {
+  // -1-
+  const res = { header: undefined, rows: [] }; // -2-
+  // -3-
+  const rows = source.split('\n');
+  for (const row of rows) {
+    const cols = row.split(',');
+    if (!res.header) {
+      res.header = cols;
+    } else {
+      res.rows.push(cols);
+    }
+  }
+  // -3-
+  return `export default ${JSON.stringify(result)}`; // -4-
+};
+```
+
+1. 로더의 모듈의 내용을 문자열로 입력받는 함수
+2. 모듈을 사용하는 쪽에서 받게 될 데이터
+3. 문자열로 입력된 CSV 모듈의 내용을 파싱해서 result 객체에 저장
+4. result 객체의 내용이 담긴 자바스크립트 코드를 반환
+
+> 실행
+
+    node dist/main.js
+
+### 플러그인 제작하기
+
+- 플러그인은 웹팩의 처리 과정을 이해해야 작성할 수 있기 때문에 로더보다 작성이 까다로운 편
+- DefinePlugin 처럼 플러그인은 모듈의 내용도 수정할 수 있기 때문에 로더가 할 수 있는 모든 일을 수행가능하다.
+
+> 플러그인
+
+    로더가 할 수 있는 모든 일을 수행 가능하다.
+    제대로 이해하고 작성한다면 매우 강력한 도구가 될 수 있음
+
+> 설치
+
+    npm i webpack webpack-cli
+
+#### index 파일 작성
+
+```js
+function index2() {
+  console.log('this is index2');
+  console.log('this size is bigger than index1');
+}
+
+index2();
+```
+
+#### webpack.config.js 작성
+
+```js
+const path = require('path');
+const MyPlugin = require('/my-plugin'); //-1-
+
+module.exports = {
+  entry: {
+    app1: './src/index1.js', //-2-
+    app2: './src/index2.js', //-2-
+  },
+  output: {
+    filename: '[name].js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  plugins: [new MyPlugin({ showSize: true })], //-3-
+  mode: 'production',
+};
+```
+
+1. 다음에 만들 플러그인 불러오기
+2. 두 개의 번들 파일을 만들도록 설정
+3. 만들어진 플러그인을 사용하도록 설정
+   - showSize 옵션을 입력으로 받아서 처리
+
+#### 플러그인 작성
+
+```js
+class Myplugin {
+  //-1-
+  constructor(options) {
+    //-2-
+    this.options = options;
+  }
+  apply(compiler) {
+    //-3-
+    compiler.hooks.done.tap('MyPlugin', () => {
+      //-4-
+      console.log('bundling completed');
+    });
+    compiler.hooks.emit.tap('MyPlugin', (complication) => {
+      //-5-
+      let res = '';
+      for (const filename in complication.assets) {
+        //-6-
+        if (this.options.showSize) {
+          const size = complication.assets[filename].size();
+          res += `${filename}(${size})\n`;
+        } else {
+          res += `${filename}\n`;
+        }
+      }
+      complication.assets['fileList.txt'] = {
+        //-7-
+        source: function () {
+          return res;
+        },
+        size: function () {
+          return res.length();
+        },
+      };
+    });
+  }
+}
+
+module.exports(Myplugin);
+```
+
+1. 플러그인은 클래스로 정의 가능
+2. 설정 파일에서 입력한 옵션이 생성자(constructor)의 매개변수로 넘어옴
+
+- 이 플러그인은 showSize 옵션 처리 가능
+
+3. apply 메서드에서는 웹펙의 각 처리 단계에서 호출될 콜백 함수를 등록 가능
+
+- 콜백 함수를 등록할 수 있는 처리 단계가 다양하기 때문에 플러그인으로 할 수 있는 일도 증가
+
+4. 웹팩이 실행이 호출되는 콜백 함수를 등록
+5. 웹팩이 결과 파일을 생성하기 직전에 호출되는 콜백 함수를 등록
+6. complication.assets 에는 웹팩이 생성할 파일의 목록이 들어있음
+7. fileList.txt 파일이 생성되도록 설정
+   - 웹팩 실행 시 dist 폴더 밑 fileList.txt
