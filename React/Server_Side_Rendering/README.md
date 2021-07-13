@@ -487,4 +487,303 @@ ReactDom.hydrate(
 
 - 리액트에서 스타일을 적용하는 방식은 다향
 - 전통적인 방식으로 CSS 파일을 별도로 작성 후 HTML 파일에 연결하면 서버사이드 렌더링 시 특별한 고민할 필요가 없음
-- 그러나 css-module, css-in-js 방식으로 작성한다면 서버 사이드 렌더링 시
+- 그러나 css-module, css-in-js 방식으로 작성한다면 서버 사이드 렌더링 시 추가 작업을 해야함
+- 둘 다 자바스크르립트 코드가 실행되면서 스타일 코드 -> 돔으로 삽입 방식
+- 서버에는 돔이 없으면 별도의 작업을 하지 않으면 서버사이드 렌더링 시 스타일 정보가 HTML에 포함되지 않음
+
+> css-in-js 방식에서 가장 유명한 styled-components 사용해서 서버 사이드 렌더링 스타일 적용
+
+#### styled-components로 스타일 적용해보기
+
+> 설치
+
+    npm i styled-components
+
+> App.js
+
+```js
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import Home from './Home';
+import About from './About';
+
+// -1-
+const Container = styled.div`
+  background-color: #aaaaaa;
+  border: 1px solid blue;
+`;
+// -1-
+export default function App({ pages }) {
+  const [page, setPage] = useState(pages);
+  useEffect(() => {
+    window.onpopstate = (event) => {
+      setPage(event.state);
+    };
+  }, []);
+
+  function onChangePage(e) {
+    const newPage = e.target.dataset.page;
+    window.history.pushState(newPage, '', `/${newPage}`);
+    setPage(newPage);
+  }
+  const PageComponent = page === 'home' ? Home : About;
+  return (
+    // -2-
+    <Container>
+      <div className="container">
+        <button data-page="home" onClick={onChangePage}>
+          Home
+        </button>
+        <button data-page="about" onClick={onChangePage}>
+          About
+        </button>
+        <PageComponent />
+      </div>
+    </Container>
+  );
+}
+```
+
+1. styled-components를 이용해서 스타일이 적용된 컴포넌트를 만든다.
+2. 기존의 div 요소를 제거하고 Container 컴포넌트로 대체
+
+- 문제점
+  - 서버로부터 전달된 HTML을 살펴보면 스타일 코드가 없음
+  - 스타일이 적용되지 않은 화면이 잠시 보이고 클라이언트에서 코드가 실행 된 후에
+  - 스타일이 적용된다.
+  - 이를 개선 하지 않으면 초기 화면은 깜빡이게 됨
+  - 사용자의 브라우저가 자바스크립트 허용하지 않으면 스타일이 적용되지 않은 화면이 보이게 됨
+
+#### 서버사이드 렌더링에 스타일 적용하기
+
+- 위를 개선하기 위해서 서버사이드 렌더링 시 스타일을 적용해야함
+- 서버사이드 렌더링 과정에서 스타일 추출 -> HTML에 삽입
+
+> HTML에 스타일 코드를 넣기 위해서 ./template/index.html 파일 수정
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>test-ssr</title>
+    <script type="text/javascript">
+      window.__INITIAL_DATA__ = __DATA_FROM_SERVER__;
+    </script>
+    __STYLE_FROM_SERVER__ //-1-
+  </head>
+
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+1. 서버사이드 렌더링 시 추출된 스타일 코드를 넣을 예정
+   웹 서버 코드에는 스타일 코드를 HTML에 삽입해야 함
+
+> server.js
+
+```js
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { renderToString } from 'react-dom/server';
+import React from 'react';
+import App from './App';
+import * as url from 'url';
+
+import { ServerStyleSheet } from 'styled-components';
+
+const app = express();
+const html = fs.readFileSync(
+  path.resolve(__dirname, '../dist/index.html'),
+  'utf8'
+);
+app.use('/dist', express.static('dist'));
+app.get('/favicon.ico', (req, res) => res.sendStatus(204));
+app.get('*', (req, res) => {
+  const parseUrl = url.parse(req.url, true);
+  const page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
+  const sheet = new ServerStyleSheet(); // -1-
+  const renderString = renderToString(sheet.collectStyles(<App page={page} />)); // -2-
+  const styles = sheet.getStyleTags(); // -3-
+  const initialDate = { page };
+  const result = html
+    .replace('<div id="root"></div>', `<div id="root">${renderString}</div>`)
+    .replace('__DATA_FROM_SERVER__', JSON.stringify(initialDate))
+    .replace('__STYLE_FROM_SERVER__', styles); //-4-
+  res.send(result);
+});
+app.listen(3000);
+```
+
+1. 스타일을 추출하는 데 사용될 객체를 생성
+2. collectStyles 메서드에 리액트 요소를 입력하면 스타일 정보를 수집하기 위한 코드가 리액트 요소에 삽입됨
+   - 실제 스타일 정보는 renderToString 함수의 호출이 끝나야 수집할 수 있다.
+3. getStylesTags 메서드 호출 하면 스타일 정보 추출
+4. 추출된 스타일 코드를 HTML에 삽입
+
+> 리액트 코드에서 스타일 정보 가져오기
+
+    collectStyles : 스타일 정보를 수집하기 위한 코드 -> 리액트 요소
+    getStylesTags : 스타일 정보 추출
+
+#### 서버로부터 전달되는 HTML
+
+```html
+<style data-styled="active" data-styled-version="5.3.0"></style> -1-
+<div class="sc-bdnxRM kmQaIS">
+  -2- <button data-page="home">Home</button
+  ><button data-page="about">About</button>
+  <div><h3>This is about page</h3></div>
+</div>
+```
+
+1. getStyleTags 메서드가 반환한 스타일 코드
+2. App.js 파일의 Container 컴포넌트로부터 생성된 돔 요소
+   - style 태그에서 정의된 클래스명 확인 가능
+
+- 스타일 정보가 HTML에 포함되어 전달되므로 사용자는 자바스크립트가 실행 되지 않더라도 빠르게 스타일이 적용된 화면을 볼 수 있다.
+
+### 이미지 모듈 적용하기
+
+- 웹팩에서는 JS 뿐만 아닌 모든 파일이 모듈이 될 수 있음
+- 그 중에서도 자주 쓰이는 이미지 파일을 모듈로 적용
+- 이미지 파일은 대게 file-loader, url-loader를 이용해서 처리
+
+> file-loader
+
+    전달된 리소스 파일을 output 설정에 지정된 폴더로 복사
+    JS 코드에는 복사된 파일의 경로가 반환
+
+- 파일의 경로는 클라이언트와 서버가 모두 같은 정보를 공유해야함
+- 그렇지 않으면 (서버사이드 렌더링 결과 !== 클라이언트 렌더링 결과)의 문제가 초래
+  - 고로 클라이언트 코드에서 file-loader로 처리 -> 서버 코드 file-loader로 처리
+  - 서버 코드에서 file-loader를 실행하기 위해 서버 코드도 --웹팩으로 번들링--
+
+#### 서버 코드도 웹팩으로 번들링
+
+- 지금까지는 서버 코드에 바벨만 적용
+
+> ./webpack.config.js
+
+- 파일 구조 변경하기
+
+```js
+const nodeExternals = require('webpack-node-externals'); // -1-
+
+function getConfig(isServer) {} // -2-
+
+module.exports = [getConfig(false), getConfig(true)]; // -3-
+```
+
+1. 서버 코드를 번들링할 때는 node_modules 폴더 밑에 있는 모듈까지 하나의 번들 파일로 만들 필요가 없음
+   - 서버 코드는 언제든지 node_modules 폴더 밑에 있는 모듈을 가져와서
+   - webpack-node-externals 모듈은 node_modules 폴더 밑에 있는 모듈을 번들 파일에서 제외 시켜주는 역할을 함
+2. isSever 매개변수에 따라 웹팩 설정을 반환해주는 함수
+3. 웹팩 설정 파일에서 배열을 내보내면 배열의 각 아이템 개수만큼 웹팩이 실행
+   - 위의 코드에서는 클라이언트 -> 서버 순으로 번들링
+
+- getConfig 코드
+
+```js
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const nodeExternals = require('webpack-node-externals');
+
+function getConfig(isServer) {
+  return {
+    // -1-
+    entry: isServer
+      ? { server: './src/server.js' }
+      : { main: './src/index.js' },
+    // -1-
+    output: {
+      filename: isServer ? '[name].bundle.js' : '[name].[chunkhash].js', //-2-
+      path: path.resolve(__dirname, 'dist'),
+      publicPath: '/dist/',
+    },
+    target: isServer ? 'node' : 'web', //-3-
+    externals: isServer ? [nodeExternals()] : [], //-4-
+    node: {
+      __dirname: false, // -5-
+    },
+    // -6-
+    optimization: isServer
+      ? {
+          splitChunks: false,
+          minimize: false,
+        }
+      : undefined,
+    // -6-
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              configFile: path.resolve(
+                __dirname,
+                isServer ? '.babelrc.server.js' : '.babelrc.client.js' //-7-
+              ),
+            },
+          },
+        },
+        {
+          test: /\.(png|jpg|gif)$/,
+          use: {
+            loader: 'file-loader',
+            options: {
+              emitFile: isServer ? false : true, //-8-
+            },
+          },
+        },
+      ],
+    },
+    plugins: isServer //-9-
+      ? []
+      : [
+          new CleanWebpackPlugin(),
+          new HtmlWebpackPlugin({ template: './template/index.html' }),
+        ],
+    mode: 'production',
+  };
+}
+module.exports = [getConfig(false), getConfig(true)];
+```
+
+1. 서버와 클라이언트 각각 server.js, index.js 파일을 entry로 설정
+2. 클라이언트 -> 브라우저 캐싱 효과 -> chunkhash
+   - 서버 -> 필요없음
+3. target 속성에 node를 입력해서 웹팩에 서버 코드를 번들링 한다고 알려줄 수 있음
+   - 웹팩 -> node 입력시 노드에 특화된 번들링 과정을 거침
+   - fs, path 모듈과 같이 노드에 내장된 모듈은 번들 파일에 포함 x
+4. 서버 코드를 번들링 할 때는 node_modules 폴더 밑에 있는 모듈을 번들 파일에 포함시키지 않음
+5. 이 설정을 하지 않으면 코드에서 `__dirname` 을 사용할 경우 절대 경로인 `('/')` 가 잡히게 된다. false를 입력할 경우 일반적인 노드의 `__dirname`으로 동작하게 됨
+6. 서버 코드는 압축할 필요가 없음
+7. 적절한 바벨 설정 파일을 입력
+8. file-loader 실행 시 한쪽에서만 파일을 복사해도 충분하다.
+9. 두 플러그인은 모두 클라이언트 코드 번들링 시에만 실행하면 됨
+
+> 설치
+
+    npm i webpack-node-externals file-loader
+
+#### 이미지 모듈 사용하기
+
+- 서버에서도 file-loader를 사용할 수 있도록 설정했기에 이미지 모듈 사용
+
+> ./src/App.js
+
+- 이미지 불러와서 렌더링 하는 코드 추가
+
+#### package.json 파일에서 build 명령 수정
+
+```js
+    "scripts": {
+        "build": "webpack",
+        "start": "node dist/server.bundle.js"
+    },
+```

@@ -1,32 +1,38 @@
 import React, { useEffect, useState } from 'react';
-
+import styled from 'styled-components';
+import Icon from './icon.png';
 import Home from './Home';
 import About from './About';
+
+const Container = styled.div`
+  background-color: black;
+  border: 1px solid blue;
+`;
 
 export default function App({ pages }) {
   const [page, setPage] = useState(pages);
   useEffect(() => {
-    //  -1-
     window.onpopstate = (event) => {
       setPage(event.state);
     };
   }, []);
-  //  -2-
+
   function onChangePage(e) {
     const newPage = e.target.dataset.page;
-    window.history.pushState(newPage, '', `/${newPage}`); //  -3-
+    window.history.pushState(newPage, '', `/${newPage}`);
     setPage(newPage);
   }
-  const PageComponent = page === 'home' ? Home : About; // -4-
+  const PageComponent = page === 'home' ? Home : About;
   return (
-    <div className="container">
+    <Container>
       <button data-page="home" onClick={onChangePage}>
         Home
       </button>
       <button data-page="about" onClick={onChangePage}>
         About
       </button>
+      <img src={Icon} />
       <PageComponent />
-    </div>
+    </Container>
   );
 }
