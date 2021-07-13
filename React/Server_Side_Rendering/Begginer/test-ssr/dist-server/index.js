@@ -11,6 +11,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // 실습1
 // ReactDom.render(<App page="home" />, document.getElementById('root'));
 // 실습2
+const initialData = window.__INITIAL_DATA__;
+
 _reactDom.default.hydrate( /*#__PURE__*/_react.default.createElement(_App.default, {
-  page: "home"
+  page: initialData.page
 }), document.getElementById('root'));

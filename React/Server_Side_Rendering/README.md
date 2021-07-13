@@ -397,3 +397,94 @@ ReactDom.hydrate(<App page="home" />, document.getElementById('root'));
 
 > npm run build
 > npm start
+
+### 서버 데이터를 클라이언트로 전달하기
+
+- 서버사이드 렌더링 시 서버에서 생성한 데이터를 클라이언트로 전달하는 방법
+- 서버에서 렌더링할 때 사용한 데이터를 클라이언트도 알아야 일관성 있게 화면을 갱신 가능
+- 지금까지 작성한 프로젝트에서 클라이언트로 전달할 데잍터는 App 컴포넌트의 page 속성 값
+  - page 속성값의 초기값을 home이라고 가정하고 코드를 작성
+
+> url 에 따라 /home -> home을 초기값 사용 , /about -> about 초기값 사용
+
+#### HTML에 서버 데이터 넣기
+
+> ./template/index.html
+
+```html
+<head>
+  <title>test-ssr</title>
+  // -1-
+  <script type="text/javascript">
+    window.__INITIAL_DATA__ = __DATA_FROM_SERVER__;
+  </script>
+  // -2-
+</head>
+```
+
+1. 서버는 `__DATA_FROM_SERVER__` 부분에 필요한 데이터를 채워서 전달
+   - 클라이언트는 `window.__INITIAL_DATA__` 을 통해서 서버의 데이터를 받을 수 있음
+   - 웹 서버 코드에서는 서버의 데이터를 HTML에 삽입해야 함
+   - server.js 파일 수정
+
+```js
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { renderToString } from 'react-dom/server';
+import React from 'react';
+import App from './App';
+import * as url from 'url';
+const app = express();
+const html = fs.readFileSync(
+  path.resolve(__dirname, '../dist/index.html'),
+  'utf8'
+);
+app.use('/dist', express.static('dist'));
+app.get('/favicon.ico', (req, res) => res.sendStatus(204));
+app.get('*', (req, res) => {
+  const parseUrl = url.parse(req.url, true); // -1-
+  const page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
+  // -2-
+  const renderString = renderToString(<App page={page} />); // -3-
+  const initialDate = { page }; // -4-
+  const result = html
+    .replace('<div id="root"></div>', `<div id="root">${renderString}</div>`)
+    .replace('__DATA_FROM_SERVER__', JSON.stringify(initialDate)); // -5-
+  res.send(result);
+});
+app.listen(3000);
+```
+
+1. 문자열로 된 주솟값을 구조체로 변환하기 위해 url 모듈을 사용한다.
+   - parsed Url 변수는 url의 경로와 쿼리 파라미터 등의 정보를 담고 있음
+2. pathname 앞쪽의 슬래시를 제거해서 page 변수를 만듬
+3. url로부터 계산된 페이지 정보를 App 컴포넌트의 속성값으로 사용
+4. 클라이언트에게 전달할 초기 데이터
+5. `__DATA_FROM_SERVER__` 문자열을 초기 데이터로 대체
+
+#### 클라이언트에서 데이터 사용하기
+
+- 클라이언트에서 서버의 데이터를 받아서 사용하는 코드가 필요
+
+> index.js
+
+```js
+const initialData = window.__INITIAL_DATA__; //-1-
+ReactDom.hydrate(
+  <App page={initialData.page} />, //-2-
+  document.getElementById('root')
+);
+```
+
+1. 서버로부터 전달된 초기 데이터를 가져옴
+2. 전달받은 page 데이터를 속성 값으로 입력
+
+> 리덕스를 사용하는 프로젝트는 리덕스의 상태값을 `window.__INITIAL_DATA__`
+> 로 전달해서 사용이 가능하다.
+
+### 스타일 적용하기
+
+- 리액트에서 스타일을 적용하는 방식은 다향
+- 전통적인 방식으로 CSS 파일을 별도로 작성 후 HTML 파일에 연결하면 서버사이드 렌더링 시 특별한 고민할 필요가 없음
+- 그러나 css-module, css-in-js 방식으로 작성한다면 서버 사이드 렌더링 시

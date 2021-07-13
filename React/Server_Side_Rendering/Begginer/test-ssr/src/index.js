@@ -6,4 +6,8 @@ import App from './App';
 // ReactDom.render(<App page="home" />, document.getElementById('root'));
 
 // 실습2
-ReactDom.hydrate(<App page="home" />, document.getElementById('root'));
+const initialData = window.__INITIAL_DATA__;
+ReactDom.hydrate(
+  <App page={initialData.page} />,
+  document.getElementById('root')
+);
