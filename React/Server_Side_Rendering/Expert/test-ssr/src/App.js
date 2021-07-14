@@ -9,14 +9,25 @@ const Container = styled.div`
   border: 1px solid blue;
 `;
 
+function fetchUsername() {
+  const usernames = ['mike', 'june', 'jamie'];
+  return new Promise((res) => {
+    const username = usernames[Math.floor(Math.random() * 3)];
+    setTimeout(() => res(username), 100);
+  });
+}
+
 export default function App({ pages }) {
   const [page, setPage] = useState(pages);
+  const [username, setUsername] = useState(null);
   useEffect(() => {
     window.onpopstate = (event) => {
       setPage(event.state);
     };
   }, []);
-
+  useEffect(() => {
+    fetchUsername().then((data) => setUsername(data));
+  });
   function onChangePage(e) {
     const newPage = e.target.dataset.page;
     window.history.pushState(newPage, '', `/${newPage}`);
@@ -32,7 +43,7 @@ export default function App({ pages }) {
         About
       </button>
       <img src={Icon} />
-      <PageComponent />
+      <PageComponent username={username} />
     </Container>
   );
 }
