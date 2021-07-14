@@ -3,31 +3,26 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
 
-function getConfig(isServer) {
+function getConfig(isServer, name) {
   return {
-    // -1-
-    entry: isServer
-      ? { server: './src/server.js' }
-      : { main: './src/index.js' },
-    // -1-
+    entry: { [name]: `./src/${name}` },
+
     output: {
-      filename: isServer ? '[name].bundle.js' : '[name].[chunkhash].js', //-2-
+      filename: isServer ? '[name].bundle.js' : '[name].[chunkhash].js',
       path: path.resolve(__dirname, 'dist'),
       publicPath: '/dist/',
     },
-    target: isServer ? 'node' : 'web', //-3-
-    externals: isServer ? [nodeExternals()] : [], //-4-
+    target: isServer ? 'node' : 'web',
+    externals: isServer ? [nodeExternals()] : [],
     node: {
-      __dirname: false, // -5-
+      __dirname: false,
     },
-    // -6-
     optimization: isServer
       ? {
           splitChunks: false,
           minimize: false,
         }
       : undefined,
-    // -6-
     module: {
       rules: [
         {
@@ -37,7 +32,7 @@ function getConfig(isServer) {
             options: {
               configFile: path.resolve(
                 __dirname,
-                isServer ? '.babelrc.server.js' : '.babelrc.client.js' //-7-
+                isServer ? '.babelrc.server.js' : '.babelrc.client.js'
               ),
             },
           },
@@ -59,4 +54,8 @@ function getConfig(isServer) {
     mode: 'production',
   };
 }
-module.exports = [getConfig(false), getConfig(true)];
+module.exports = [
+  getConfig(false, 'index'),
+  getConfig(true, 'server'),
+  getConfig(true, 'prerender'),
+];
