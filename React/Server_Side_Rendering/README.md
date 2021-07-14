@@ -812,4 +812,306 @@ module.exports = [getConfig(false), getConfig(true)];
 ### 페이지를 미리 렌더링 하기
 
 - 이전에 만들었던 Home 컴포넌트에 사용자 이름을 보여주는 UI 추가
--
+
+```js
+import React from 'react';
+function Home({ username }) {
+  return (
+    <div>
+      <h3>This is home page</h3>
+      {username && <p>{`${username}님 안녕하세요`}</p>} //-1-
+    </div>
+  );
+}
+export default Home;
+```
+
+1. 속성값으로 받아온 사용자 이름이 존재하면 화면에 보여줌
+   - 사용자 이름이 서버사이드 렌더링 시 존재하면 home 페이지는 사용자 마다 다르기 때문에 미리 렌더링 불가
+   - 따라서 서버 사이드 렌더링 시 사용자 이름 없이 받아오고 클라이언트에서 마운트 이후에 이름을 API로 받아오도록 함
+   - App.js 파일을 수정해서 마운트 이후에 Home 컴포넌트로 사용자 이름을 전달한다.
+
+```js
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import Icon from './icon.png';
+import Home from './Home';
+import About from './About';
+
+const Container = styled.div`
+  background-color: black;
+  border: 1px solid blue;
+`;
+// -1-
+function fetchUsername() {
+  const usernames = ['mike', 'june', 'jamie'];
+  return new Promise((res) => {
+    const username = usernames[Math.floor(Math.random() * 3)];
+    setTimeout(() => res(username), 100);
+  });
+}
+// -1-
+export default function App({ pages }) {
+  const [page, setPage] = useState(pages);
+  const [username, setUsername] = useState(null);
+  useEffect(() => {
+    window.onpopstate = (event) => {
+      setPage(event.state);
+    };
+  }, []);
+  useEffect(() => {
+    fetchUsername().then((data) => setUsername(data)); // -2-
+  });
+
+  function onChangePage(e) {
+    const newPage = e.target.dataset.page;
+    window.history.pushState(newPage, '', `/${newPage}`);
+    setPage(newPage);
+  }
+
+  const PageComponent = page === 'home' ? Home : About;
+  return (
+    <Container>
+      <button data-page="home" onClick={onChangePage}>
+        Home
+      </button>
+      <button data-page="about" onClick={onChangePage}>
+        About
+      </button>
+      <img src={Icon} />
+      <PageComponent username={username} /> // -3-
+    </Container>
+  );
+}
+```
+
+1. fetchUsername 함수는 API 통신으로 사용자 이름을 가져옴
+2. 클라이언트 측에서 마운트 이후에 사용자 이름을 요청
+3. 사용자 이름을 Home 컴포넌트로 전달
+   - 물론 About 컴포넌트에서 사용자 이름이 필요 없지만 편의를 위해 리펙터링 생략
+
+#### 일부 페이지에서 서버에서 미리 렌더링하도록 리펙터링
+
+- 데이터 의존성이 낮은 일부 페이지만 미리 렌더링 하도록 리팩터링
+- src 폴더 밑에 prerender.js 생성 -> 미리 렌더링 코드 작성
+
+> npx prerender.js
+
+```js
+import fs from 'fs';
+import path from 'path';
+import { renderPage, prerenderPages } from './common'; //-1-
+
+for (const page of prerenderPages) {
+  const result = renderPage(page);
+  fs.writeFileSync(path.resolve(__dirname, `../dist/${page}.html`), result); //-2-
+}
+```
+
+1. 페이지를 렌더링하는 함수와 미리 렌더링할 페이지의 목록을 가져옴
+   - src/common.js 파일은 잠시 후 작성
+2. 페이지를 미리 렌더링 해서 dist 폴더 밑 저장
+
+```js
+import fs from 'fs';
+import path from 'path';
+import { renderToString } from 'react-dom/server';
+import React from 'react';
+import App from './App';
+import { ServerStyleSheet } from 'styled-components';
+
+// -1-
+const html = fs.readFileSync(
+  path.resolve(__dirname, '../dist/index.html'),
+  'utf-8'
+);
+// -1-
+
+export const prenderPages = ['home']; //-2-
+
+export function renderPage(page) {
+  const sheet = new ServerStyleSheet();
+  const renderString = renderToString(sheet.collectStyles(<App page={page} />));
+  const styles = sheet.getStyleTags();
+  const result = html
+    .replace('<div id="root"></div>', `<div id="root">${renderString}</div>`)
+    .replace('__STYLE_FROM_SERVER__', styles);
+  return result;
+}
+```
+
+- common.js 파일의 내용은 server.js 파일에서 작성했던 코드와 상당히 유사
+
+1. dist/index.html 파일의 내용을 가져옴
+2. 미리 렌더링할 페이지의 목록을 정의
+3. 페이지를 미리 렌더링 해서 문자열을 반환하는
+   - server.js 파일에서 렌더링하던 코드와 유사
+   - renderPage 함수에 -> `__DATA_FROM_SERVER__ ` 문자열 그대로 둠 -> renderPage 데이터에 대한 정보를 모르기 때문에
+   - prerender.js 파일에서는 `__DATA_FROM_SERVER__` 문자열을 변환하지 못한 채로 각 페이지의 HTML 파일을 저장한다.
+   - 데이터는 서버에서 사용자 요청을 할 때 채워넣을 예정
+
+#### 미리 렌더링한 페이지 활용하기
+
+- 웹 서버 코드에서 미리 렌더링한 페이지를 활용하도록 sever.js 파일 수정
+
+```js
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import * as url from 'url';
+
+import { renderPage, prerenderPages } from './common';
+
+const app = express();
+// -1-
+const prerenderHtml = {};
+for (const page of prerenderPages) {
+  const pageHtml = fs.readFileSync(
+    path.resolve(__dirname, `../dist/${page}.html`)
+  );
+  prerenderHtml[page] = pageHtml;
+}
+// -1-
+const html = fs.readFileSync(
+  path.resolve(__dirname, '../dist/index.html'),
+  'utf8'
+);
+app.use('/dist', express.static('dist'));
+app.get('/favicon.ico', (req, res) => res.sendStatus(204));
+app.get('*', (req, res) => {
+  const parseUrl = url.parse(req.url, true);
+  const page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
+  const initialDate = { page };
+  // -2-
+  const pageHtml = prerenderPages.includes(page)
+    ? prerenderHtml[html]
+    : renderPage(page);
+  //-2-
+  //-3-
+  const result = pageHtml.replace(
+    '__DATA_FROM_SERVER__',
+    JSON.stringify(initialDate)
+  );
+  //-3-
+  res.send(result);
+});
+app.listen(3000);
+```
+
+1. prerender.js 파일이 실행될 때 미리 렌더링해 놓은 페이지를 prerenderHtml 객체에 저장
+2. 미리 렌더링된 페이지가 아닌 경우에만 새로 렌더링
+3. `__DATA_FROM_SERVER__ ` 문자열을 초기 데이터로 대체
+
+#### 웹팩 설정 및 결과 확인하기
+
+- prender.js 파일을 서버에서 실행하기 위해서 웹팩으로 빌드
+
+> ./webpack.config.js
+
+```js
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const nodeExternals = require('webpack-node-externals');
+
+function getConfig(isServer, name) {
+  // -1-
+  return {
+    entry: {
+      entry: { [name]: `./src/${name}` }, // -2-
+    },
+    output: {
+      filename: isServer ? '[name].bundle.js' : '[name].[chunkhash].js',
+      path: path.resolve(__dirname, 'dist'),
+      publicPath: '/dist/',
+    },
+    target: isServer ? 'node' : 'web',
+    externals: isServer ? [nodeExternals()] : [],
+    node: {
+      __dirname: false,
+    },
+    optimization: isServer
+      ? {
+          splitChunks: false,
+          minimize: false,
+        }
+      : undefined,
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              configFile: path.resolve(
+                __dirname,
+                isServer ? '.babelrc.server.js' : '.babelrc.client.js'
+              ),
+            },
+          },
+        },
+        {
+          test: /\.(png|jpg|gif)$/,
+          use: {
+            loader: 'file-loader',
+            options: {
+              emitFile: isServer ? false : true,
+            },
+          },
+        },
+      ],
+    },
+    plugins: isServer
+      ? []
+      : [new HtmlWebpackPlugin({ template: './template/index.html' })],
+    mode: 'production',
+  };
+}
+module.exports = [
+  getConfig(true, 'index'),
+  getConfig(true, 'server'),
+  getConfig(true, 'prerender'), // -3-
+];
+```
+
+1. getConfig 함수의 두 번째 매개변수로 이름 정보를 추가했다.
+2. 각 이름에 해당하는 파일의 번들 파일을 생생헌다.
+3. prerender.js 파일을 마지막에 번들링
+   - 웹팩 빌드 후 일부 페이지 위해 package.json 파일 수정
+
+> ./package.json
+
+#### 생성된 home.html 파일의 내용
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>test-ssr</title>
+    <script>
+      window.__INITIAL_DATA__ = __DATA_FROM_SERVER__; // -1-
+    </script>
+    <style data-styled="true" data-styled-version="5.3.0">
+      .kmQaIS {
+        background-color: black;
+        border: 1px solid blue;
+      } /*!sc*/
+      data-styled.g1[id='sc-bdnxRM'] {
+        content: 'kmQaIS,';
+      } /*!sc*/
+    </style>
+    <script defer="defer" src="/dist/index.7e29e19e9565bbf054dc.js"></script>
+  </head>
+  <body>
+    <div id="root">
+      <div class="sc-bdnxRM kmQaIS">
+        <button data-page="home">Home</button
+        ><button data-page="about">About</button
+        ><img src="/dist/29de4f72a026df827ec324f0c66f58d6.png" />
+        <div><h3>This is about page</h3></div>
+      </div>
+    </div>
+  </body>
+</html>
+
+1. `__DATA_FROM_SERVER__` 문자열은 그대로 존재
+2.

@@ -204,13 +204,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ 127:
-/***/ ((module) => {
-
-module.exports = require("express");
-
-/***/ }),
-
 /***/ 747:
 /***/ ((module) => {
 
@@ -243,13 +236,6 @@ module.exports = require("react-dom/server");
 /***/ ((module) => {
 
 module.exports = require("styled-components");
-
-/***/ }),
-
-/***/ 835:
-/***/ ((module) => {
-
-module.exports = require("url");
 
 /***/ })
 
@@ -319,21 +305,11 @@ var __webpack_exports__ = {};
 (() => {
 
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-var _express = _interopRequireDefault(__webpack_require__(127));
-
 var _fs = _interopRequireDefault(__webpack_require__(747));
 
 var _path = _interopRequireDefault(__webpack_require__(622));
 
-var url = _interopRequireWildcard(__webpack_require__(835));
-
 var _common = __webpack_require__(407);
-
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -343,43 +319,21 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-var app = (0, _express["default"])();
-var prerenderHtml = {};
-
 var _iterator = _createForOfIteratorHelper(_common.prerenderPages),
     _step;
 
 try {
   for (_iterator.s(); !(_step = _iterator.n()).done;) {
     var page = _step.value;
+    var result = (0, _common.renderPage)(page);
 
-    var pageHtml = _fs["default"].readFileSync(_path["default"].resolve(__dirname, "../dist/".concat(page, ".html")));
-
-    prerenderHtml[page] = pageHtml;
+    _fs["default"].writeFileSync(_path["default"].resolve(__dirname, "../dist/".concat(page, ".html")), result);
   }
 } catch (err) {
   _iterator.e(err);
 } finally {
   _iterator.f();
 }
-
-var html = _fs["default"].readFileSync(_path["default"].resolve(__dirname, '../dist/index.html'), 'utf8');
-
-app.use('/dist', _express["default"]["static"]('dist'));
-app.get('/favicon.ico', function (req, res) {
-  return res.sendStatus(204);
-});
-app.get('*', function (req, res) {
-  var parseUrl = url.parse(req.url, true);
-  var page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
-  var initialDate = {
-    page: page
-  };
-  var pageHtml = _common.prerenderPages.includes(page) ? prerenderHtml[html] : (0, _common.renderPage)(page);
-  var result = pageHtml.replace('__DATA_FROM_SERVER__', JSON.stringify(initialDate));
-  res.send(result);
-});
-app.listen(3000);
 })();
 
 /******/ })()
