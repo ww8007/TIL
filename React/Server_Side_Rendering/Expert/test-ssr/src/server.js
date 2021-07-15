@@ -26,7 +26,7 @@ app.get('*', (req, res) => {
   const page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
   const initialDate = { page };
   const pageHtml = prerenderPages.includes(page)
-    ? prerenderHtml[html]
+    ? prerenderHtml[page]
     : renderPage(page);
   const result = pageHtml.replace(
     '__DATA_FROM_SERVER__',
