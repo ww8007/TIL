@@ -1,12 +1,10 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
 
 function getConfig(isServer, name) {
   return {
     entry: { [name]: `./src/${name}` },
-
     output: {
       filename: isServer ? '[name].bundle.js' : '[name].[chunkhash].js',
       path: path.resolve(__dirname, 'dist'),
@@ -42,15 +40,19 @@ function getConfig(isServer, name) {
           use: {
             loader: 'file-loader',
             options: {
-              emitFile: isServer ? false : true, //-8-
+              emitFile: isServer ? false : true,
             },
           },
         },
       ],
     },
-    plugins: isServer //-9-
+    plugins: isServer
       ? []
-      : [new HtmlWebpackPlugin({ template: './template/index.html' })],
+      : [
+          new HtmlWebpackPlugin({
+            template: './template/index.html',
+          }),
+        ],
     mode: 'production',
   };
 }

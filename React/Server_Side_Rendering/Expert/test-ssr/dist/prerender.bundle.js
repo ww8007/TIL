@@ -14,10 +14,10 @@ exports.default = void 0;
 
 var _react = _interopRequireDefault(__webpack_require__(297));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function About() {
-  return /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement("h3", null, "This is about page"));
+  return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("h3", null, "This is about page"));
 }
 
 var _default = About;
@@ -29,8 +29,6 @@ exports.default = _default;
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 Object.defineProperty(exports, "__esModule", ({
   value: true
@@ -47,80 +45,55 @@ var _Home = _interopRequireDefault(__webpack_require__(33));
 
 var _About = _interopRequireDefault(__webpack_require__(341));
 
-var _templateObject;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
-
-var Container = _styledComponents["default"].div(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  background-color: black;\n  border: 1px solid blue;\n"])));
+const Container = _styledComponents.default.div`
+  background-color: black;
+  border: 1px solid blue;
+`;
 
 function fetchUsername() {
-  var usernames = ['mike', 'june', 'jamie'];
-  return new Promise(function (res) {
-    var username = usernames[Math.floor(Math.random() * 3)];
-    setTimeout(function () {
-      return res(username);
-    }, 100);
+  const usernames = ['mike', 'june', 'jamie'];
+  return new Promise(res => {
+    const username = usernames[Math.floor(Math.random() * 3)];
+    setTimeout(() => res(username), 100);
   });
 }
 
-function App(_ref) {
-  var pages = _ref.pages;
-
-  var _useState = (0, _react.useState)(pages),
-      _useState2 = _slicedToArray(_useState, 2),
-      page = _useState2[0],
-      setPage = _useState2[1];
-
-  var _useState3 = (0, _react.useState)(null),
-      _useState4 = _slicedToArray(_useState3, 2),
-      username = _useState4[0],
-      setUsername = _useState4[1];
-
-  (0, _react.useEffect)(function () {
-    window.onpopstate = function (event) {
+function App({
+  pages
+}) {
+  const [page, setPage] = (0, _react.useState)(pages);
+  const [username, setUsername] = (0, _react.useState)(null);
+  (0, _react.useEffect)(() => {
+    window.onpopstate = event => {
       setPage(event.state);
     };
   }, []);
-  (0, _react.useEffect)(function () {
-    fetchUsername().then(function (data) {
-      return setUsername(data);
-    });
+  (0, _react.useEffect)(() => {
+    fetchUsername().then(data => setUsername(data));
   });
 
   function onChangePage(e) {
-    var newPage = e.target.dataset.page;
-    window.history.pushState(newPage, '', "/".concat(newPage));
+    const newPage = e.target.dataset.page;
+    window.history.pushState(newPage, '', `/${newPage}`);
     setPage(newPage);
   }
 
-  var PageComponent = page === 'home' ? _Home["default"] : _About["default"];
-  return /*#__PURE__*/_react["default"].createElement(Container, null, /*#__PURE__*/_react["default"].createElement("button", {
+  const PageComponent = page === 'home' ? _Home.default : _About.default;
+  return /*#__PURE__*/_react.default.createElement(Container, null, /*#__PURE__*/_react.default.createElement("button", {
     "data-page": "home",
     onClick: onChangePage
-  }, "Home"), /*#__PURE__*/_react["default"].createElement("button", {
+  }, "Home"), /*#__PURE__*/_react.default.createElement("button", {
     "data-page": "about",
     onClick: onChangePage
-  }, "About"), /*#__PURE__*/_react["default"].createElement("img", {
-    src: _icon["default"]
-  }), /*#__PURE__*/_react["default"].createElement(PageComponent, {
+  }, "About"), /*#__PURE__*/_react.default.createElement("img", {
+    src: _icon.default
+  }), /*#__PURE__*/_react.default.createElement(PageComponent, {
     username: username
   }));
 }
@@ -139,11 +112,12 @@ exports.default = void 0;
 
 var _react = _interopRequireDefault(__webpack_require__(297));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function Home(_ref) {
-  var username = _ref.username;
-  return /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement("h3", null, "This is home page"), username && /*#__PURE__*/_react["default"].createElement("p", null, "".concat(username, "\uB2D8 \uC548\uB155\uD558\uC138\uC694")));
+function Home({
+  username
+}) {
+  return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("h3", null, "This is home page"), username && /*#__PURE__*/_react.default.createElement("p", null, `${username}님 안녕하세요`));
 }
 
 var _default = Home;
@@ -174,20 +148,20 @@ var _App = _interopRequireDefault(__webpack_require__(255));
 
 var _styledComponents = __webpack_require__(914);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var html = _fs["default"].readFileSync(_path["default"].resolve(__dirname, '../dist/index.html'), 'utf8');
+const html = _fs.default.readFileSync(_path.default.resolve(__dirname, '../dist/index.html'), 'utf8');
 
-var prerenderPages = ['home'];
+const prerenderPages = ['home'];
 exports.prerenderPages = prerenderPages;
 
 function renderPage(page) {
-  var sheet = new _styledComponents.ServerStyleSheet();
-  var renderString = (0, _server.renderToString)(sheet.collectStyles( /*#__PURE__*/_react["default"].createElement(_App["default"], {
+  const sheet = new _styledComponents.ServerStyleSheet();
+  const renderString = (0, _server.renderToString)(sheet.collectStyles( /*#__PURE__*/_react.default.createElement(_App.default, {
     page: page
   })));
-  var styles = sheet.getStyleTags();
-  var result = html.replace('<div id="root"></div>', "<div id=\"root\">".concat(renderString, "</div>")).replace('__STYLE_FROM_SERVER__', styles);
+  const styles = sheet.getStyleTags();
+  const result = html.replace('<div id="root"></div>', `<div id="root">${renderString}</div>`).replace('__STYLE_FROM_SERVER__', styles);
   return result;
 }
 
@@ -311,28 +285,12 @@ var _path = _interopRequireDefault(__webpack_require__(622));
 
 var _common = __webpack_require__(407);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+for (const page of _common.prerenderPages) {
+  const result = (0, _common.renderPage)(page);
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-var _iterator = _createForOfIteratorHelper(_common.prerenderPages),
-    _step;
-
-try {
-  for (_iterator.s(); !(_step = _iterator.n()).done;) {
-    var page = _step.value;
-    var result = (0, _common.renderPage)(page);
-
-    _fs["default"].writeFileSync(_path["default"].resolve(__dirname, "../dist/".concat(page, ".html")), result);
-  }
-} catch (err) {
-  _iterator.e(err);
-} finally {
-  _iterator.f();
+  _fs.default.writeFileSync(_path.default.resolve(__dirname, `../dist/${page}.html`), result);
 }
 })();
 

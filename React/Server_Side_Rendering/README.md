@@ -1131,3 +1131,80 @@ module.exports = [
 npm i lru-cache
 
 - lur-cache 패키지는 정해진 최대 캐시 개수를 초과하면 LRU(least recently used) 알고리즘에 따라 가장 오랫동안 사용되지 않은 캐시를 제거
+
+- 서버사이드 렌더링에서 캐싱 기능을 구현
+
+> ./server.js
+
+```js
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import * as url from 'url';
+import lruCache from 'lru-cache'; // -1-
+
+import { renderPage, prerenderPages } from './common';
+
+// -2-
+const ssrCache = new lruCache({
+  max: 100,
+  maxAge: 1000 * 60,
+});
+// -2-
+
+const app = express();
+
+const prerenderHtml = {};
+for (const page of prerenderPages) {
+  const pageHtml = fs.readFileSync(
+    path.resolve(__dirname, `../dist/${page}.html`)
+  );
+  prerenderHtml[page] = pageHtml;
+}
+
+const html = fs.readFileSync(
+  path.resolve(__dirname, '../dist/index.html'),
+  'utf8'
+);
+app.use('/dist', express.static('dist'));
+app.get('/favicon.ico', (req, res) => res.sendStatus(204));
+app.get('*', (req, res) => {
+  const parseUrl = url.parse(req.url, true);
+  const cacheKey = parseUrl.path; //-3-
+  // -4-
+  if (ssrCache.has(cacheKey)) {
+    console.log('캐시 사용');
+    res.send(ssrCache.get(cacheKey));
+    return;
+  }
+  // -4-
+  const page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
+  const initialData = { page };
+  const pageHtml = prerenderPages.includes(page)
+    ? prerenderHtml[page]
+    : renderPage(page);
+  const result = pageHtml.replace(
+    '__DATA_FROM_SERVER__',
+    JSON.stringify(initialData)
+  );
+  // -5-
+  ssrCache.set(cacheKey, result);
+  res.send(result);
+  // -5-
+});
+app.listen(3000);
+```
+
+1. 캐싱 기능을 위해 lru-cache 패키지를 이용
+2. 최대 100개의 페이지를 캐싱하고 각 아이템은 60초 동안 캐싱되도록 설정
+3. cacheKey는 쿼리 파라미터를 포함하는 url로 함
+   - 만약 페이지를 렌더링할 때 user-agent와 같은 추가 정보 이용 하면
+   - cacheKey는 그 정보들을 모두 포함해야 함
+4. 캐시가 존재하면 캐싱된 값을 사용한다.
+5. 캐시가 존재하지 않으면 서버사이드 렌더링 후 그 결과를 캐시에 저장
+
+> 빌드 후 브라우저에서 페이지를 입력하면 캐시 사용 로그가 출력되지 않음
+
+    - 같은 페이지를 또 방문하면 캐시 사용 로그가 출력되는 것
+
+###

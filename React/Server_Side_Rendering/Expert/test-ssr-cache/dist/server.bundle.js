@@ -218,6 +218,13 @@ module.exports = require("fs");
 
 /***/ }),
 
+/***/ 8:
+/***/ ((module) => {
+
+module.exports = require("lru-cache");
+
+/***/ }),
+
 /***/ 622:
 /***/ ((module) => {
 
@@ -329,6 +336,8 @@ var _path = _interopRequireDefault(__webpack_require__(622));
 
 var url = _interopRequireWildcard(__webpack_require__(835));
 
+var _lruCache = _interopRequireDefault(__webpack_require__(8));
+
 var _common = __webpack_require__(407);
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -343,6 +352,10 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+var ssrCache = new _lruCache["default"]({
+  max: 100,
+  maxAge: 1000 * 60
+});
 var app = (0, _express["default"])();
 var prerenderHtml = {};
 
@@ -353,7 +366,7 @@ try {
   for (_iterator.s(); !(_step = _iterator.n()).done;) {
     var page = _step.value;
 
-    var pageHtml = _fs["default"].readFileSync(_path["default"].resolve(__dirname, "../dist/".concat(page, ".html")));
+    var pageHtml = _fs["default"].readFileSync(_path["default"].resolve(__dirname, "../dist/".concat(page, ".html")), 'utf8');
 
     prerenderHtml[page] = pageHtml;
   }
@@ -363,7 +376,7 @@ try {
   _iterator.f();
 }
 
-var html = _fs["default"].readFileSync(_path["default"].resolve(__dirname, '../dist/index.html'), 'utf8');
+var html = _fs["default"].readFileSync(_path["default"].resolve(__dirname, '../dist/index.html'), 'utf8').replace('__STYLE_FROM_SERVER__', '');
 
 app.use('/dist', _express["default"]["static"]('dist'));
 app.get('/favicon.ico', function (req, res) {
@@ -371,12 +384,21 @@ app.get('/favicon.ico', function (req, res) {
 });
 app.get('*', function (req, res) {
   var parseUrl = url.parse(req.url, true);
+  var cacheKey = parseUrl.path;
+
+  if (ssrCache.has(cacheKey)) {
+    console.log('캐시 사용');
+    res.send(ssrCache.get(cacheKey));
+    return;
+  }
+
   var page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
-  var initialDate = {
+  var initialData = {
     page: page
   };
-  var pageHtml = _common.prerenderPages.includes(page) ? prerenderHtml[html] : (0, _common.renderPage)(page);
-  var result = pageHtml.replace('__DATA_FROM_SERVER__', JSON.stringify(initialDate));
+  var pageHtml = _common.prerenderPages.includes(page) ? prerenderHtml[page] : (0, _common.renderPage)(page);
+  var result = pageHtml.replace('__DATA_FROM_SERVER__', JSON.stringify(initialData));
+  ssrCache.set(cacheKey, result);
   res.send(result);
 });
 app.listen(3000);
