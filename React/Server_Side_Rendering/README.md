@@ -1207,4 +1207,71 @@ app.listen(3000);
 
     - 같은 페이지를 또 방문하면 캐시 사용 로그가 출력되는 것
 
-###
+### 서버사이드 렌더링 함수 사용해보기 : renderToNodeStream
+
+- 리엑트는 서버사이드 렌더링을 위해 renderToString 함수 외 renderToNodeStream 함수도 제공
+- renderToString : 모든 렌더링 과정이 끝나야 문자열로 된 결괏값을 반환
+- renderToNodeStream : 호출 즉시 노드 스트림(stream) 객체를 반환
+
+#### 노드의 스트림
+
+- 스트림 : 배열이나 문자열 같은 데이터 컬렉션, 크기가 큰 데이터를 다룰 때 유용
+- 스트림은 데이터를 청크 단위로 쪼개서 전달하기 때문에 데이터가 완전히 준비되지 않아도 전송 시작 가능
+
+##### 크기가 큰 파일을 읽는 코드
+
+```js
+app.get('/readFile', (req, res) => {
+  fs.readFile('./big_file.zip', (err, data) => {
+    //-1-
+    if (err) throw err;
+    res.end(data);
+  });
+});
+```
+
+1. /readFile 요청이 오면 크기가 큰 파일을 읽어서 전달
+   - 이 때 파일의 전체 내용을 메모리로 가져오기 때문에 메모리 여유가 없다면 부담이 될 수 있음
+   - 스트림을 사용하면 큰 파일을 읽을 때도 메모리를 효율적으로 사용이 가능
+
+##### 스트림을 이용한 파일 읽기
+
+```js
+app.get('readFile', (req, res) => {
+  const fileStream = fs.createReadStream('./big_file.zip'); // -1-
+  fileStream.pipe(res); //-2-
+});
+```
+
+1. 파일을 읽기 위해 읽기 가능한 스트림(readable stream) 객체를 만든다.
+2. 노드의 HTTP response 객체는 쓰기 가능한 스트림(writeable stream) 객체
+   - 읽기 가능한 스트림에 쓰기 가능한 스트림을 연결
+   - 데이터는 읽기 가능한 스트림에서 쓰기 가능한 스트림에서 쓰기 가능한 스트림 쪽으로 흐름
+
+- 위의 코드는 메모리를 효율적으로 사용할 뿐만 아니라 첫 번째 청크가 준비되면 바로 전송을 시작
+- 바로 전송을 시작 -> 데이터를 빠르게 전송가능
+
+- 읽기와 쓰기가 모두 가능한 스트림(duplex stream) 객체도 존재
+- 읽기와 쓰기가 모두 가능한 스트림은 다음과 같이 세 개 이상의 스트림을 연결할 때 사용됨
+
+##### 여러 개의 스트림 연결하기
+
+```js
+readableStream
+  .pipe(transformStream1)
+  .pipe(transformStream2)
+  .pipe(writableStream); //-1-
+```
+
+#### server.js 수정
+
+1. 읽기 가능한 스트림과 쓰기 가능한 스트림 사이에 두 개의 읽기와 쓰기가 가능한 스트림을 연결
+
+- readableStream -> transformStream -> transformStream2 -> writableStream
+- 중간의 두 스트림은 스트림이 생성한 데이터를 기반으로 추가적인 작업을 할 수 있다.
+- 데이터를 변환하거나 데이터가 처리되는 속도를 측정해서 콘솔로 측정 가능
+
+- renderToNodeStream 함수를 이용하면 렌더링 데이터를 빠르게 전달할 수 있다는 장점이 있다.
+- 렌더링하려는 페이지가 아무리 복잡하더라도 첫 번째 청크가 준비되면 바로 전송을 시작하기 때문
+
+> npx server.js
