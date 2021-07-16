@@ -1586,3 +1586,132 @@ export default Page1;
 - 넥스트에서 이미지와 같은 정적 파일 사용 -> HTML head 태그와 스타일 코드 작성 방법
 
 > mkdir static
+
+- 그림 파일 하나 icon.png로 이름 변경 후 저장
+
+##### page1.js
+
+```js
+import Head from 'next/head';
+
+function Page1() {
+  return (
+    <div>
+      <p>This is Home Page</p>
+      <img src="/static/icon.png" /> // -1-
+      <Head>
+        // -2-
+        <title>page1</title>
+      </Head>
+      <Head>
+        <meta name="description" content="hello world" />
+      </Head>
+      // -2-
+      <style jsx>{`
+        // -3-
+        p {
+          color: blue;
+          font-size: 18pt;
+        }
+      `}</style>
+      // -3-
+    </div>
+  );
+}
+
+export default Page1;
+```
+
+1. 프로젝트 루트의 static 폴더 밑 정적 파일 생성, 경로 입력하면 정적 파일 서비스 가능
+   - but 파일의 내용과 상관없이 항상 같은 경로가 사용되므로 브라우저 캐싱에 불리함
+2. 넥스트에서 제공하는 `Head` 컴포넌트를 사용하면 `HTML head`태그에 원하는 돔 요소를 삽입 가능
+   - 여러번 사용하는 것도 가능
+   - 나중에 하나로 합쳐짐
+3. 넥스트는 `styled-jsx` 패키지를 통해서 `css-in-js` 방식을 지원
+   - 여기서 선언된 스타일은 이 컴포넌트 내 p 요소에만 적용
+   - styled-components를 사용하는 방식도 가능함
+
+#### 넥스트가 생성한 HTML 분석하기
+
+> npx next build && npx next start
+
+1. page1.js 에서 `Head` 컴포넌트를 사용해 입력한 돔 요소
+2. page1.js 에서 styled-jsx 문법을 사용해서 입력한 스타일 코드
+3. 서버에서 생성된 데이터
+4. script 태그를 이용해서 여러 가지 자바스크립트 파일을 가져옴
+
+#### 웹팩 설정 변경하기
+
+- 넥스트에서는 정적 파일을 서비스 하기 위해 프로젝트 루트의 static 폴더를 이용
+- 지금까지 살펴본 예제 코드는 정적 파일의 내용과 상관없이 항상 같은 파일 경로 사용
+- 브라우저 캐싱을 최대로 활용하기 위해서는 파일의 내용이 변경되면 파일의 경로도 변경되는 것이 좋음
+- 웹팩의 `file-loader`를 사용해서 기능 구현
+
+> 설치
+
+    npm i file-loader
+
+- 넥스트는 CRA와 달리 웹팩 설정을 변경할 수 있음
+
+> touch next.config.js && code next.config.js
+
+```js
+module.exports = {
+  // -1-
+  webpack: (config) => {
+    // -2-
+    config.module.rules.push({
+      test: /.(png|jpg)$/,
+      use: [
+        {
+          loader: 'file-loader',
+          options: {
+            name: '[path][name].[ext]?[hash]', //-3-
+            emitFile: false, //-4-
+            publicPath: '/',
+          },
+        },
+      ],
+    });
+    return config;
+  },
+};
+```
+
+1. 웹팩 설정을 변경하기 위한 함수
+   - 이 함수의 첫 번째 매개변수로 넥스트의 웹팩 설정이 넘어옴
+2. 넥스트의 웹팩 설정에 `file-loader`를 추가
+3. 쿼리 파라미터 부분에 해시를 추가해서 파일의 경로도 수정되도록 함
+4. 넥스트는 `static` 폴더의 정적 파일을 그대로 서비스하기 때문에 파일을 복사할 필요가 없음
+
+- 앞에서 설정한 `file-loader`가 동작하기 위해 이미지를 모듈로 다뤄야 함
+- page1.js 파일을 수정해서 기존의 src 속성값으로 입력했던 이미지 경로를 모듈의 경로로 사용하도록 변경
+
+##### page1.js
+
+```js
+import Head from 'next/head';
+import Icon from '../static/icon.png';
+function Page1() {
+  return (
+    <div>
+      <p>This is Home Page</p>
+      <img src={Icon} />
+      <Head>
+        <title>page1</title>
+      </Head>
+      <Head>
+        <meta name="description" content="hello world" />
+      </Head>
+      <style jsx>{`
+        p {
+          color: blue;
+          font-size: 18pt;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export default Page1;
+```
