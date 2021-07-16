@@ -1582,3 +1582,7 @@ export default Page1;
 - `_document.js` 파일은 서버 측에서 HTML 요소를 추가하는 용도로 사용
 
 #### 넥스트의 기본 기능 사용하기
+
+- 넥스트에서 이미지와 같은 정적 파일 사용 -> HTML head 태그와 스타일 코드 작성 방법
+
+> mkdir static
