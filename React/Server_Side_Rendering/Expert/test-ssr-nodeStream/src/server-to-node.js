@@ -2,12 +2,13 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import * as url from 'url';
+import { renderPage, prerenderPages } from './common';
 import lruCache from 'lru-cache';
 import { ServerStyleSheet } from 'styled-components';
 import React from 'react';
+import App from './App';
 import { renderToNodeStream } from 'react-dom/server';
 import { Transform } from 'stream';
-import { renderPage, prerenderPages } from './common';
 
 function createCacheStream(cacheKey, prefix, postfix) {
   const chunks = [];
@@ -47,14 +48,14 @@ const html = fs
 app.use('/dist', express.static('dist'));
 app.get('/favicon.ico', (req, res) => res.sendStatus(204));
 app.get('*', (req, res) => {
-  const parseUrl = url.parse(req.url, true);
-  const cacheKey = parseUrl.path;
+  const parsedUrl = url.parse(req.url, true);
+  const cacheKey = parsedUrl.path;
   if (ssrCache.has(cacheKey)) {
     console.log('캐시 사용');
     res.send(ssrCache.get(cacheKey));
     return;
   }
-  const page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
+  const page = parsedUrl.pathname ? parsedUrl.pathname.substr(1) : 'home';
   const initialData = { page };
   const isPrerender = prerenderPages.includes(page);
   const result = (isPrerender ? prerenderHtml[page] : html).replace(
@@ -65,7 +66,7 @@ app.get('*', (req, res) => {
     ssrCache.set(cacheKey, result);
     res.send(result);
   } else {
-    const ROOT_TEXT = '<div id ="root">';
+    const ROOT_TEXT = '<div id="root">';
     const prefix = result.substr(
       0,
       result.indexOf(ROOT_TEXT) + ROOT_TEXT.length
@@ -79,10 +80,11 @@ app.get('*', (req, res) => {
     );
     const cacheStream = createCacheStream(cacheKey, prefix, postfix);
     cacheStream.pipe(res);
-    renderStream.pipe(cacheStream, { end: false });
+    renderStream.pipe(cacheStream, { end: 'false' });
     renderStream.on('end', () => {
       res.end(postfix);
     });
   }
 });
+
 app.listen(3000);

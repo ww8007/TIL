@@ -1275,3 +1275,227 @@ readableStream
 - 렌더링하려는 페이지가 아무리 복잡하더라도 첫 번째 청크가 준비되면 바로 전송을 시작하기 때문
 
 > npx server.js
+
+```js
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import * as url from 'url';
+import lruCache from 'lru-cache';
+// -1-
+import { ServerStyleSheet } from 'styled-components';
+import React from 'react';
+import { renderToNodeStream } from 'react-dom/server';
+// -1-
+import { renderPage, prerenderPages } from './common';
+
+const ssrCache = new lruCache({
+  max: 100,
+  maxAge: 1000 * 60,
+});
+
+const app = express();
+
+const prerenderHtml = {};
+for (const page of prerenderPages) {
+  const pageHtml = fs.readFileSync(
+    path.resolve(__dirname, `../dist/${page}.html`),
+    'utf8'
+  );
+  prerenderHtml[page] = pageHtml;
+}
+// -2-
+const html = fs
+  .readFileSync(path.resolve(__dirname, '../dist/index.html'), 'utf8')
+  .replace('__STYLE_FROM_SERVER__', '');
+// -2-
+app.use('/dist', express.static('dist'));
+app.get('/favicon.ico', (req, res) => res.sendStatus(204));
+app.get('*', (req, res) => {
+  const parseUrl = url.parse(req.url, true);
+  const cacheKey = parseUrl.path;
+  if (ssrCache.has(cacheKey)) {
+    console.log('캐시 사용');
+    res.send(ssrCache.get(cacheKey));
+    return;
+  }
+  const page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
+  const initialData = { page };
+  const isPrerender = prerenderPages.includes(page); // -3-
+  // -4-
+  const result = (isPrerender ? prerenderHtml[page] : html).replace(
+    '__DATA_FROM_SERVER__',
+    JSON.stringify(initialData)
+  );
+  // -4-
+  // -5-
+  if (isPrerender) {
+    ssrCache.set(cacheKey, result);
+    res.send(result); // -5-
+  } else {
+    //-6-
+    const ROOT_TEXT = '<div id ="root">';
+    const prefix = result.substr(
+      0,
+      result.indexOf(ROOT_TEXT) + ROOT_TEXT.length
+    );
+    const postfix = result.substr(prefix.length);
+    // -6-
+    res.write(prefix); // -7-
+    const sheet = new ServerStyleSheet();
+    const reactElement = sheet.collectStyles(<App page={page} />);
+    // -8-
+    const renderStream = sheet.interleaveWithNodeStream(
+      renderToNodeStream(reactElement)
+    );
+    // -8-
+
+    renderStream.pipe(res, { end: false }); // -9-
+    // -10-
+    renderStream.on('end', () => {
+      res.end(postfix);
+    });
+    // -11-
+  }
+});
+app.listen(3000);
+```
+
+1. common.js 파일에 있던 내용의 상당 부분을 가져와야 하므로 관련된 모듈도 가져옴
+2. dist/index.html 파일의 내용을 가져옴
+   - 이 때 스트림 방식에서는 더 이상 `__STYLE_FROM_SERVER__`를 사용하지 않으므로 지움
+3. 미리 렌더링하는 페이지인지 여부를 isPrerender 변수에 저장
+4. HTML에 초기 데이터를 넣음
+   - 미리 렌더링하는 페이지는 이 작업을 끝으로 HTML이 완성됨
+5. 미리 렌더링하는 페이지를 캐시에 저장 후 전송
+6. root 요소를 기준으로 이전 문자열과 이후 문자열로 나눔
+7. 이전 문자열은 바로 전송
+   - write 메소드는 여러 번 호출가능
+8. renderToNodeStream 함수를 호출해서 읽기 가능한 스트림 객체를 만듬
+   - 스트림 방식을 사용할 때는 `styled-components`의 `interleaveWithNodeStream `메서를 호출해야함
+   - 이 메서드는 renderStream에서 스타일 코드가 생성되도록 하는 역할
+   - 기존에는 스타일 코드를 `__STYLE_FROM_SERVER`부분에 삽입했지만 이제는 root 요소 내부에 삽입
+9. `renderStream` 스트림과 `res` 스트림이 연결
+   - `res`는 쓰기 가능한 스트림
+   - `{end : false}` 옵션은 스트림이 종료됐을 때 `res.end` 메서드가 자동으로 호출되지 않도록 함
+10. 스트림이 종료되면 마지막으로 postfix 데이터를 전송
+
+#### 스트림 방식에서 캐싱 구현하기
+
+- 현재깢의 구현으로는 스트림으로 전송된 데이터를 캐싱하지 못함
+- 스트림 방식에서 캐싱 구현 -> 스트림으로 전송되는 청크 데이터에 접근 할 수 있어야함
+- 이를 위해 두 스크림 사이 직접 구현한 스트림을 끼워 넣어야함
+- 스트림으로 렌더링한 결과를 캐싱하기 위해 server.js 파일을 다음과 같이 수정
+
+#### 스트림으로 렌더링한 결과를 캐싱하도록 server.js 수정
+
+```js
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import * as url from 'url';
+import lruCache from 'lru-cache';
+import { ServerStyleSheet } from 'styled-components';
+import React from 'react';
+import { renderToNodeStream } from 'react-dom/server';
+import { Transform } from 'stream'; // -1-
+import { renderPage, prerenderPages } from './common';
+
+// -2-
+function createCacheStream(cacheKey, prefix, postfix) {
+  const chunks = []; // -3-
+  return new Transform({
+    // -4-
+    // -5-
+    transform(data, _, callback) {
+      chunks.push(data);
+      callback(null, data);
+    },
+    // -5-
+    // -6-
+    flush(callback) {
+      const data = [prefix, Buffer.concat(chunks).toString(), postfix];
+      ssrCache.set(cacheKey, data.join(''));
+      callback();
+    },
+    // -6-
+  });
+}
+
+const ssrCache = new lruCache({
+  max: 100,
+  maxAge: 1000 * 60,
+});
+
+const app = express();
+
+const prerenderHtml = {};
+for (const page of prerenderPages) {
+  const pageHtml = fs.readFileSync(
+    path.resolve(__dirname, `../dist/${page}.html`),
+    'utf8'
+  );
+  prerenderHtml[page] = pageHtml;
+}
+
+const html = fs
+  .readFileSync(path.resolve(__dirname, '../dist/index.html'), 'utf8')
+  .replace('__STYLE_FROM_SERVER__', '');
+
+app.use('/dist', express.static('dist'));
+app.get('/favicon.ico', (req, res) => res.sendStatus(204));
+app.get('*', (req, res) => {
+  const parseUrl = url.parse(req.url, true);
+  const cacheKey = parseUrl.path;
+  if (ssrCache.has(cacheKey)) {
+    console.log('캐시 사용');
+    res.send(ssrCache.get(cacheKey));
+    return;
+  }
+  const page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
+  const initialData = { page };
+  const isPrerender = prerenderPages.includes(page);
+  const result = (isPrerender ? prerenderHtml[page] : html).replace(
+    '__DATA_FROM_SERVER__',
+    JSON.stringify(initialData)
+  );
+  if (isPrerender) {
+    ssrCache.set(cacheKey, result);
+    res.send(result);
+  } else {
+    const ROOT_TEXT = '<div id ="root">';
+    const prefix = result.substr(
+      0,
+      result.indexOf(ROOT_TEXT) + ROOT_TEXT.length
+    );
+    const postfix = result.substr(prefix.length);
+    res.write(prefix);
+    const sheet = new ServerStyleSheet();
+    const reactElement = sheet.collectStyles(<App page={page} />);
+    const renderStream = sheet.interleaveWithNodeStream(
+      renderToNodeStream(reactElement)
+    );
+    // -7-
+    const cacheStream = createCacheStream(cacheKey, prefix, postfix);
+    cacheStream.pipe(res);
+    renderStream.pipe(cacheStream, { end: false });
+    // -7-
+    renderStream.on('end', () => {
+      res.end(postfix);
+    });
+  }
+});
+app.listen(3000);
+```
+
+1. 중간에 삽입할 `스트림`을 만들기 위해 Transform 클래스를 가져옴
+2. 중간에 삽입할 `스트림`을 생성해 주는 함수
+3. `스트림`으로 전달된 모든 청크 데이터를 저장하는 배열
+4. `Transform` 객체를 생성
+   - `Transform`은 읽기와 쓰기가 가능한 `스트림`객체
+5. 청크 데이터를 받으면 호출되는 함수
+   - 전달받은 청크 데이터를 그대로 `chunks`배열에 넣음
+6. 청크 데이터가 모두 전달된 후 호출되는 함수
+   - 모든 청크 데이터와 prefix, postfix를 이용해서 하나의 완성된 HTML 데이터를 만들고 캐싱
+7. 생성한 `스트림`을 두 `스트림` 사이에 연결
+   - 순서 : renderStream -> cacheStream -> res

@@ -246,6 +246,13 @@ module.exports = require("react-dom/server");
 
 /***/ }),
 
+/***/ 413:
+/***/ ((module) => {
+
+module.exports = require("stream");
+
+/***/ }),
+
 /***/ 914:
 /***/ ((module) => {
 
@@ -336,9 +343,19 @@ var _path = _interopRequireDefault(__webpack_require__(622));
 
 var url = _interopRequireWildcard(__webpack_require__(835));
 
+var _common = __webpack_require__(407);
+
 var _lruCache = _interopRequireDefault(__webpack_require__(8));
 
-var _common = __webpack_require__(407);
+var _styledComponents = __webpack_require__(914);
+
+var _react = _interopRequireDefault(__webpack_require__(297));
+
+var _App = _interopRequireDefault(__webpack_require__(255));
+
+var _server = __webpack_require__(250);
+
+var _stream = __webpack_require__(413);
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -351,6 +368,21 @@ function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol 
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function createCacheStream(cacheKey, prefix, postfix) {
+  var chunks = [];
+  return new _stream.Transform({
+    transform: function transform(data, _, callback) {
+      chunks.push(data);
+      callback(null, data);
+    },
+    flush: function flush(callback) {
+      var data = [prefix, Buffer.concat(chunks).toString(), postfix];
+      ssrCache.set(cacheKey, data.join(''));
+      callback();
+    }
+  });
+}
 
 var ssrCache = new _lruCache["default"]({
   max: 100,
@@ -383,8 +415,8 @@ app.get('/favicon.ico', function (req, res) {
   return res.sendStatus(204);
 });
 app.get('*', function (req, res) {
-  var parseUrl = url.parse(req.url, true);
-  var cacheKey = parseUrl.path;
+  var parsedUrl = url.parse(req.url, true);
+  var cacheKey = parsedUrl.path;
 
   if (ssrCache.has(cacheKey)) {
     console.log('캐시 사용');
@@ -392,14 +424,37 @@ app.get('*', function (req, res) {
     return;
   }
 
-  var page = parseUrl.pathname ? parseUrl.pathname.substr(1) : 'home';
+  var page = parsedUrl.pathname ? parsedUrl.pathname.substr(1) : 'home';
   var initialData = {
     page: page
   };
-  var pageHtml = _common.prerenderPages.includes(page) ? prerenderHtml[page] : (0, _common.renderPage)(page);
-  var result = pageHtml.replace('__DATA_FROM_SERVER__', JSON.stringify(initialData));
-  ssrCache.set(cacheKey, result);
-  res.send(result);
+
+  var isPrerender = _common.prerenderPages.includes(page);
+
+  var result = (isPrerender ? prerenderHtml[page] : html).replace('__DATA_FROM_SERVER__', JSON.stringify(initialData));
+
+  if (isPrerender) {
+    ssrCache.set(cacheKey, result);
+    res.send(result);
+  } else {
+    var ROOT_TEXT = '<div id="root">';
+    var prefix = result.substr(0, result.indexOf(ROOT_TEXT) + ROOT_TEXT.length);
+    var postfix = result.substr(prefix.length);
+    res.write(prefix);
+    var sheet = new _styledComponents.ServerStyleSheet();
+    var reactElement = sheet.collectStyles( /*#__PURE__*/_react["default"].createElement(_App["default"], {
+      page: page
+    }));
+    var renderStream = sheet.interleaveWithNodeStream((0, _server.renderToNodeStream)(reactElement));
+    var cacheStream = createCacheStream(cacheKey, prefix, postfix);
+    cacheStream.pipe(res);
+    renderStream.pipe(cacheStream, {
+      end: 'false'
+    });
+    renderStream.on('end', function () {
+      res.end(postfix);
+    });
+  }
 });
 app.listen(3000);
 })();
