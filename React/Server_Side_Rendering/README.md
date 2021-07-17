@@ -1715,3 +1715,208 @@ function Page1() {
 
 export default Page1;
 ```
+
+#### 서버에서 생성된 데이터를 전달하기
+
+- 넥스트는 `getInitialProps` 함수를 이용해서 페이지 컴포넌트로 속성값을 전달
+- 각 페이지의 `getInitialProps` 함수는 페이지 진입 직전에 호출됨
+- 사용자가 첫 페이지를 요청하면 `getInitialProps` 함수는 서버에서 호출
+- 이후 클라이언트에서 페이지 전환 -> 클라이언트에서 호출
+
+- `getInitialProps` 함수가 반환하는 값은 페이지 컴포넌트의 속성값으로 입력됨
+- 넥스트는 `getInitialProps` 함수가 서버에서 호출되는 경우 반환값을 클라이언트로 전달해줌
+
+> getInitialProps
+
+    컴포넌트의 속성값을 서버 -> 클라이언트
+    첫 페이지 요청하면 서버
+    그 후는 페이지 전환시 클라 -> 서버
+
+> cd pages && mkdir page2.js && code page2.js
+
+```js
+import { async } from 'regenerator-runtime';
+import { callApi } from '../src/api';
+
+// -1-
+Page2.getInitialProps = async ({ query }) => {
+  const text = query.text || 'none'; // -2-
+  const data = await callApi(); // -3-
+  return { text, data }; // -4-
+};
+
+// -5-
+export default function Page2({ text, data }) {
+  return (
+    <div>
+      <p>this is homepage</p>
+      <p>{`text: ${text}`}</p>
+      <p>{`data is ${data}`}</p>
+    </div>
+  );
+}
+```
+
+1. `getInitialProps` 함수를 정의
+   - 매개변수로 다양한 정보가 전달되지만 여기서는 쿼리 파라미터 정보만 사용
+2. 쿼리 파라미터로부터 `text` 변수 생성
+3. 데이터를 가져오기 위해 API를 호출
+   - `getInitialProps` 함수 내부의 API 호출은 서버 또는 클라이언트에서 호출될 수 있다는 점을 기억
+   - `async await` 분법을 사용했기 때문에 API 통신이 끝날 때 까지 기다림
+4. `getInitialProps` 함수가 반환하는 값은 페이지 컴포넌트의 속성값으로 전달됨
+5. 페이지 컴포넌트에서 `getInitialProps` 함수가 반환한 값을 사용
+
+> touch api.js && code api.js
+
+> npx next
+
+- `getInitialProps` 함수가 서버에서 호출되더라도 이 함수에서 생성된 데이터는 항상 페이지 컴포넌트로 잘 전달된다는 것을 확인
+- 서버에서 호출되는 경우를 경우를 특별히 신경 쓰지 않아도 되기 때문에 `getInitialProps` 코드를 편하게 작성할 수 있다.
+
+> getInitialProps 함수를 통한 데이터 전송 Next.js의 큰 장점
+
+#### getInitialProps에서 HTTP 요청 객체 이용하기
+
+- `getInitialProps` 함수의 매개변수로 다양한 정보가 전달
+  1. HTTP 요청과
+  2. 응답 객체도 전달
+
+##### user-agent 정보 추출하기
+
+```js
+//-1-
+MyComponent.getInitialProps = async ({ req }) => {
+  const userAgent = req ? req.headers['user-agent'] : navigator.userAgent; //-2-
+};
+```
+
+1. HTTP 요청 객체도 `getInitialProps` 함수의 매개변수로 전달됨
+
+- 참고로 HTTP 요청과 응답 객체는 `getInitialProps` 함수가 서버에서 호출 되는 경우에만 전달됨
+
+2. HTTP 요청 객체가 존재하면 헤더에서 `user-agent` 정보를 추출함
+
+- 클라이언트에서 호출된 경우 브라우저의 `navigator` 전역 변수를 이용
+
+> getInitialProps HTTP 요청
+
+    HTTP 요청과 응답 객체 : 서버 호출만 포함
+    클라이언트 -> `navigator`
+
+#### 페이지 이동하기
+
+- 넥스트는 페이지 이동을 위해서 `Link` 컴포넌트와 `Router` 객체를 제공
+
+##### Link 컴포넌트를 이용해서 페이지 이동하기
+
+- Link 컴포넌트를 이용해서 페이지를 이동하는 코드를 작성
+
+- react와 동일하게 사용이 가능하다.
+
+```js
+import Head from 'next/head';
+import Icon from '../static/icon.png';
+import Link from 'next/link';
+function Page1() {
+  return (
+    <div>
+      // -1-
+      <Link href="/page2">
+        <a>페이지2로 이동</a>
+      </Link>
+      // ...
+    </div>
+  );
+}
+
+export default Page1;
+```
+
+1. Link 컴포넌트를 이용해서 page2로 이동 버튼을 만든다.
+   - 사용자가 Link 컴포넌트의 자식 요소를 클릭하면 href 속성으로 전달된 페이지로 이동
+
+##### Router 객체를 이용하여 page2.js 파일 수정
+
+```js
+import { async } from 'regenerator-runtime';
+import { callApi } from '../api';
+import Router from 'next/router';
+
+Page2.getInitialProps = async ({ query }) => {
+  const text = query.text || 'none';
+  const data = await callApi();
+  return { text, data };
+};
+
+export default function Page2({ text, data }) {
+  return (
+    <div>
+      <button onClick={() => Router.push('/page1')}>pag1 으로 이동</button>
+      //-1-
+      <p>this is homepage</p>
+      <p>{`text: ${text}`}</p>
+      <p>{`data is ${data}`}</p>
+    </div>
+  );
+}
+```
+
+1. 버튼을 누르면 /page1로 이동
+
+- 페이지 이동을 위해서 Router 객체를 이용하는 것과 Link 컴포넌트를 이용하는 것 사이에 기능적인 차이는 없음
+- 다만 Router 객체가 좀 더 동적인 코드에 적합함
+- 개발 모드로 넥스트를 실행
+
+#### 에러 페이지 구현하기
+
+- 별도로 에러 페이지를 구현하지 않았다면 넥스트에서 기본적으로 제공되는 에러 페이지가 사용됨
+- 만약 에러 페이지를 직접 구현하고 싶다면 `pages`폴더 밑 `_error.js` 파일을 생성
+
+```js
+// -1-
+ErrorPage.getInitialProps = ({ res, err }) => {
+  const statusCode = res ? res.statusCode : err ? err.statusCode : null; //-2-
+  return { statusCode };
+  //-2-
+};
+
+export default function ErrorPage({ statusCode }) {
+  return (
+    <div>
+      //-3-
+      {statusCode === 404 && '페이지를 찾을 수 없습니다.'}
+      {statusCode === 500 && '알 수 없는 에러가 발생했습니다.'}
+      {!statusCode && '클라이언트에서 에러가 발생했습니다.'}
+      //-3-
+    </div>
+  );
+}
+```
+
+1. 에러 페이지도 getInitialProps 함수를 사용 가능
+2. 에러 코드를 페이지 컴포넌트의 속성값으로 전달
+3. statusCode 변수의 값에 따라 다른 메시지를 출력
+   - 만약 statusCode 변수의 값이 존재하지 않으면 클라이언트 측에서 발생한 에러
+
+- 에러 페이지를 확인하기 위해 고의로 에러를 ㅅ발생
+
+> ./pages/page2.js
+
+##### getInitialProps 함수에서 예외가 발생하도록 page2.js 파일 수정하기
+
+```js
+ErrorPage.getInitialProps = ({ res, err }) => {
+  const statusCode = res ? res.statusCode : err ? err.statusCode : null;
+  return { statusCode };
+};
+
+export default function ErrorPage({ statusCode }) {
+  return (
+    <div>
+      {statusCode === 404 && '페이지를 찾을 수 없습니다.'}
+      {statusCode === 500 && '알 수 없는 에러가 발생했습니다.'}
+      {!statusCode && '클라이언트에서 에러가 발생했습니다.'}
+    </div>
+  );
+}
+```
