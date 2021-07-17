@@ -1,7 +1,7 @@
-import { callApi } from '../api';
+import { callApi } from '../src/api';
 
 Page2.getInitialProps = async ({ query }) => {
-  const { sayHello } = await import('../sayHello');
+  const { sayHello } = await import('../src/sayHello');
   console.log(sayHello());
   const text = query.text || 'none';
   const data = await callApi();
@@ -10,7 +10,7 @@ Page2.getInitialProps = async ({ query }) => {
 
 export default function Page2({ text, data }) {
   function onClick() {
-    import('../sayHello').then(({ sayHello }) => console.log(sayHello()));
+    import('../src/sayHello').then(({ sayHello }) => console.log(sayHello()));
   }
   return (
     <div>

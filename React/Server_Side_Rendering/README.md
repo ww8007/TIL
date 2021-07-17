@@ -2251,3 +2251,128 @@ async function renderAndCache(req, res) {
 
 - 경로 설정이 잘못되어 있을 때는 err문에서 경로가 없다고 나왔는데
   - 요번에 보니 내가 잘못 설정한거 였음
+
+### 페이지 미리 렌더링하기
+
+- 페이지를 미리 렌더링하면 서버의 CPU 리소스를 절약 가능
+- 넥스트에서 빌드 시 `getInitialProps` 함수가 없는 페이지는 자동으로 미리 렌더링됨
+- 지금까지 작업한 프로젝트 빌드해서 `.next/server/static` 폴더를 확인해 보면
+
+  - page1 : 미리 렌더링된 `HTML`파일로 만들어짐
+  - page2 : 자바스크립트 파일로 만들어짐
+
+- 고로 `getInitialProps` 함수는 꼭 필요한 경우에만 작성하는 것이 좋음
+- `_app.js` 파일에서 `getInitialProps` 함수를 정의하면 모든 페이지가 미리 렌더링 되지 않음
+
+> 추후 next 에서 사용하는 함수들 정리 예정
+
+#### next export로 미리 렌더링 하기
+
+- 넥스트에서 next export 명령어를 통해 전체 페이지를 미리 렌더링 할 수 있음
+- next export 명령어는 빌드 후 실행해야 함
+
+> npx next build && npx next export
+
+- 명령어 실행 시 프로젝트 루트에 `out` 폴더가 생성
+
+![image](https://user-images.githubusercontent.com/54137044/126030610-605edc9c-9bc1-471e-8c64-7bbcd78990c8.png)
+
+- `404.html` : 에러 페이지가 미리 렌더링된 파일
+- `page1.html` : `/page1` 요청에 대ㅐ해 미리 렌더링된 파일
+- `page2.html` : `/page2` 요청에 대해 미리 렌더링된 파일
+- `_next` 폴더 : 프로젝트 루트의 `.next`폴더에 있는 번들 파일과 같음
+- `static` 폴더 : 이미지와 같은 정적 파일을 모아둔 곳
+
+- next export 명령어 실행 후 생성된 `out`폴더만 있으면 서버에서 넥스트를 실행하지 않고 정적 페이지 서비스 가능
+- 정적 페이지만 서비스하는 웹 서버 코드 작성
+
+```js
+const express = require('express');
+
+const server = express();
+server.use(express.static('out')); // -1-
+
+server.listen(3000, (err) => {
+  if (err) throw err;
+});
+```
+
+1. 단순히 `out` 폴더 밑의 정적 파일을 서비스 하도록 설정
+
+> node server.js
+
+#### 넥스트의 exportPathMap 옵션 사용하기
+
+- next의 `exportPathMap` 옵션을 이용하면 쿼리 파라미터를 이용해 정적 페이지를 만들 수 있음
+
+> code next.config.js
+
+```js
+  // -1-
+  exportPathMap: function () {
+    return {
+      '/page1': { page: '/page1' },
+      '/page2-hello': { page: '/page2', query: { text: 'hello' } }, // -2-
+      '/page2-world': { page: '/page2', query: { text: 'world' } }, // -2-
+    };
+  },
+```
+
+1. `next export` 명령 실행 시 `exportPathMap` 옵션이 사용
+2. 쿼리 파라미터 정보를 이용해서 미리 렌더링 할 수 있음
+
+> npx next build && npx next export
+> node server.js
+
+#### 동적 페이지와 정적 페이지를 동시에 서비스하기
+
+- 동적 페이지를 서비스하기 위해 넥스트를 실행하면서
+- 미리 렌더링한 페이지도 같이 서비스 할 수 있도록 구현
+
+- 미리 렌더링한 HTML을 이용하도록 server.js 파일 수정
+
+##### 미리 렌더링한 HTML을 이용하도록 server.js 파일 수정
+
+```js
+/// renderAndCache 제외한 코드
+const fs = require('fs');
+
+const prerenderList = [
+  { name: 'page1', path: '/page1' },
+  { name: 'page2-hello', path: '/page2?text=hello' },
+  { name: 'page2-world', path: '/page2?text=world' },
+];
+const prerenderCache = {};
+if (!dev) {
+  for (const info of prerenderList) {
+    const { name, path } = info;
+    const html = fs.readFileSync(`./out/${name}.html`, 'utf-8');
+    prerenderCache[path] = html;
+  }
+}
+
+async function renderAndCache(req, res) {
+  const parseUrl = url.parse(req.url, true);
+  const cacheKey = parseUrl.path;
+  if (ssrCache.has(cacheKey)) {
+    console.log('캐시 사용');
+    res.send(ssrCache.get(cacheKey));
+    return;
+  }
+  if (prerenderCache.hasOwnProperty(cacheKey)) {
+    console.log('미리 렌더링한 HTML 사용');
+    res.send(prerenderCache[cacheKey]);
+    return;
+  }
+  try {
+    const { query, pathname } = parseUrl;
+    const html = await app.renderToHTML(req, res, pathname, query);
+    if (res.statusCode === 200) {
+      ssrCache.set(cacheKey, html);
+    }
+    res.send(html);
+  } catch (err) {
+    app.renderError(err, req, res, pathname, query);
+  }
+}
+```
