@@ -1,11 +1,18 @@
 import Head from 'next/head';
 import Icon from '../static/icon.png';
 import { add } from '../src/util';
+import styled from 'styled-components';
+
+const MyP = styled.div`
+  color: blue;
+  font-size: 18pt;
+`;
+
 function Page1() {
   return (
     <div>
-      <p>{`10 + 20 = ${add(10, 20)}`}</p>
-      <p>This is Home Page</p>
+      <MyP>{`10 + 20 = ${add(10, 20)}`}</MyP>
+      <MyP>This is Home MyPage</MyP>
       <img src={Icon} />
       <Head>
         <title>page1</title>

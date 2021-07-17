@@ -2387,3 +2387,96 @@ async function renderAndCache(req, res) {
 
 - 브라우저에서 http://loacalhost:3000/page2?text=hello 로 접속
 - 서버의 콘솔 로그에 `미리 렌더링한 HTML 사용`
+
+### styled-components 사용하기
+
+- 넥스트는 `css-in-js` 방식으로 스타일 코드를 작성할 수 있는 `styled-jsx` 패키지를 내장
+- 다른 패키지를 이용해서 `css-in-js` 방식을 사용하기 위해서는 몇 가지 설정을 해야 함
+- 넥스트에서 `styled-components` 패키지를 사용할 수 있도록 설정
+
+- 앞에서 진행했듯이 `css-in-js` 방식을 사용하려면 서버사이드 렌더링 시 스타일 코드를 추출해서
+- `HTML`에 삽입하는 과정이 필요
+- `styled-jsx` 문법으로 작성한 스타일 코드를 추출하는 코드는 넥스트 내부의 `_document.js` 파일에 있는 일부 코드
+
+#### `_document.js` 파일 작성하기
+
+- 넥스트 에서는 pages 폴더 밑 `_document.js` 파일을 작성할 수 있도록 허용
+- `_document.js` 파일을 생성하면 넥스트는 내장된 `_document.js` 파일 대신 우리가 작성한 파일을 사용 하도록 함
+- `pages` 폴더 밑 `_document.js` 파일을 생성하고 `styled-components`를 사용하는 코드를 작성
+
+```js
+import Document from 'next/document';
+import { ServerStyleSheet } from 'styled-components';
+//-1-
+export default class MyDocument extends Document {
+  // -2-
+  static async getInitialProps(ctx) {
+    const sheet = new ServerStyleSheet();
+    const originalRenderPage = ctx.renderPage;
+
+    try {
+      ctx.renderPage = () =>
+        originalRenderPage({
+          enhanceApp: (App) => (props) =>
+            sheet.collectStyles(<App {...props} />), // -3-
+        });
+      const initialProps = await Document.getInitialProps(ctx);
+      return {
+        ...initialProps,
+        styles: (
+          <>
+            {initialProps.styles}
+            {sheet.getStyleElement} // -4-
+          </>
+        ),
+      };
+    } finally {
+      sheet.seal();
+    }
+  }
+}
+```
+
+1. 넥스트의 `Document` 컴포넌트를 상속 받아서 컴포넌트를 만듬
+2. 넥스트에 내장된 `Document` 컴포넌트의 `getInitialProps` 함수에서는 `styled-jsx`의 스타일 코드를 추출
+3. `MyDocument` 컴포넌트의 `getInitialProps` 메서드에서는 `styled-components`의 스타일 코드를 추출
+4. `styled-components`로 추출한 스타일 코드를 반환값에 추가
+
+##### page1.js 파일에서 styled-components 사용하기
+
+```js
+import styled from 'styled-components';
+
+const MyP = styled.div`
+  color: blue;
+  font-size: 18pt;
+`;
+```
+
+##### 서버와 클라이언트의 결과값 일치시키기
+
+- 여기까지 작업하면 `styled-components`가 서버와 클라이언트에서 생성하는 해시값이 서로 달라 문제
+- `styled-components`에서 제공하는 바벨 플러그인을 사용하면 서버와 클라이언트 결과값을 일치 가능
+
+> 설치
+
+    npm i babel-plugin-styled-components
+
+> touch .babelrc
+
+```js
+{
+  "presets": ["next/babel"], // -1-
+  "plugins": ["babel-plugin-styled-components"] //-2-
+}
+```
+
+1. `next/babel` 프리셋은 **항상** 포함 시켜야함
+2. `styled-components` 에서 제공하는 플러그인을 설정
+
+> 빌드 후 실행
+
+    npx next build && npx next export
+    NODE_ENV=production node server.js
+
+- 서버에 전달되는 HTML을 확인해보면 결과값을 확인이 가능하다.
