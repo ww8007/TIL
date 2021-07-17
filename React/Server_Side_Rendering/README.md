@@ -2336,12 +2336,14 @@ server.listen(3000, (err) => {
 ```js
 /// renderAndCache 제외한 코드
 const fs = require('fs');
-
+// -1-
 const prerenderList = [
   { name: 'page1', path: '/page1' },
   { name: 'page2-hello', path: '/page2?text=hello' },
   { name: 'page2-world', path: '/page2?text=world' },
 ];
+// -1-
+// -2-
 const prerenderCache = {};
 if (!dev) {
   for (const info of prerenderList) {
@@ -2350,7 +2352,8 @@ if (!dev) {
     prerenderCache[path] = html;
   }
 }
-
+// -2-
+// -3-
 async function renderAndCache(req, res) {
   const parseUrl = url.parse(req.url, true);
   const cacheKey = parseUrl.path;
@@ -2359,20 +2362,28 @@ async function renderAndCache(req, res) {
     res.send(ssrCache.get(cacheKey));
     return;
   }
+  // -4-
   if (prerenderCache.hasOwnProperty(cacheKey)) {
     console.log('미리 렌더링한 HTML 사용');
     res.send(prerenderCache[cacheKey]);
     return;
   }
-  try {
-    const { query, pathname } = parseUrl;
-    const html = await app.renderToHTML(req, res, pathname, query);
-    if (res.statusCode === 200) {
-      ssrCache.set(cacheKey, html);
-    }
-    res.send(html);
-  } catch (err) {
-    app.renderError(err, req, res, pathname, query);
-  }
+  // -4-
+  // ...(try catch)
 }
 ```
+
+1. `next.config.js` 파일에서 설정한 `exportPathMap` 옵션의 내용과 같은 내용
+   - `next.config.js` 파일을 파싱하는게 좋지만 코드를 이해하는데 방해
+   - 직접 작성
+2. `out` 폴더에 있는 미리 렌더링된 `HTML`파일을 읽어서 `prerenderCache`에 저장
+   - `next export` 명령어는 `production`에서만 -> 사용
+   - `out` 폴더의 내용을 읽는 작업은 `production` 에서만 사용
+3. `renderAndCache` 함수에서 `prerenderCache` 변수를 이용
+4. 미리 렌더링된 페이지라면 캐싱된 `HTML`를 사용
+
+> npx next build && npx next export
+> NODE_ENV=production node server.js
+
+- 브라우저에서 http://loacalhost:3000/page2?text=hello 로 접속
+- 서버의 콘솔 로그에 `미리 렌더링한 HTML 사용`
