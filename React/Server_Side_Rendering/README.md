@@ -2173,3 +2173,81 @@ app.prepare().then(() => {
 
     npx next build
     NODE_ENV=production node server.js
+
+### 서버사이드 렌더링 캐싱하기
+
+- 넥스트에서 서버사이드 렌더링 결과를 캐싱
+- `server.js` 파일 수정
+
+```js
+const express = require('express');
+const next = require('next');
+const url = require('url');
+const lruCache = require('lru-cache'); // -1-
+const { query } = require('express');
+// -2-
+const ssrCache = new lruCache({
+  max: 100,
+  maxAge: 1000 * 60,
+});
+// -2-
+const port = 3000;
+const dev = process.env.NODE_ENV !== 'production';
+const app = next({ dev });
+const handle = app.getRequestHandler();
+
+app.prepare().then(() => {
+  const server = express();
+
+  server.get('/page/:id', (req, res) => {
+    res.redirect(`/page${req.params.id}`);
+  });
+  // -3-
+  server.get(/^\/page[1-9]/, (req, res) => {
+    return renderAndCache(req, res);
+  });
+  // -3-
+  server.get('*', (req, res) => {
+    return handle(req, res);
+  });
+  server.listen(port, (err) => {
+    if (err) throw err;
+    console.log(`> Ready on http://localhost:${port}`);
+  });
+});
+// -4-
+async function renderAndCache(req, res) {
+  const parseUrl = url.parse(req.url, true);
+  const cacheKey = parseUrl.path; // -5-
+  // -6-
+  if (ssrCache.has(cacheKey)) {
+    console.log('캐시 사용');
+    res.send(ssrCache.get(cacheKey));
+    return;
+  }
+  try {
+    const { query, pathname } = parseUrl;
+    const html = await app.renderToHtml(req, res, pathname, query); // -7-
+    if (res.statusCode === 200) {
+      ssrCache.set(cacheKey, html); // -8-
+    }
+    res.send(html);
+  } catch (err) {
+    app.renderError(err, req, res, pathname, query);
+  }
+}
+```
+
+1. 서버사이드 렌더링 결과를 캐싱하기 위해 lru-cache 패키지를 이용
+2. 최대 100개의 항목을 저장하고 각 항목은 60초 동안 저장
+3. `/page1, page2` 요청에 대해서 서버사이드 렌더링 결과를 캐싱
+4. `renderAndCache` 함수에서 캐싱 기능을 구현
+   - `async await` 문법을 사용
+5. 쿼리 파라미터가 포함된 경로를 키로 사용
+6. 캐시가 존재하면 캐시에 저장된 값을 사용한다.
+7. 캐시가 없으면 넥스트의 `renderToHTML` 메서드 호출
+   - `await` 키워드를 사용해서 처리가 끝날 때까지 기다림
+8. `renderToHTML` 함수가 정상적으로 처리됐으면 그 결과를 캐싱
+
+- 경로 설정이 잘못되어 있을 때는 err문에서 경로가 없다고 나왔는데
+  - 요번에 보니 내가 잘못 설정한거 였음
