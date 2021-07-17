@@ -1934,3 +1934,47 @@ export default function ErrorPage({ statusCode }) {
 - 모든 페이지에서 공통으로 필요한 기능한 `pages/_app.js` 파일에서 구현할 수 있음
 - 페이지가 전환되어도 메뉴 UI를 그대로 유지하고 싶다면 \_app.js 파일에서 구현하는 것이 좋음
 - 간단한 메뉴 UI 구성 예제
+
+> `cd ./pages && touch _app.js && code _app.js`
+
+```js
+import Link from 'next/link';
+
+// -1-
+export default function MyApp({ Component, pageProps }) {
+  return (
+    <div>
+      // -2-
+      <Link href="/page1">
+        <a>page1</a>
+      </Link>
+      <Link href="/page2">
+        <a>page2</a>
+      </Link>
+      // -2-
+      <Component {...pageProps} />
+      // -3-
+    </div>
+  );
+}
+```
+
+1. Component 속성값은 : 현재 렌더링하려는 페이지의 컴포넌트
+   - pageProps 속성값 : getInitialProps 함수가 반환한 값
+2. 메뉴 UI 구성
+3. 페이지 컴포넌트 렌더링
+
+> npx next
+
+    개발 모드로 next 실행
+
+- 두 페이지 모두 `_app.js` 파일에서 구현한 메뉴 UI가 렌더링 되는 것을 확인 가능
+- MyApp 컴포넌트는 페이지가 전환되는 경우에는 언마운트 되지 않음
+- 메뉴 UI는 항상 유지되어야 하므로 `_app.js`파일에서 메뉴 UI를 구현하는 것이 자연스러움
+- 컴포넌트가 언마운트 되지 않기 때문에 MyApp 컴포넌트에서 전역 상태값 관리 가능
+
+> `_app.js`를 활용한 전역 상태 값 관리
+
+    컴포넌트가 언마운트 되지 않기 때문에 전역으로 상태값을 관리 가능
+
+### 넥스트에서의 코드 분할
