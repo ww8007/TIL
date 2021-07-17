@@ -2042,3 +2042,87 @@ export default function Page2({ text, data }) {
 #### getInitialProps 함수에서 동적 임포트 사용
 
 - `getInitialProps` 함수에서 사용된 동적 임포트 동작 확인
+
+> code ./pages/page2.js
+
+```js
+import { callApi } from '../api';
+
+Page2.getInitialProps = async ({ query }) => {
+  const { sayHello } = await import('../sayHello'); //-1-
+  console.log(sayHello()); //-2-
+  const text = query.text || 'none';
+  const data = await callApi();
+  return { text, data };
+};
+
+export default function Page2({ text, data }) {
+  function onClick() {
+    import('../sayHello').then(({ sayHello }) => console.log(sayHello()));
+  }
+  return (
+    <div>
+      <p>this is homepage</p>
+      <p>{`text: ${text}`}</p>
+      <p>{`data is ${data}`}</p>
+      {/* <button onClick={onClick}>sayHello</button> */}
+    </div>
+  );
+}
+```
+
+1. getInitialProps 함수에서 동적 임포트로 sayHello.js 모듈을 가져옴
+2. sayHello 함수의 반환값을 콘솔로 출력
+
+> npx next build && npx next start
+
+- 이번 단계에서는 이전과 다르게 `sayHello.js` 모듈이 담긴 자바 스크립트 파일이 전송되지 않음
+- `getInitialProps` 함수가 서버 측에서 실행되어 클라이언트로 별도의 파일을 내려줄 필요가 없기 때문
+- page1 -> page2 이동하면 `getInitialProps` 함수가 클라이언트에서 실행
+
+> 서버와 클라이언트 차이
+
+    서버에서 실행되면 js 파일 전송 X
+    클라에서 실행되면 js 파일 전송
+
+#### 여러 페이지에서 공통으로 사용되는 코드 분할하기
+
+- 넥스트는 여러 페이지에서 공통으로 사용되는 모듈을 별도의 번들 파일로 분할
+- 웹팩의 `splitChunks` 설정을 통해 코드를 분할
+- 코드 변경에 따른 캐시 무효화(`cache invalidation`)를 최소화하는 방향으로 설계
+
+- 페이지에서 공통으로 사용할 모듈 생성
+
+> mkdir src && cd src && touch util.js
+
+- `page1.js`에서 파일을 사용하도록 설정
+
+```js
+import { add } from '../src/util';
+<p>{`10 + 20 = ${add(10, 20)}`}</p>;
+```
+
+> rm -rf .next
+> npx next build
+
+- `util.js`의 모듈이 공통 모듈로 분리되지 않음을 확인 가능
+
+- page1의 내용을 page2로 복사 후 npx build를 해보면
+- js 모듈의 코드가 `.next/static/chunks` 폴더 밑에 포함되는 것을 확인 가능
+- 두 페이지가 청크 파일을 공통으로 사용되는 것을 확인 가능
+
+> 공통으로 만드는 모듈의 사용
+
+    next는 `splitChunks`를 자동 지원하여 공통 적으로 사용하는 모듈에 대해서
+    청크 파일을 공통으로 사용함을 알 수 있음
+
+### 웹서버 직접 띄우기
+
+- 지금까지는 넥스트에 내장된 웹 서버를 사용
+- 내장된 웹 서버를 사용하지 않고 웹서버를 띄우면 좀 더 많은 일을 가능
+- 내장된 웹서버 : 렌더링 결과 캐싱 불가
+- 직접 띄운 웹서버 : 캐싱을 통해 더 많은 트래픽 처리 가능
+
+> express를 통한 웹서버
+
+    npm i express
