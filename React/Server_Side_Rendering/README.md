@@ -1978,3 +1978,67 @@ export default function MyApp({ Component, pageProps }) {
     컴포넌트가 언마운트 되지 않기 때문에 전역으로 상태값을 관리 가능
 
 ### 넥스트에서의 코드 분할
+
+- 넥스트는 기본적으로 페이지별로 번들 파일을 생성
+- 동적 임포트(`dynamic import`) -> 모듈의 코드는 별도로 분리
+- 여러 페이지 고통 사용 모듈 -> 별도 파일로 분할
+
+#### 동적 임포트로 코드 분할하기
+
+- 넥스트에서 동적 임포트시 코드 어떻게 분할 되는지 확인
+
+> touch sayHello.js
+
+```js
+export function sayHello() {
+  return 'hello~';
+}
+```
+
+- 동적 임포트로 sayHello 모듈을 가져오는 코드 작성
+
+```js
+import { async } from 'regenerator-runtime';
+import { callApi } from '../api';
+
+Page2.getInitialProps = async ({ query }) => {
+  const text = query.text || 'none';
+  const data = await callApi();
+  return { text, data };
+};
+
+export default function Page2({ text, data }) {
+  function onClick() {
+    import('../sayHello').then(({ sayHello }) => console.log(sayHello())); // -1-
+  }
+  return (
+    <div>
+      <p>this is homepage</p>
+      <p>{`text: ${text}`}</p>
+      <p>{`data is ${data}`}</p>
+      <button onClick={onClick}>sayHello</button>
+      // -2-
+    </div>
+  );
+}
+```
+
+1. 동적 임포트를 사용해서 sayHello 모듈을 가져옴
+2. onClick 함수를 버튼에 연결
+
+> rm -rf .next
+> npx next build && npx next start
+
+- 브라우저 접속 후 확인하면 버튼 클릭 -> js 파일 전송됨을 확인
+
+- .next 폴더 확인
+
+- `.next/static/chunks` 폴더 밑 `sayHello.js` 모듈의 코드를 포함하는 번들 파일 포함
+- `.next/server` 폴더 밑 `sayHello.js` 모듈의 코드를 포함하는 번들 파일 포함
+
+- 동적 임포트를 사용하면 클라이언트뿐만 아닌 서버를 위한 번들 파일도 생성
+- `.next/server` 폴더 밑에 생성되는 파일은 서버사이드 렌더링 시 사용
+
+#### getInitialProps 함수에서 동적 임포트 사용
+
+- `getInitialProps` 함수에서 사용된 동적 임포트 동작 확인

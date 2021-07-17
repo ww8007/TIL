@@ -8,11 +8,15 @@ Page2.getInitialProps = async ({ query }) => {
 };
 
 export default function Page2({ text, data }) {
+  function onClick() {
+    import('../sayHello').then(({ sayHello }) => console.log(sayHello()));
+  }
   return (
     <div>
       <p>this is homepage</p>
       <p>{`text: ${text}`}</p>
       <p>{`data is ${data}`}</p>
+      <button onClick={onClick}>sayHello</button>
     </div>
   );
 }
