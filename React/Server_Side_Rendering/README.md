@@ -2126,3 +2126,50 @@ import { add } from '../src/util';
 > express를 통한 웹서버
 
     npm i express
+
+> touch server.js
+
+```js
+const express = require('express');
+const next = require('next');
+
+const port = 3000;
+const dev = process.env.NODE_ENV !== 'production'; // -1-
+// -2-
+const app = next({ dev });
+const handle = app.getRequestHandler();
+// -3-
+app.prepare().then(() => {
+  const server = express();
+  // -4-
+  server.get('/page/:id', (req, res) => {
+    res.redirect(`/page${req.params.id}`);
+  });
+  //-4-
+  // -5-
+  server.get('*', (req, res) => {
+    return handle(req, res);
+  });
+  // -5-
+  // -6-
+  server.listen(port, (err) => {
+    if (err) throw err;
+    console.log(`> Ready on http://localhost:${port}`);
+  });
+  // -6-
+});
+```
+
+1. `NODE_ENV` 환경 변수에 따라 개발 모드와 프로덕션 모드 구분
+2. 넥스트를 실행하기 위해 필요한 객체와 함수를 생성
+3. 넥스트의 준비 과정이 끝나면 입력된 함수를 실행
+4. `express` 웹 서버에서 처리할 `url` 패턴을 등록
+   - 위의 코드에서는 `/page/1` 요청이 들어오면 `/page1`으로 리다이렉트
+5. 나머지 모든 요청은 `handle` 함수로 처리
+   - 만약 4번과 같은 코드가 없다면 내장된 웹서버와 같은 역할을 함
+   - 이렇게 서버를 띄우는 이유가 여기에 있음
+
+> 프로덕션 모드 실행
+
+    npx next build
+    NODE_ENV=production node server.js
