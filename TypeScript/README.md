@@ -55,3 +55,93 @@
 - `vscode` 또한 MS에서 제작 -> `Ts`에 대한 지원이 잘됨
 - 타입스크립트 이용해서 자바스크립트 파일도 타입 검사
   - `레거시(legacy)` 프로젝트에서 유용
+
+### 실습을 위한 준비
+
+- 타입스크립트 홈페이지에서 코드 실행
+
+```ts
+let v1 = 123; // -1-
+v1 = '123'; // 오류
+```
+
+1. v1의 타입을 명시적으로 입력하지 않아도 `Ts` 숫자 타입으로 인식
+   - 자동 타입 인식 -> `type interface` 타입 추론
+   - 타입 추론 덕분에 기존의 `Js` 코드를 크게 변경하지 않고 `Ts` 비교적 쉽게 적용 가능
+
+#### Ts에서 타입 선언의 방법
+
+```ts
+let v1: number | string = 123; // -1-
+v1 = 'abc'; // -2-
+```
+
+1. 변수 v1을 숫자나 문자열인 타입으로 정의
+   - 변수 이름은 이름 오른쪽에 콜론(`:`)과 함께 타입을 선언가능
+2. 변수 v1은 문자열도 포함하는 타입으로 타입 에러가 발생하지 않음
+
+## Ts의 여러 가지 타입
+
+- 타입 스크립트로 정의할 수 있는 여러가지 타입 학습
+
+### Ts의 다양한 타입
+
+- Ts에서 사용되는 기본 타입 학습
+
+```ts
+const size: number = 123;
+const isBig: boolean = size >= 100;
+const msg: string = isBig ? '크다' : '작다';
+
+// -1-
+const values: number[] = [1, 2, 3];
+const values2: Array<number> = [1, 2, 3];
+// -1-
+
+values.push('a'); // 타입 에러 -2-
+
+const data: [string, number] = [msg, size]; // -3-
+data[0].substr(1);
+data[1].substr(1); //타입 에러 -4-
+```
+
+1. 배열 타입은 두 가지 방법으로 정의 가능
+2. 숫자 배열에 문자열을 입력하면 에러 발생
+3. 문자열과 숫자로 구성된 `튜플(tuple)` 타입을 정의
+4. 두 번째 아이템의 타입은 숫자인데 문자열의 메서드를 호출하면 타입 에러발생
+   - `substr` -> 문자열 메서드
+
+#### null과 undefined 타입
+
+- `Js`에서 값으로 존재하는 `null`, `undefined`는 타입스크립트에서 각각 타입으로 존재
+
+```ts
+`use strict`;
+// -1-
+let v1: undefined = undefined;
+let v2: null = null;
+// -1-
+v1 = 123; // 타입 에러 -2-
+
+let v3: number | undefined = undefined; // -3-
+v3 = 123;
+```
+
+1. `undefined`, `null`은 타입으로 사용이 가능
+2. `undefined` 타입에 숫자를 입력하면 타입 에러 발생
+3. `undefined`, `null` 타입은 다른 타입과 함께 `유니온` 타입으로 정의할 때 많이 사용
+
+> 유니온 타입
+
+     `파이프(|)`를 이용해서 여러 가지중에 하나를 표현
+     제너릭의 표현의 한계를 해결해준다.
+     `파이프(|)`를 맨압에 사용하는 것도 가능함
+
+```ts
+type Animal = Rabbit | Dog | Cat;
+```
+
+> 정리
+
+     Js와는 다르게 Ts 에서는 `undefined`, `null`을 타입으로 표현가능
+     Js 에서는 값으로 표현됨
