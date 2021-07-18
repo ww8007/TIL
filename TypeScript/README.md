@@ -9,8 +9,8 @@
 
 > 동적 타입, 정적 타입
 
-        동적 : 변수의 타입 -> 런타임 시점
-        정적 : 변수의 타입 -> 컴파일 타임 시점
+    동적 : 변수의 타입 -> 런타임 시점
+    정적 : 변수의 타입 -> 컴파일 타임 시점
 
 ## 타입스크립트란
 
@@ -145,3 +145,187 @@ type Animal = Rabbit | Dog | Cat;
 
      Js와는 다르게 Ts 에서는 `undefined`, `null`을 타입으로 표현가능
      Js 에서는 값으로 표현됨
+
+#### 문자열 리터럴과 숫자 리터털 타입
+
+- Ts 에서는 문자열 리터럴과 숫자 리터럴을 타입으로 정의 가능
+
+```ts
+'use strict';
+
+let v1: 10 | 20 | 30; // -1-
+v1 = 10;
+v1 = 15; // 타입 에러 -2-
+
+let v2: '경찰관' | '소방관'; // -3-
+v2 = '의사';
+```
+
+1. 숫자 10, 20, 30은 각각 타입으로 사용
+   - 변수 `v1`은 오직 숫자 10, 20, 30만 가질 수 있는 타입으로 정의
+2. 지정된 숫자가 아닌 다른 숫자는 입력 불가
+3. 변수 `v2`는 문자열 리터럴 타입으로 정의
+
+> 정리
+
+     문자열 리터럴과 숫자 리터럴 타입으로 변수 타입을 정의 가능하다.
+
+#### any 타입
+
+- `any` 타입은 모든 종류의 값을 허용하는 타입
+
+```ts
+let val: any;
+val = 123;
+val = '456';
+val = () => {};
+```
+
+- any 타입에는 `숫자`, `문자열`, `함수`도 입력 가능
+- `any` 타입은 기존 Js -> Ts로 `포팅`하는 경우 유용하게 사용가능
+
+- 다만 `any` 타입을 난발하면 타입스크립트를 사용하는 의미가 퇴색
+
+#### void와 never 타입
+
+- 아무 값도 반환하지 않고 종료되는 함수의 반환 타입은 `void` 타입으로 정의 가능
+- 항상 예외가 발생해서 비정상적 종료되거나 무한 루프 때문에 종료되지 않는 함수의 반환타입은 `never`타입으로 정의 가능
+
+```ts
+'use strict';
+// -1-
+function f1(): void {
+  console.log('hello');
+}
+// -2-
+function f2(): never {
+  throw new Error('some error');
+}
+// -3-
+function f3(): never {
+  while (true) {}
+}
+```
+
+1. 아무 값도 반환하지 않으므로 `void` 타입으로 정의
+2. 함수가 항상 비정상적으로 종료되므로 `never` 타입으로 정의
+3. 함수가 종료되지 않으므로 `never`타입으로 정의
+
+> 정리
+
+     void : 아무것도 반환 하지 않을 때
+     never : 함수가 종료되지 않을 경우
+
+#### object 타입
+
+- `object` 타입은 `Js`에서 일반적으로 사용되는 객체으 ㅣ타입
+
+```ts
+let v: object;
+v = { name: 'abc' };
+console.log(v.prop1); // 타입 에러 -1-
+```
+
+1. 객체의 속성에 대한 정보가 없기 때문에 특정 속성값에 접근하면 타입 에러 발생
+   - 속성 정보를 포함해서 타입을 정의하기 위해서는 `interface`를 사용해야 함
+
+#### 교차 타입과 유니온 타입
+
+- 여러 타입의 교집합과 합집합을 각각 교차(`intersection`) 타입과 유니온(`union`) 타입으로
+- 표현이 가능
+- 교차 타입 -> `&`
+- 유니온 타입 -> `|`
+
+```ts
+let v1: (1 | 3 | 5) & (3 | 5 | 7); // -1-
+v1 = 3;
+v1 = 1; // 타입 에러 -2-
+```
+
+1. 변수 `v1`의 타입은 3 | 5 와 같음
+2. `v1`에 3또는 5가 아닌 값을 할당 불가
+
+> 정리
+
+     | : 유니온(union)
+     & : 교차(intersection)
+
+#### type 키워드로 타입에 별칭주기
+
+- `type` 키워드를 사용해서 타입에 별칭을 줄 수 있음
+- 타입 별칭은 타입을 선언할 때 편리하게 사용 가능
+
+```ts
+type Width = number | string; // -1-
+let width: Width;
+width = 100;
+width = '100px';
+```
+
+1. number | string 타입에 Width라는 별칭을 부여
+2. Width는 일반적인 타입처럼 사용될 수 있음
+
+### 열거형 타입
+
+- 열거형 타입은 `enum` 키워드를 사용해서 정의
+- 역거형 타입의 각 원소는 `값`으로 사용될 수 있고 `타입`으로 사용 가능
+
+```ts
+// -1-
+enum Fruit {
+  Apple,
+  Banana,
+  Orange,
+}
+const v1: Fruit = Fruit.Apple; // -2-
+const v2: Fruit.Apple | Fruit.Banana = Fruit.Banana; // -3-
+```
+
+1. 열거형 타입을 이용해서 파일을 정의
+2. 열거형 타입의 원소인 Apple을 값으로 사용
+3. Apple 타입을 사용
+
+#### 명시적으로 원소의 값 입력하기
+
+```ts
+enum Fruit {
+  Apple, // -1-
+  // -2-
+  Banana = 5,
+  Orange,
+}
+console.log(Fruit.Apple, Fruit.Banana, Fruit.Orange);
+```
+
+1. 열거형 타입의 첫 번째 원소에 값을 할당하지 않으면 자동으로 0이 할당
+2. 열거형 타입의 각 원소에 숫자 또는 문자열 할당할 수 있다.
+   - 명시적으로 값을 입력 X -> 이전 원소에서 1만큼 증가한 값이 할당
+
+- 다른 코드들과 달리 열거형 타입은 컴파일 후에도 관련된 코드가 남음
+
+```ts
+var Fruit;
+(function (Fruit) {
+  Fruit[(Fruit['Apple'] = 0)] = 'Apple'; // -2-
+  Fruit[(Fruit['Banana'] = 5)] = 'Banana';
+  Fruit[(Fruit['Orange'] = 5)] = 'Orange';
+})(Fruit || (Fruit = {})); // -1-
+console.log(Fruit.Apple, Fruit.Banana, Fruit.Orange);
+```
+
+1. 열거형 타입은 `객체`로 존재
+2. 열거형 타입의 각 원소는 이름과 값이 양 방향으로 매핑(`mapping`) 됨
+   - 열거형 타입은 객체로 존재하기 때문에 해당 객체를 `런타임`에 사용 가능
+
+#### 열거형 타입의 객체 사용하기
+
+```ts
+enum Fruit {
+  Apple,
+  Banana = 5,
+  Orange,
+}
+console.log(Fruit.Banana);
+console.log(Fruit['Banana']);
+console.log(Fruit[5]);
+```
