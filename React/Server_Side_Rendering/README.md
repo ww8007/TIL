@@ -2560,3 +2560,200 @@ const MyP = styled.div`
     NODE_ENV=production node server.js
 
 - 서버에 전달되는 HTML을 확인해보면 결과값을 확인이 가능하다.
+
+## Link
+
+```js
+import Link from 'next/link';
+
+<Link href="/about">
+  <a>Go to about</a>
+</Link>;
+```
+
+### Link를 동적 라우팅과 연결
+
+- `encodedURIComponent()`
+  - 문자열로 url이 들어간다면 `utf-8` 형식을 지켜주기 위해 사용
+  - 숫자 형태의 `url path`라면 생략해도 무관
+
+### Link 컴포넌트의 Props
+
+- Link 컴포넌트는 특정 속성만을 받는 `HOC`이기 때문에 속성이 아니면 오류가 남
+- `Attribute`만 `props`로 받을 수 있음
+
+> React의 Link를 생각하고 className 속성을 주면 안됨
+
+    만약 스타일을 주고 싶으면 안에 들어가는
+    `a` 태그에 추가를 시키면 된다.
+
+## Code Splitting과 Prefetching
+
+- Next는 코드 스플리팅을 자동으로 지원한다.
+- 코드를 자동으로 분할해서 해당 페이지에 필요한 것만 로드
+- Code Splitting 이 있으면 수백개의 페이지가 있더라도 빠르게 로드
+
+## HTML title 태그
+
+- title 테그는 `head` 태그 내부에 존재
+- 이런 태그들을 `Metadata Contents`라고 함
+
+- `metadata`들은 `Search Engine Optimize`에 중요한 요소
+
+## CSR vs SSR vs SSG
+
+- CSR : client side rendering -> 화면을 클라이언트단에서 바꾸는 기법
+- SSR : Server Side Rendering -> 화면을 서번단에서 전송해주는 기법
+- SSG : Server Side Generation -> 화면을 서버에서 미리 만들어 전송해주는 기법
+
+### 웹의 발달 과정
+
+- SSR -> CSR -> SSR -> SSG
+
+#### 최초의 렌더링 SSR
+
+- 최초에는 static한 `html`파일만 존재
+- 사용자와 상요작용할 수 없을 뿐더러 특정 분야에서만 사용
+- 대중적이게 꾸밀 필요가 없었음
+
+- 그러나 점차 동적인 페이지를 원하게 됨
+
+> -> Server Template Engine이 나옴
+
+    여전히 서버에서 HTML을 렌더링하는 것은 같았음
+
+#### ajax의 탄생과 CSR
+
+- `Server Template Engine` 의 경우 `전체 리로딩`의 문제가 있음
+- 그래서 화면 깜빡임 없이 특정 부분만 변경할 수 있는 기술
+- 비동기 컴포넌트들 점차 등장
+
+#### 다시 돌아온 SSR
+
+- CSR의 호황을 맞으며 `REACT`, `Angular`, `Vue`
+- 문제점이 존재한다.
+  1. seo
+  2. 성능
+
+##### seo
+
+- 웹 크롤러가 웹 사이트를 읽고 인덱싱하는 과정을 거쳐
+- 웹페이지가 `검색 엔진`에 노출이 가능하도록 함
+- `SPA` -> 사용자 클릭으로 동적으로 `JS`를 이용해 페이지 생성
+
+##### 성능 문제
+
+- 페이지를 렌더링하기 위해서 브라우저가 `Js` 실행
+- 그를 감당할 cpu 기기가 필요
+
+#### 그래서 다시 SSR
+
+- 위의 방법을 해결하기 위해 `SSR`을 찾기 시작함
+- 위에 사용한 `SSR`과는 다르게 `HTML`을 생성하기 위해
+- `Template Engine`이나 `JSP`처럼 서버측 프로그래밍 언어를 사용하지 않고 최신의 `JS` 라이브러리와 프레임 워크 사용
+
+#### 발전된 SSR SSG
+
+- `SSR` 동작 과정
+
+1. 사용자 요청
+2. 서버가 페이지의 `html`파일 생성
+3. 서버가 `html` 반환
+4. 브라우저 `html` 렌더링
+
+## SPA 특징
+
+- 처음이 느리고 다음부터 빠름
+- 서버로 요청을 한 뒤 `html`, `js`, `assets`파일을 다운 받기 전 까지 대기
+- `Javascript` 이용해서 매 화면의 컨텐츠를 동적으로 바꿈
+
+### Pre-Rendering
+
+- next.js 에서 가장 중요한 개념 중 하나
+- next 모든 페이지가 사용자가에게 전해기지기 전에 `HTML`을 미리 생성해서 프리 렌더링 수행
+
+#### Pre-Rendering 과정
+
+- 두 가지 존재
+
+1. initial load
+2. hydration
+
+##### initial load html
+
+- `js` 동작만 없는 `html`을 먼저 화면에 보여줌
+- `js` 파일이 로드되기 전 이므로 `<Link>` 와 같은 컴포넌트는 동작을 안함
+
+##### hydration
+
+- `initial load`에서 `html` 을 로드한 뒤 `js` 파일으 서버로부터 받아 `html`을 연결시키는 과정
+- 이 작업에서 `js` <-> `html` 연결
+
+> react 컴포넌트 초기화, 사용자와 상호작용할 준비를 마침
+
+> next.js의 사용의 이유
+
+SSR의 장점과 CSR의 장점을 적절히 섞어 좋은 성능의 앱을 만드는 것임
+
+## index.html
+
+- 기본적으로 제공하는 `Next`의 `SSG` 기능을 사용하면
+- `pages` 디렉토리 아래 리액트 컴포넌트를 생성하면 `HTML`파일은 빌드시 생성
+
+### SSG
+
+- 리액트 컴포넌트를 Next에서 개발했을 경우
+
+1. 컴포넌트에서 사용할 외부 데이터가 없는 경우
+2. 컴포넌트에서 사용할 외부 데이터가 없는 경우
+
+### 컴포넌트에서 사용할 외부 데이터 없는 경우
+
+```js
+function About() {
+  return <div>About</div>;
+}
+export default About;
+```
+
+- 위의 코드에서는 `pre-render`를 하기 위해 사용되어야 할 외부 데이터가 존재하지 않음
+- 단순히 `HTML` -> `build`
+
+### 컴포넌트에서 사용할 외부 데이터가 있는 경우
+
+- 웹을 만들다 보면 특정 페이지에서 외부 데이터 필요한 경우 존재
+- 같은 파일 시스템에 존재하는 모든 파일을 말함
+
+> 이 때 `export` 할 때 Next가 제공하는 2가지 함수 잘 사용
+
+1. 페이지에서 내용이 외부 데이터 사용
+   - `getStaticProps`
+2. url이 외부 데이터를 사용
+   - `getStaticPaths`
+
+#### getStaticProps
+
+- 페이지 내부에서 `외부 데이터`를 사용할 경우 비동기 함수
+- `getStaticProps`를 `export` 해줘야함
+
+- `getStaticProps`는 `async`함수 이어야함
+- Next.js가 빌드 시점에 해당 함수에서 반환된 `props` 통해
+  - `Pre-rendering` 진행
+
+```js
+// 함수를 사용할 경우
+export async function getStaticProps(context) {
+  return {
+    props: {},
+  };
+}
+
+// ES6 화살표 함수를 사용할 경우
+export const getStaticProps = async (context) => {
+  return {
+    props: {},
+  };
+};
+```
+
+- props가 `Pre-Rendering`을 위해 Next가 필요하는 값
