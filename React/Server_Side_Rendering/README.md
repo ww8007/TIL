@@ -2757,3 +2757,135 @@ export const getStaticProps = async (context) => {
 ```
 
 - props가 `Pre-Rendering`을 위해 Next가 필요하는 값
+
+## redux-toolkit store
+
+- `Next.js`는 처음 렌더링 -> `SSR`
+- `store`를 호출 할 때 마다 `redux store` 새로 생성하게 됨
+- 서버의 `store` !== 클라이언트 `store`
+
+  - 이 둘을 합치는 로직이 필요
+  - `next-redux-wrapper`
+  - 이게 없으면 `getInitialProps`, `getServerSideProps`, `getStaticProps` 내에서
+  - `redux-store` 접근 불가
+
+### index.ts에 rootReducer 생성
+
+> ./modules/index.ts
+
+```ts
+import { combineReducers, AnyAction } from '@reduxjs/toolkit';
+import { HYDRATE } from 'next-redux-wrapper';
+import { ICounter } from '../interface/counter';
+import counter from './counter';
+export interface State {
+  counter: ICounter;
+}
+
+const rootReducer = (state: State | undefined, action: AnyAction) => {
+  switch (action.type) {
+    case HYDRATE: // -1-
+      console.log('HYDRATE');
+      return action.payload;
+
+    default: {
+      const combineReducer = combineReducers({ counter });
+      return combineReducer(state, action);
+    }
+  }
+};
+
+export type RootState = ReturnType<typeof rootReducer>;
+export default rootReducer;
+```
+
+1. `HYDRATE -> action.type` 을 통해서 서버와 클라이언트가 각기 다른 값을 가지고 있는 store를 합쳐주는 작업을 진행하게 된다.
+
+### store.ts 설정
+
+```ts
+import {
+  configureStore,
+  getDefaultMiddleware,
+  EnhancedStore,
+} from '@reduxjs/toolkit';
+import rootReducer from './modules';
+import { createWrapper, MakeStore } from 'next-redux-wrapper';
+
+const devMode = process.env.NODE_ENV === 'development';
+
+// -1-
+const store = configureStore({
+  reducer: rootReducer,
+  middleware: [
+    ...getDefaultMiddleware({ thunk: true, serializableCheck: false }),
+  ],
+  devTools: devMode,
+});
+
+const setupStore = (context: any): EnhancedStore => store; //-2-
+
+const makeStore = (context) => setupStore(context); // -3-
+
+export const wrapper = createWrapper(makeStore, {
+  debug: devMode,
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+export default wrapper;
+```
+
+1. `store` 생성
+   - `reducer` : 위어서 만든 rootReducer 사용
+   - `middleware`의 경우 학습 더필요, 지금 더 이상 사용하지 않는다고 하는데 잘 모르겠음...
+   - `devTools` : 개발 모드 이므로 설정이 되어있음
+2. `setupStore` : 함수 생성 `EnhancedStore` 기반
+
+- `AnyAction`을 기반으로 생성이 되기 때문에 미들웨어의 액션도 포함한다는 것 인거 같음
+
+```js
+export interface EnhancedStore<S = any, A extends Action = AnyAction, M extends Middlewares<S> = Middlewares<S>> extends Store<S, A> {
+/**
+ * The `dispatch` method of your store, enhanced by all its middlewares.
+ *
+ * @inheritdoc
+ */
+dispatch: DispatchForMiddlewares<M> & Dispatch<A>;
+}
+```
+
+3. 유저가 페이지를 요청할 때마다 새로운 `redux store` 생성
+   - `makeStore` 함수를 작성해 준다.
+
+## Next.js with Saga
+
+- saga store
+
+```js
+import { applyMiddleware, createStore } from 'redux';
+import createSagaMiddleware from 'redux-saga';
+import { createWrapper } from 'next-redux-wrapper';
+
+import rootReducer from './reducer';
+import rootSaga from './saga';
+
+const bindMiddleware = (middleware) => {
+  if (process.env.NODE_ENV !== 'production') {
+    const { composeWithDevTools } = require('redux-devtools-extension');
+    return composeWithDevTools(applyMiddleware(...middleware));
+  }
+  return applyMiddleware(...middleware);
+};
+
+export const makeStore = (context) => {
+  const sagaMiddleware = createSagaMiddleware();
+  const store = createStore(rootReducer, bindMiddleware([sagaMiddleware]));
+
+  store.sagaTask = sagaMiddleware.run(rootSaga);
+
+  return store;
+};
+
+export const wrapper = createWrapper(makeStore, { debug: true });
+```
