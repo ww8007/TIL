@@ -325,7 +325,254 @@ enum Fruit {
   Banana = 5,
   Orange,
 }
-console.log(Fruit.Banana);
-console.log(Fruit['Banana']);
-console.log(Fruit[5]);
+// -1-
+console.log(Fruit.Banana); // 5
+console.log(Fruit['Banana']); // 5
+// -1-
+console.log(Fruit[5]); // -2-
 ```
+
+1. 열거형 타입은 객체이기 때문에 객체처럼 다룰 수 잇음
+2. 각 원소의 이름과 값이 양방향으로 `매핑` -> 값을 이용해서 이름을 가져올 수 있음
+
+> 정리
+
+    열거형 타입 -> `객체`이므로 매핑이 되어있음
+    값을 통해 이름을 가져오거나
+    이름을 통해 값을 가져오기가 가능
+
+#### 열거형 타입의 값으로 문자열 할당하기
+
+```ts
+enum Language {
+  Korean = 'ko',
+  English = 'en',
+  Japanese = 'jp',
+}
+```
+
+- 열거형 타입의 원소에 문자열을 할당하면 `단방향`으로 매핑
+
+  - 이는 서로 다른 원소의 이름 또는 값이 같을 경우 충돌이 발생
+
+- 결과
+
+```js
+{ Korean: 'ko', English: 'en', Japanese: 'jp' }
+```
+
+> 정리
+
+    열거형 타입 문자열 -> 단방향
+    열거형 타입 숫자 -> 양방향
+
+#### 열거형 타입을 위한 유틸리티 함수
+
+- 열거형 타입을 자주 사용하면 유틸리티 함수를 만들어서 사용하는게 좋음
+
+##### 열거형 타입의 원소 개수를 알려주는 함수
+
+```ts
+function getEnumLength(enumObj: any) {
+  const keys = Object.keys(enumObj);
+  // enum 값이 숫자이면 두 개씩 들어가므로 문자열만 계산
+  return keys.reduce(
+    (acc, key) => (typeof enumObj[key] === 'string' ? acc + 1 : acc), // -1-
+    0
+  );
+}
+```
+
+1. 원소가 숫자인 경우에는 양방향으로 매핑되기 때문에 주의해야 함
+   - 객체의 속성값이 문자열인 경우에만 계산하면 열거형 타입에서 원소의 개수를 구할 수 있음
+
+##### 열거형 타입에 존재하는 값인지 검사하는 함수
+
+```js
+function isValidEnumVal(enumObj: any, value: number | string) {
+  if (typeof value === 'number') {
+    return !!enumObj[value]; // -1-
+  } else {
+    return Object.keys(enumObj)
+      .filter((key) => isNaN(Number(key)))
+      .some((key) => enumObj[key] === value); // -2-
+  }
+}
+```
+
+1. 1의 값이 숫자이면 양방향으로 매핑 되어 있는지 검사
+2. 값이 문자열이면 양방향 매핑에 의해 생성된 키를 제거하고 해당 값이 존재하는지 검사
+
+##### getEnumLen 함수와 isValidEnumVal 함수의 사용 예
+
+```js
+enum Fruit {
+  Apple,
+  Banana,
+  Orange,
+}
+enum Language {
+  Korean = 'ko',
+  English = 'en',
+  Japanese = 'jp',
+}
+console.log(getEnumLength(Fruit), getEnumLength(Language));
+console.log('1 in Fruit', isValidEnumVal(Fruit, 1));
+console.log('5 in Fruit', isValidEnumVal(Fruit, 5));
+```
+
+- isValidEnumValue 함수는 서버로부터 받은 데이터를 검증할 때 유용하게 사용가능
+
+#### 상수 열거형 타입
+
+- 열거형 타입은 컴파일 후에도 남아 있기 때문에 번들 파일의 크기가 불필요하게 커짐
+- 열거형 타입의 객체에 접근하지 않는다면 굳이 컴파일 후에 객체로 남겨둘 필요가 없음
+- `상수(cost) 열거형` 타입을 사용하면 컴파일 결과에 열거형 타입의 객체를 남겨 놓지 않을 수 있음
+
+```ts
+const enum Fruit {
+  Apple,
+  Banana,
+  Orange,
+}
+const fruit: Fruit = Fruit.Apple;
+
+const enum Lan {
+  Korean = 'ko',
+  Eng = 'en',
+  Jap = 'jp',
+}
+
+const lang: Lan = Lan.Korean;
+
+console.log(fruit, lang);
+```
+
+- 열거형 타입의 `객체`를 생성하는 코드가 보이지 않음
+- 열거형 타입이 사용된 코드는 `원소의 값`으로 대체 -> 코드 간소화
+
+- But `상수 열거형`을 모든 경우에 사용할 수 있는 것이 아님
+  - 열거형 타입을 상수로 정의 -> 열거형 타입의 객체 사용 불가
+
+##### 상수 열거형 타입 객체 사용 불가
+
+```ts
+const enum Fruit {
+  Apple,
+  Banana,
+  Orange,
+}
+console.log(getEnumLength(Fruit)); //-1-
+```
+
+- 컴파일 시 에러를 확인 가능하긴 함
+
+### 함수 타입
+
+- 함수의 타입을 정의하기 위해서는 `매개변수 타입`, `반환 타입` 필요
+- `콜론(:)`을 이용해서 `매개변수 타입` `반환 타입` 정의 가능
+
+```ts
+function getInfoText(name: string, age: number): string {
+  // -1-
+  const nameText = name.substr(0, 10); // -2-
+  const ageText = age >= 35 ? 'senior' : 'junior'; // -3-
+  return `name : ${nameText}, age: ${ageText}`;
+}
+const v1: string = getInfoText('mike', 23);
+const v2: string = getInfoText('mike', '23');
+const v3: number = getInfoText('mike', 23);
+```
+
+1. `매개변수` 타입과 `반환` 타입을 정의
+2. `매개변수 name`은 문자열 타입 -> `substr` 사용 가능
+3. `매개변수 age`는 숫자형 타입 -> 크기 비교 가능
+
+#### 변수를 함수 타입으로 정의
+
+```ts
+const getinfoText: (name: string, age: number) => string = function (
+  name,
+  age
+) {};
+```
+
+- 이 내용은 책이 잘못됨
+- 똑같이 입력해도 오류가 생김...
+
+### 선택 매개변수
+
+- `선택 매개변수` : 반드시 입력하지 않아도 되는 매개변수
+  - 매개변수 이름 오른쪽 `물음표(?)` 기호를 입력 시 `선택 매개변수`
+
+```ts
+// -1-
+function getInfoText(name: string, age: number, lan?: string): string {
+  const nextText = name.substr(0, 10);
+  const ageText = age >= 35 ? 'sen' : 'jun';
+  const langText = lan ? lan.substr(0, 10) : ''; // -2-
+  return `name : ${nextText}, age: ${ageText}, lan : ${langText}`;
+}
+
+console.log(getInfoText('jang', 26));
+console.log(getInfoText('dong', 25, 'ko'));
+```
+
+1. lan을 `선택 매개변수`로 지정
+   - 함수 호출 시 `선택 매개변수`의 인수를 입력하지 않아도 `타입 에러` 안생김
+2. 인수의 존재 여부를 검사하지 않고 호출 시 `타입 에러`
+   ```ts
+   const langText = lan ? lan.substr(0, 10) : '';
+   ```
+
+#### 선택 매개변수 오른쪽에 필수 매개변수를 지정
+
+- 선택 매개변수 `물음표(?)` 오른쪽에 `필수` 매개변수 입력하면 오류생김
+- 이럴 때는 `or(|)` 연산자 이용 -> `undefined`
+
+```ts
+function getInfoText(
+  name: string,
+  lang: string | undefined, // -1-
+  age: number
+): string {
+  // ...
+  return;
+}
+
+getInfoText('mike', undefined, 23); // -2-
+```
+
+1. `유니온 타입` 이용해서 `undefined` 입력 가능하게
+2. 함수 호출 시 중간에 `undefined` 입력 가능
+
+> 그러나 이런 방식은 가독성이 좋지 않음
+
+    `매개변수` 개수가 많은 경우
+    `비구조화` 분법을 사용해서 `명명된 매개변수`로 작성하는게 좋음
+    뒤에 설명
+
+### 매개변수의 기본값 정하기
+
+- 매개변수의 기본값을 정의 가능하다.
+
+```ts
+function getInfoText(
+  name: string,
+  age: number = 15, // -1-
+  lang: 'korean' // -2-
+): string {
+  const nextText = name.substr(0, 10);
+  const ageText = age >= 35 ? 'sen' : 'jun';
+  const langText = lang ? lang.substr(0, 10) : ''; // -2-
+  return `name : ${nextText}, age : ${ageText}, lang : ${langText}`;
+}
+
+const f1: (name: string, age?: number, lang?: string) => string = getInfoText; // -3-
+```
+
+1. 타입 오른쪽에 `=` 기호를 사용해서 매개변수 `기본값` 정의 가능
+   - age의 인수를 입력하지 않으면 15가 기본값으로 사용
+2. 타입을 `입력하지 않아도` 매개변수의 기본값 정의 가능
+   - 기본값이 문자열 -> 타입도 문자열
+3. `기본값`이 있는 매개변수는 `선택 매개변수`
