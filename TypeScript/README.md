@@ -218,7 +218,7 @@ function f3(): never {
 
 #### object 타입
 
-- `object` 타입은 `Js`에서 일반적으로 사용되는 객체으 ㅣ타입
+- `object` 타입은 `Js`에서 일반적으로 사용되는 객체의 타입
 
 ```ts
 let v: object;
@@ -576,3 +576,166 @@ const f1: (name: string, age?: number, lang?: string) => string = getInfoText; /
 2. 타입을 `입력하지 않아도` 매개변수의 기본값 정의 가능
    - 기본값이 문자열 -> 타입도 문자열
 3. `기본값`이 있는 매개변수는 `선택 매개변수`
+
+### 나머지 매개변수
+
+```ts
+function getInfoText(name: string, ...rest: string[]): string {
+  // ...
+}
+```
+
+> 나머지 매개변수
+
+    `배열`로 정의가 가능하다.
+
+### this 타입
+
+- 함수의 `this` 타입을 지정하지 않으면 기본적으로 `any` 타입이 사용된다.
+- `any`타입을 자주 사용하는 것은 좋은 습관이 아니므로 `this` 타입을 지정해두는 것이 좋음
+
+```ts
+function getParam(index: number): string {
+  const params = this.splt(','); // -1-
+  if (index < 0 || params.length <= index) {
+    return '';
+  }
+  return this.split('')[index];
+}
+```
+
+1. `splt`로 오타를 내었지만 `this` type이 `any`가 되었기 때문에 컴파일 에러 X
+
+- 함수의 `this` 타입은 첫 번째 매개변수 위치에서 정의 가능
+
+```ts
+function getParam2(this: string, index: number): string {
+  const params = this.split(',');
+  if (index < 0 || params.length <= index) {
+    return '';
+  }
+  return this.split('')[index];
+}
+```
+
+### 원시 타입에 메서드 추가하기
+
+- `원시(primitive)` 타입에 메서드를 등록할 때는 `인터페이스` 이용
+
+```ts
+// -1-
+interface String {
+  getParam(this: string, index: number): string;
+}
+String.prototype.getParam = getParam; // -2-
+console.log('asdf, 1234, ok'.getParam(1)); // -3-
+```
+
+1. `interface`를 이용해서 이미 존재하는 문자열 타입에 `getParam` 메서드를 추가
+2. 문자열의 `프로토타입`에 작성한 함수를 등록
+3. 문자에 등록된 `getParam` 메서드를 호출 가능
+
+> 정리
+
+조금만 배우면 진짜 편하게 쓸 수 있을 것 같음
+리액트에서 적용이 가능하도록 응용 해보기
+
+### 함수 오버로드:여러 개의 타입 정의
+
+- 자바스크립트는 동적 타입 언어이므로 하나의 함수가 다양한 `매개변수` 타입과
+- `반환` 타입을 가질 수 있음
+- `함수 오버로드(overload)`를 사용하면 하나의 함수에 여러가지 타입 정의 가능
+
+> `add` 함수를 만들어서 아래와 같은 일을 처리하고 싶다고 가정
+
+    1.  두 매개변수가 모두 문자열이면 문자열 반환
+    2.  두 매개변수가 모두 숫자이면 숫자 반환
+    3.  두 매개변수를 서로 다른 타입으로 입력하면 안됨
+
+#### 함수 오버로드를 사용하지 않은 코드
+
+```ts
+// -1-
+function add(x: number | string, y: number | string): number | string {
+  if (typeof x === 'number' && typeof y === 'number') {
+    return x + y;
+  } else {
+    const result = Number(x) | Number(y);
+    return result.toString();
+  }
+}
+const v1: number = add(1, 2); // -2- type error
+console.log(add(1, '2')); // -3-
+```
+
+1. 모든 `매개변수`와 `반환값`의 타입은 문자열이거나 숫자
+2. 모든 `매개변수`가 숫자이면 반환값도 숫자이지만 타입 에러 발생
+3. 두 `매개변수`의 타입이 달라도 타입 에러가 발생하지 않음
+   - 함수의 타입을 구체적으로 정의하지 않았기 때문에 발생하는 오류이다.
+
+> 함수 `오버로드`를 사용하면 조건을 만족함는 함수 타입 작성 가능
+
+#### 함수 오버로드를 사용한 코드
+
+```ts
+function add(x: number, y: number): number;
+function add(x: string, y: string): string; // -1-
+// -2-
+function add(x: number | string, y: number | string): number | string {
+  // ...
+}
+const v1: number = add(1, 2); // -3-
+console.log(add(1, '2')); // type error 4
+```
+
+1. `매개변수`와 `반환 타입`의 모든 가능한 조합을 정의
+2. 실제 구현하는 쪽에서 정의한 `타입`은 함수 `오버로드의 타입 목록`에서 제외
+3. 두 매개변수의 `타입`이 숫자이면 `반환타입`도 숫자 `타입 에러`
+   - 두 매개변수의 타입이 다르면 타입 에러 발생
+
+### 명명된 매개변수
+
+```ts
+function getInfoText({
+  // -1-
+  name,
+  age = 15,
+  language,
+}: // -1-
+{
+  // -2-
+  name: string;
+  age?: number;
+  language?: string;
+  // -2-
+}): string {
+  const nameText = name.substr(0, 10);
+  const ageText = age >= 35 ? 'senior' : 'junior';
+  return `name: ${nameText}, age: ${ageText}, language: ${language}`;
+}
+```
+
+1. 모든 `매개변수`의 이름을 정의
+
+- `매개변수`의 기본값이 있다면 같이 정의 하도록 함
+
+2. 앞에 나열된 모든 매개변수에 대한 타입을 정의
+   - `명명된 매개변수` 타입을 재사용 하려면 `interface`를 사용하면 된다.
+
+#### 인터페이스로 명명된 매개변수의 타입 정의
+
+```ts
+// -1-
+interface Param {
+  name: string;
+  age?: number;
+  language?: string;
+}
+// -2-
+function getInfoText2({ name, age = 15, language }: Param) {
+  // ...
+}
+```
+
+1. `명명된 매개변수` 타입을 `interface`로 정의
+2. `Param` `interface`를 사용
