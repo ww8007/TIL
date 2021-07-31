@@ -891,7 +891,7 @@ const a2 = {
 const a3: Non = a2; // -3-
 ```
 
-[코드로 이동](../TypeScript/Practice/interface/정의되지않은속성값.ts)
+- [코드로 이동](../TypeScript/Practice/interface/정의되지않은속성값.ts)
 
 1. `Person` 인터페이스에 정의되지 않은 속성을 `리터럴`로 입력하므로 타입 에러 발생
 2. a2 객체에 Non 인터페이스에 정의되지 않은 속성 존재
@@ -901,7 +901,7 @@ const a3: Non = a2; // -3-
 
 > 리터럴에서 에러 발생 -> 개발자 실수를 줄이기 위한 편의 기능
 
-[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### 인터페이스로 정의하는 인덱스 타입
 
@@ -921,13 +921,13 @@ const p33: Index = {
 };
 ```
 
-[코드로 이동](Practice/interface/인덱스타입.ts)
+- [코드로 이동](Practice/interface/인덱스타입.ts)
 
 1. 문자열로 된 `모든 속성 이름`에 대해 값이 문자열 또는 숫자라고 정의
 2. birthday 속성을 입력해도 컴파일 에러가 발생하지 않음
 3. age는 명시적으로 숫자로 정의 -> 문자열 입력 시 에러
 
-[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ##### 여러개의 인덱스를 정의하는 경우
 
@@ -963,12 +963,12 @@ const InfoText: GetInfoText = function (name, age) {
 };
 ```
 
-[코드로 이동](../TypeScript/Practice/interface/함수타입정의.ts)
+- [코드로 이동](../TypeScript/Practice/interface/함수타입정의.ts)
 
 1. `interface`로 함수를 정의할 때는 속성 이름 없이 정의
    - 자바스크립에서는 함수도 속성값을 가질 수 있음
 
-[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ##### 함수 타입에 속성값 추가하기
 
@@ -993,7 +993,7 @@ getInfoText3.totalCall = 0;
 1. 숫자 타입의 속성값 정의
 2. 타입스크립트는 totalCall 속성값이 숫자라는 것을 알고 있음
 
-[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ##### 인터페이스로 클래스 구현하기
 
@@ -1022,7 +1022,7 @@ class SomePerson implements Person {
 }
 ```
 
-[코드로 이동](Practice/interface/클래스구현.ts)
+- [코드로 이동](Practice/interface/클래스구현.ts)
 
 1. 세 개의 속성을 가진 `인터페이스`를 정의
 2. `implements` 키워드를 사용해 interface 키워드 사용 -> `클래스` 구현 가능
@@ -1030,7 +1030,7 @@ class SomePerson implements Person {
    - `하나의 속성`이라도 구현하지 않으면 컴파일 에러 발생
 3. name, age 속성값은 `필숫값` -> 생성자에서 값 할당 안하면 `컴파일 에러`
 
-[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 > 리액트 에서의 `객체 지향 프로그래밍`
 
@@ -1083,8 +1083,8 @@ interface Korean extends PersonExtend, Programmer {
 }
 ```
 
-[코드로 이동](Practice/interface/인터페이스확장.ts)
-[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+- [코드로 이동](Practice/interface/인터페이스확장.ts)
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ##### 인터페이스 합치기
 
@@ -1115,8 +1115,8 @@ const pp: PP = {
    - PP 타입이 name 속성만 포함하는게 아니라 헷갈릴 수 있음
    - 이는 속성의 교집합이 아닌 -> 타입이 가질 수 있는 값의 집합에 대한 교집합
 
-[코드로 이동](Practice/interface/교차타입_합치기.ts)
-[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+- [코드로 이동](Practice/interface/교차타입_합치기.ts)
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ## 타입 호환성
 
@@ -1131,6 +1131,7 @@ const pp: PP = {
 - A 타입의 집합이 B 타입의 값의 집합에 포함되면 A 타입은 B 타입에 할당 가능
 
 - `숫자`, `문자열`, `인터페이스`, `함수`의 경우 어떤 조건을 만족해야 할당 가능한지 학습
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### 숫자와 문자열의 타입 호환성
 
@@ -1149,6 +1150,8 @@ function func2(a: 1 | 2) {
 }
 ```
 
+- [코드로 이동](./Practice/type%20호환성/숫자와문자열.ts)
+
 1. `number`는 `number | string` 타입에 `할당 가능`
 2. `number | string` 타입은 숫자에 할당 가능하지 않음
 3. `1 | 2` 타입은 `1 | 3` 타입에 할당 가능하지 않기 때문에 타입 에러
@@ -1158,6 +1161,8 @@ function func2(a: 1 | 2) {
 
      `number` -> `number | string` === true
      `number | string` -> `number` === false
+
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### 인터페이스의 타입 호환성
 
@@ -1187,6 +1192,8 @@ const person: PersonInterface = { name: 'mike', age: 23 };
 const product: ProductInterface = person; // -2-
 ```
 
+- [코드로 이동](./Practice/interface/인터페이스확장.ts)
+
 1. Person과 Product는 이름이 다르지만 모든 속성 이름과 타입이 같음
 2. 타입 이름은 다르지만 내부 구조가 같기 때문에 Person과 Product는 서로 할당이 가능
 
@@ -1196,6 +1203,7 @@ const product: ProductInterface = person; // -2-
 
 - 속성이 많을수록 타입에 더 많은 제약을 가하는 것이고
   - 해당 타입의 값의 집합이 작아짐을 뜻함
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### 선택 속성이 타입 호환성에 미치는 영향
 
@@ -1214,6 +1222,8 @@ interface ProductInterface {
 const person1: PersonInterface = { name: 'mike', age: 23 };
 const product1: ProductInterface = person; // type error // -2-
 ```
+
+- [코드로 이동](./Practice/type%20호환성/선택속성in호환성.ts)
 
 1. age가 `선택 속성`이면 Person 값의 집합은 Product 값의 집합보다 커지게 됨
 2. Person은 Product에 할당가능 하지 않음
@@ -1238,6 +1248,8 @@ const product2: ProductInterface2 = person;
 
      `선택 속성`이 포함된 경우라면 집합이 더 커지게됨
 
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ### 추가 속성과 유니온 타입이 타입 호환성에 미치는 영향
 
 - `추가 속성`과 `유니온 타입`은 타입 호환성에 영향을 미침
@@ -1257,10 +1269,14 @@ interface Product {
 }
 ```
 
+- [코드로 이동](./Practice/type%20호환성/유니온type.ts)
+
 1. `추가 속성`이 있으면 값의 집합은 더 작아지게 됨
    - Person을 Product에 할당하는 데 문제가 되지 않음
 2. 속성 타입의 `범위가 넓어`지면 값의 `집합은 더 커짐`
    - Person 이 Product 에 할당이 가능하다는 사실에는 변함이 없음
+
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### 함수의 타입 호환성
 
@@ -1271,6 +1287,8 @@ interface Product {
 1. A의 매개변수 개수가 B의 매개변수 `개수보다 적어`야 함
 2. `같은 위치`의 매개변수에 대해 B의 매개변수가 A의 매개변수로 할당 가능해야 함
 3. A의 `반환값`은 B의 `반환값`으로 할당 가능해야 함
+
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### 예제
 
@@ -1288,6 +1306,8 @@ f2 = f3; // type error // -2-
 
 1. F2보다 F1의 `매개변수 개수`가 많으므로 F1 -> F2는 불가
 2. F3의 `반환 타입`은 F1의 `반환 타입`으로 할당 가능하지 않으므로 F3 -> F2 불가
+
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### 배열의 map 매서드를 통해 살펴보는 함수의 타입 호환성
 
@@ -1320,3 +1340,5 @@ const result = [1, 2, 3].map<number>(addOne); // -1-
 
      - 1번 코드의 map 메서드는 `숫자 배열`을 반환해야 함
      - `제네릭이 number`이기 때문
+
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
