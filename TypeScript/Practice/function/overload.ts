@@ -9,4 +9,4 @@ function add(x: number | string, y: number | string): number | string {
   }
 }
 const v1: number = add(1, 2);
-console.log(add(1, '2'));
+// console.log(add(1, '2'));

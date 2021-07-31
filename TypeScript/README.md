@@ -12,6 +12,63 @@
     동적 : 변수의 타입 -> 런타임 시점
     정적 : 변수의 타입 -> 컴파일 타임 시점
 
+## 목차
+
+- [타입스크립트](#%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8)
+  - [목차](#%EB%AA%A9%EC%B0%A8)
+  - [타입스크립트란](#%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8%EB%9E%80)
+    - [동적 타입 언어와 정적 타입 언어](#%EB%8F%99%EC%A0%81-%ED%83%80%EC%9E%85-%EC%96%B8%EC%96%B4%EC%99%80-%EC%A0%95%EC%A0%81-%ED%83%80%EC%9E%85-%EC%96%B8%EC%96%B4)
+      - [정적 타입 언어가 생산성이 높은 이유](#%EC%A0%95%EC%A0%81-%ED%83%80%EC%9E%85-%EC%96%B8%EC%96%B4%EA%B0%80-%EC%83%9D%EC%82%B0%EC%84%B1%EC%9D%B4-%EB%86%92%EC%9D%80-%EC%9D%B4%EC%9C%A0)
+    - [타입스크립트의 장점](#%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8%EC%9D%98-%EC%9E%A5%EC%A0%90)
+    - [실습을 위한 준비](#%EC%8B%A4%EC%8A%B5%EC%9D%84-%EC%9C%84%ED%95%9C-%EC%A4%80%EB%B9%84)
+      - [Ts에서 타입 선언의 방법](#ts%EC%97%90%EC%84%9C-%ED%83%80%EC%9E%85-%EC%84%A0%EC%96%B8%EC%9D%98-%EB%B0%A9%EB%B2%95)
+  - [Ts의 여러 가지 타입](#ts%EC%9D%98-%EC%97%AC%EB%9F%AC-%EA%B0%80%EC%A7%80-%ED%83%80%EC%9E%85)
+    - [Ts의 다양한 타입](#ts%EC%9D%98-%EB%8B%A4%EC%96%91%ED%95%9C-%ED%83%80%EC%9E%85)
+      - [null과 undefined 타입](#null%EA%B3%BC-undefined-%ED%83%80%EC%9E%85)
+      - [문자열 리터럴과 숫자 리터털 타입](#%EB%AC%B8%EC%9E%90%EC%97%B4-%EB%A6%AC%ED%84%B0%EB%9F%B4%EA%B3%BC-%EC%88%AB%EC%9E%90-%EB%A6%AC%ED%84%B0%ED%84%B8-%ED%83%80%EC%9E%85)
+      - [any 타입](#any-%ED%83%80%EC%9E%85)
+      - [void와 never 타입](#void%EC%99%80-never-%ED%83%80%EC%9E%85)
+      - [object 타입](#object-%ED%83%80%EC%9E%85)
+      - [교차 타입과 유니온 타입](#%EA%B5%90%EC%B0%A8-%ED%83%80%EC%9E%85%EA%B3%BC-%EC%9C%A0%EB%8B%88%EC%98%A8-%ED%83%80%EC%9E%85)
+      - [type 키워드로 타입에 별칭주기](#type-%ED%82%A4%EC%9B%8C%EB%93%9C%EB%A1%9C-%ED%83%80%EC%9E%85%EC%97%90-%EB%B3%84%EC%B9%AD%EC%A3%BC%EA%B8%B0)
+    - [열거형 타입](#%EC%97%B4%EA%B1%B0%ED%98%95-%ED%83%80%EC%9E%85)
+      - [명시적으로 원소의 값 입력하기](#%EB%AA%85%EC%8B%9C%EC%A0%81%EC%9C%BC%EB%A1%9C-%EC%9B%90%EC%86%8C%EC%9D%98-%EA%B0%92-%EC%9E%85%EB%A0%A5%ED%95%98%EA%B8%B0)
+      - [열거형 타입의 객체 사용하기](#%EC%97%B4%EA%B1%B0%ED%98%95-%ED%83%80%EC%9E%85%EC%9D%98-%EA%B0%9D%EC%B2%B4-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+      - [열거형 타입의 값으로 문자열 할당하기](#%EC%97%B4%EA%B1%B0%ED%98%95-%ED%83%80%EC%9E%85%EC%9D%98-%EA%B0%92%EC%9C%BC%EB%A1%9C-%EB%AC%B8%EC%9E%90%EC%97%B4-%ED%95%A0%EB%8B%B9%ED%95%98%EA%B8%B0)
+      - [열거형 타입을 위한 유틸리티 함수](#%EC%97%B4%EA%B1%B0%ED%98%95-%ED%83%80%EC%9E%85%EC%9D%84-%EC%9C%84%ED%95%9C-%EC%9C%A0%ED%8B%B8%EB%A6%AC%ED%8B%B0-%ED%95%A8%EC%88%98)
+        - [열거형 타입의 원소 개수를 알려주는 함수](#%EC%97%B4%EA%B1%B0%ED%98%95-%ED%83%80%EC%9E%85%EC%9D%98-%EC%9B%90%EC%86%8C-%EA%B0%9C%EC%88%98%EB%A5%BC-%EC%95%8C%EB%A0%A4%EC%A3%BC%EB%8A%94-%ED%95%A8%EC%88%98)
+        - [열거형 타입에 존재하는 값인지 검사하는 함수](#%EC%97%B4%EA%B1%B0%ED%98%95-%ED%83%80%EC%9E%85%EC%97%90-%EC%A1%B4%EC%9E%AC%ED%95%98%EB%8A%94-%EA%B0%92%EC%9D%B8%EC%A7%80-%EA%B2%80%EC%82%AC%ED%95%98%EB%8A%94-%ED%95%A8%EC%88%98)
+        - [getEnumLen 함수와 isValidEnumVal 함수의 사용 예](#getenumlen-%ED%95%A8%EC%88%98%EC%99%80-isvalidenumval-%ED%95%A8%EC%88%98%EC%9D%98-%EC%82%AC%EC%9A%A9-%EC%98%88)
+      - [상수 열거형 타입](#%EC%83%81%EC%88%98-%EC%97%B4%EA%B1%B0%ED%98%95-%ED%83%80%EC%9E%85)
+        - [상수 열거형 타입 객체 사용 불가](#%EC%83%81%EC%88%98-%EC%97%B4%EA%B1%B0%ED%98%95-%ED%83%80%EC%9E%85-%EA%B0%9D%EC%B2%B4-%EC%82%AC%EC%9A%A9-%EB%B6%88%EA%B0%80)
+    - [함수 타입](#%ED%95%A8%EC%88%98-%ED%83%80%EC%9E%85)
+      - [변수를 함수 타입으로 정의](#%EB%B3%80%EC%88%98%EB%A5%BC-%ED%95%A8%EC%88%98-%ED%83%80%EC%9E%85%EC%9C%BC%EB%A1%9C-%EC%A0%95%EC%9D%98)
+      - [선택 매개변수](#%EC%84%A0%ED%83%9D-%EB%A7%A4%EA%B0%9C%EB%B3%80%EC%88%98)
+      - [선택 매개변수 오른쪽에 필수 매개변수를 지정](#%EC%84%A0%ED%83%9D-%EB%A7%A4%EA%B0%9C%EB%B3%80%EC%88%98-%EC%98%A4%EB%A5%B8%EC%AA%BD%EC%97%90-%ED%95%84%EC%88%98-%EB%A7%A4%EA%B0%9C%EB%B3%80%EC%88%98%EB%A5%BC-%EC%A7%80%EC%A0%95)
+      - [매개변수의 기본값 정하기](#%EB%A7%A4%EA%B0%9C%EB%B3%80%EC%88%98%EC%9D%98-%EA%B8%B0%EB%B3%B8%EA%B0%92-%EC%A0%95%ED%95%98%EA%B8%B0)
+      - [나머지 매개변수](#%EB%82%98%EB%A8%B8%EC%A7%80-%EB%A7%A4%EA%B0%9C%EB%B3%80%EC%88%98)
+      - [this 타입](#this-%ED%83%80%EC%9E%85)
+      - [원시 타입에 메서드 추가하기](#%EC%9B%90%EC%8B%9C-%ED%83%80%EC%9E%85%EC%97%90-%EB%A9%94%EC%84%9C%EB%93%9C-%EC%B6%94%EA%B0%80%ED%95%98%EA%B8%B0)
+      - [함수 오버로드:여러 개의 타입 정의](#%ED%95%A8%EC%88%98-%EC%98%A4%EB%B2%84%EB%A1%9C%EB%93%9C%EC%97%AC%EB%9F%AC-%EA%B0%9C%EC%9D%98-%ED%83%80%EC%9E%85-%EC%A0%95%EC%9D%98)
+      - [함수 오버로드를 사용하지 않은 코드](#%ED%95%A8%EC%88%98-%EC%98%A4%EB%B2%84%EB%A1%9C%EB%93%9C%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EC%A7%80-%EC%95%8A%EC%9D%80-%EC%BD%94%EB%93%9C)
+        - [함수 오버로드를 사용한 코드](#%ED%95%A8%EC%88%98-%EC%98%A4%EB%B2%84%EB%A1%9C%EB%93%9C%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%9C-%EC%BD%94%EB%93%9C)
+      - [명명된 매개변수](#%EB%AA%85%EB%AA%85%EB%90%9C-%EB%A7%A4%EA%B0%9C%EB%B3%80%EC%88%98)
+      - [인터페이스로 명명된 매개변수의 타입 정의](#%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4%EB%A1%9C-%EB%AA%85%EB%AA%85%EB%90%9C-%EB%A7%A4%EA%B0%9C%EB%B3%80%EC%88%98%EC%9D%98-%ED%83%80%EC%9E%85-%EC%A0%95%EC%9D%98)
+    - [인터페이스](#%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4)
+      - [인터페이스로 객체 타입 정의](#%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4%EB%A1%9C-%EA%B0%9D%EC%B2%B4-%ED%83%80%EC%9E%85-%EC%A0%95%EC%9D%98)
+        - [인터페이스의 간단한 예](#%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4%EC%9D%98-%EA%B0%84%EB%8B%A8%ED%95%9C-%EC%98%88)
+      - [선택 속성](#%EC%84%A0%ED%83%9D-%EC%86%8D%EC%84%B1)
+        - [undefined가 유니온 타입에 포함된 경우](#undefined%EA%B0%80-%EC%9C%A0%EB%8B%88%EC%98%A8-%ED%83%80%EC%9E%85%EC%97%90-%ED%8F%AC%ED%95%A8%EB%90%9C-%EA%B2%BD%EC%9A%B0)
+      - [읽기 전용 속성](#%EC%9D%BD%EA%B8%B0-%EC%A0%84%EC%9A%A9-%EC%86%8D%EC%84%B1)
+      - [정의되지 않은 속성값에 대한 처리](#%EC%A0%95%EC%9D%98%EB%90%98%EC%A7%80-%EC%95%8A%EC%9D%80-%EC%86%8D%EC%84%B1%EA%B0%92%EC%97%90-%EB%8C%80%ED%95%9C-%EC%B2%98%EB%A6%AC)
+      - [인터페이스로 정의하는 인덱스 타입](#%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4%EB%A1%9C-%EC%A0%95%EC%9D%98%ED%95%98%EB%8A%94-%EC%9D%B8%EB%8D%B1%EC%8A%A4-%ED%83%80%EC%9E%85)
+        - [여러개의 인덱스를 정의하는 경우](#%EC%97%AC%EB%9F%AC%EA%B0%9C%EC%9D%98-%EC%9D%B8%EB%8D%B1%EC%8A%A4%EB%A5%BC-%EC%A0%95%EC%9D%98%ED%95%98%EB%8A%94-%EA%B2%BD%EC%9A%B0)
+      - [그 밖 인터페이스로 할 수 있는 것](#%EA%B7%B8-%EB%B0%96-%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4%EB%A1%9C-%ED%95%A0-%EC%88%98-%EC%9E%88%EB%8A%94-%EA%B2%83)
+        - [함수 타입에 속성값 추가하기](#%ED%95%A8%EC%88%98-%ED%83%80%EC%9E%85%EC%97%90-%EC%86%8D%EC%84%B1%EA%B0%92-%EC%B6%94%EA%B0%80%ED%95%98%EA%B8%B0)
+        - [인터페이스로 클래스 구현하기](#%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4%EB%A1%9C-%ED%81%B4%EB%9E%98%EC%8A%A4-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0)
+        - [인터페이스 확장하기](#%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4-%ED%99%95%EC%9E%A5%ED%95%98%EA%B8%B0)
+        - [인터페이스 합치기](#%EC%9D%B8%ED%84%B0%ED%8E%98%EC%9D%B4%EC%8A%A4-%ED%95%A9%EC%B9%98%EA%B8%B0)
+
 ## 타입스크립트란
 
 - 타입스크립트는 자바스크립트의 모든 기능을 포함하면서 정적 타입을 지원하는 언어
@@ -500,7 +557,7 @@ const getinfoText: (name: string, age: number) => string = function (
 - 이 내용은 책이 잘못됨
 - 똑같이 입력해도 오류가 생김...
 
-### 선택 매개변수
+#### 선택 매개변수
 
 - `선택 매개변수` : 반드시 입력하지 않아도 되는 매개변수
   - 매개변수 이름 오른쪽 `물음표(?)` 기호를 입력 시 `선택 매개변수`
@@ -552,7 +609,7 @@ getInfoText('mike', undefined, 23); // -2-
     `비구조화` 분법을 사용해서 `명명된 매개변수`로 작성하는게 좋음
     뒤에 설명
 
-### 매개변수의 기본값 정하기
+#### 매개변수의 기본값 정하기
 
 - 매개변수의 기본값을 정의 가능하다.
 
@@ -577,7 +634,7 @@ const f1: (name: string, age?: number, lang?: string) => string = getInfoText; /
    - 기본값이 문자열 -> 타입도 문자열
 3. `기본값`이 있는 매개변수는 `선택 매개변수`
 
-### 나머지 매개변수
+#### 나머지 매개변수
 
 ```ts
 function getInfoText(name: string, ...rest: string[]): string {
@@ -589,7 +646,7 @@ function getInfoText(name: string, ...rest: string[]): string {
 
     `배열`로 정의가 가능하다.
 
-### this 타입
+#### this 타입
 
 - 함수의 `this` 타입을 지정하지 않으면 기본적으로 `any` 타입이 사용된다.
 - `any`타입을 자주 사용하는 것은 좋은 습관이 아니므로 `this` 타입을 지정해두는 것이 좋음
@@ -618,7 +675,7 @@ function getParam2(this: string, index: number): string {
 }
 ```
 
-### 원시 타입에 메서드 추가하기
+#### 원시 타입에 메서드 추가하기
 
 - `원시(primitive)` 타입에 메서드를 등록할 때는 `인터페이스` 이용
 
@@ -640,7 +697,7 @@ console.log('asdf, 1234, ok'.getParam(1)); // -3-
 조금만 배우면 진짜 편하게 쓸 수 있을 것 같음
 리액트에서 적용이 가능하도록 응용 해보기
 
-### 함수 오버로드:여러 개의 타입 정의
+#### 함수 오버로드:여러 개의 타입 정의
 
 - 자바스크립트는 동적 타입 언어이므로 하나의 함수가 다양한 `매개변수` 타입과
 - `반환` 타입을 가질 수 있음
@@ -675,7 +732,7 @@ console.log(add(1, '2')); // -3-
 
 > 함수 `오버로드`를 사용하면 조건을 만족함는 함수 타입 작성 가능
 
-#### 함수 오버로드를 사용한 코드
+##### 함수 오버로드를 사용한 코드
 
 ```ts
 function add(x: number, y: number): number;
@@ -693,7 +750,7 @@ console.log(add(1, '2')); // type error 4
 3. 두 매개변수의 `타입`이 숫자이면 `반환타입`도 숫자 `타입 에러`
    - 두 매개변수의 타입이 다르면 타입 에러 발생
 
-### 명명된 매개변수
+#### 명명된 매개변수
 
 ```ts
 function getInfoText({
@@ -739,3 +796,323 @@ function getInfoText2({ name, age = 15, language }: Param) {
 
 1. `명명된 매개변수` 타입을 `interface`로 정의
 2. `Param` `interface`를 사용
+
+### 인터페이스
+
+- `Java` 에서의 `interface` -> `class` 구현가기 전 `메서드` 정의
+- `Typescript` 에서의 `interface` -> 좀 더 다양한 것을 정의
+
+#### 인터페이스로 객체 타입 정의
+
+- 인터페이스로 타입을 정의 할 때 -> `interface` 키워드를 사용
+
+##### 인터페이스의 간단한 예
+
+```ts
+// -1-
+interface Person {
+  //-2-
+  name: string;
+  age: number;
+  // -2-
+}
+const p1: Person = { name: 'mike', age: 23 };
+const p2: Person = { name: 'mike', age: 'ten' }; // -3-
+```
+
+1. Person `interface`를 정의
+2. 객체 내부에 존재하는 각 속성의 타입을 정의
+3. age 속성 타입을 만족하지 못해 -> error
+   - 하나 이상의 속성 타입을 만족하지 못하면 타입 에러가 발생하게 된다.
+
+#### 선택 속성
+
+- 선택속성 : 객체에서 없어도 되는 속성을 말함
+- `interface`에서의 선택 속성은 `?`를 사용
+
+```ts
+interface Person2 {
+  name: string;
+  age?: number;
+}
+const p2: Person2 = { name: 'mike' };
+```
+
+##### undefined가 유니온 타입에 포함된 경우
+
+```ts
+interface Person3 {
+  name: string;
+  age: number | undefined;
+}
+const p3: Person3 = { name: 'mike' }; // type error -1-
+const p4: Person3 = { name: 'mike', age: undefined };
+```
+
+1. `선택 속성`과 달리 명시적으로 age 속성을 입력하지 않으면 타입 에러 발생
+
+#### 읽기 전용 속성
+
+- 객체에서 `읽기 전용 속성` -> 값이 변하지 않는 속성
+- `interface` 에서의 읽기 전용 속성은 `readonly` 키워드를 사용
+
+```ts
+interface ReadOnly {
+  readonly name: string;
+  age?: number;
+}
+const p5: ReadOnly = {
+  name: 'mike', // -1-
+};
+p5.name = 'jone'; // -2-
+```
+
+1. 변수를 정의하는 시점에서는 값을 할당할 수 있음
+2. 읽기 전용 속성의 값을 수정하려고 하면 컴파일 에러 발생
+
+#### 정의되지 않은 속성값에 대한 처리
+
+- 보통은 `객체`가 `interface`에 정의되지 않은 속성값을 가지고 있어도 할당이 가능
+- `리터럴`로 값을 초기화 하는 경우 -> `interface`에 정의되지 않은 속성값이 있으면 타입 에러 발생
+
+```ts
+interface Non {
+  readonly name: string;
+  age?: number;
+}
+const a1: Non = {
+  name: 'mike',
+  birthday: '1997', // type error -1-
+};
+const a2 = {
+  name: 'mike',
+  birthday: '1997', // -2-
+};
+const a3: Non = a2; // -3-
+```
+
+[코드로 이동](../TypeScript/Practice/interface/정의되지않은속성값.ts)
+
+1. `Person` 인터페이스에 정의되지 않은 속성을 `리터럴`로 입력하므로 타입 에러 발생
+2. a2 객체에 Non 인터페이스에 정의되지 않은 속성 존재
+3. a2가 Person에 정의되지 않은 속성을 포함하지만 `타입 에러 발생 하지 않음`
+   - 이는 a3 타입이 a2 타입을 포함하는 더 큰 타입
+   - `타입 호환성`
+
+> 리터럴에서 에러 발생 -> 개발자 실수를 줄이기 위한 편의 기능
+
+[[↑] Back to top](##목차)
+
+#### 인터페이스로 정의하는 인덱스 타입
+
+- 인터페이스에서 속성 이름을 구체적으로 정의하지 않고 값의 타입만 정의
+  - `인덱스(index)` 타입이라고 지칭
+
+```ts
+interface Index {
+  readonly name: string;
+  age: number;
+  [key: string]: string | number; // -1-
+}
+const p33: Index = {
+  name: 'mike',
+  birthday: '1997', //-2-
+  age: '25', // type error // -3-
+};
+```
+
+[코드로 이동](Practice/interface/인덱스타입.ts)
+
+1. 문자열로 된 `모든 속성 이름`에 대해 값이 문자열 또는 숫자라고 정의
+2. birthday 속성을 입력해도 컴파일 에러가 발생하지 않음
+3. age는 명시적으로 숫자로 정의 -> 문자열 입력 시 에러
+
+[[↑] Back to top](##목차)
+
+###### 여러개의 인덱스를 정의하는 경우
+
+- 자바스립트에서 속성 이름에 숫자와 문자열 사용 가능
+- 속성 이름에 숫자를 사용하면 문자열로 변환된 후 사용
+- 타입스크립트에서는 숫자인 숫자인 속성 이름의 값 -> 문자열 속성 이름의 값으로 할당 가능한지 검사 후 사용
+
+```ts
+interface YearPriceMap {
+  [year: number]: A; // -1-
+  [year: string]: B; // -2-
+}
+```
+
+1. 속성 이름이 숫자인 1번 코드의 A 타입은 2 번 코드의 B 타입에 할당 가능해야 함
+
+> 인덱스 속성 이름을 숫자로 지정하고 싶다면 문자열 속성에 포함을 시켜야 함
+
+#### 그 밖 인터페이스로 할 수 있는 것
+
+- 인터페이스로 함수 타입 정의하기
+
+```ts
+// -1-
+interface GetInfoText {
+  (name: string, age: number): string;
+}
+// -1-
+const InfoText: GetInfoText = function (name, age) {
+  const nameText = name.substr(0, 10);
+  const ageText = age >= 35 ? 'senior' : 'junior';
+  return `name: ${nameText}, age${ageText}`;
+};
+```
+
+[코드로 이동](../TypeScript/Practice/interface/함수타입정의.ts)
+
+1. `interface`로 함수를 정의할 때는 속성 이름 없이 정의
+   - 자바스크립에서는 함수도 속성값을 가질 수 있음
+
+[[↑] Back to top](##목차)
+
+###### 함수 타입에 속성값 추가하기
+
+```ts
+interface GetInfoText3 {
+  (name: string, age: number): string;
+  totalCall: number; // -1-
+}
+const getInfoText3: GetInfoText3 = function (name, age) {
+  // -2-
+  getInfoText3.totalCall += 1;
+  console.log(`totalCall: ${getInfoText3.totalCall}`);
+  // ...
+};
+
+getInfoText3.totalCall = 0;
+// -2-
+```
+
+[파일로 이동](Practice/interface/함수타입_속성값추가.ts)
+
+1. 숫자 타입의 속성값 정의
+2. 타입스크립트는 totalCall 속성값이 숫자라는 것을 알고 있음
+
+[[↑] Back to top](##목차)
+
+###### 인터페이스로 클래스 구현하기
+
+```ts
+// -1-
+interface Person {
+  name: string;
+  age: number;
+  isYoungerThan(age: number): boolean;
+}
+// -1-
+
+class SomePerson implements Person {
+  //-2-
+  name: string;
+  age: number;
+  // -3-
+  constructor(name: string, age: number) {
+    this.name = name;
+    this.age = age;
+  }
+  // -3-
+  isYoungerThan(age: number) {
+    return this.age < age;
+  }
+}
+```
+
+[코드로 이동](Practice/interface/클래스구현.ts)
+
+1. 세 개의 속성을 가진 `인터페이스`를 정의
+2. `implements` 키워드를 사용해 interface 키워드 사용 -> `클래스` 구현 가능
+   - `interface`에서 정의한 새 속성을 클래스 내부에서 구현
+   - `하나의 속성`이라도 구현하지 않으면 컴파일 에러 발생
+3. name, age 속성값은 `필숫값` -> 생성자에서 값 할당 안하면 `컴파일 에러`
+
+[[↑] Back to top](##목차)
+
+> 리액트 에서의 `객체 지향 프로그래밍`
+
+    타입스크립트에서 `클래스의 타입`을 정의하기 위해서는 알아야 할 내용 up
+    그러나 `React` 에서는 객체지향 프로그래밍을 할 일이 많지 않음
+    `클래스형 컴포넌트` -> `React Hook` 나오면서 의존도 down
+
+###### 인터페이스 확장하기
+
+- 인터페이스 확장해서 새로운 인터페이스 생성 가능
+
+```ts
+interface PersonExtend {
+  name: string;
+  age: number;
+}
+interface Korean extends PersonExtend {
+  // -1-
+  isLiveInSeoul: boolean;
+}
+
+/// -2-
+// interface Korean {
+//   name: string;
+//   age: number;
+//   isLiveInSeoul: boolean;
+// }
+/// -2-
+```
+
+1. PersonExtend 인터페이스를 `확장`해서 Korean 인터페이스 생성
+2. 확장해서 만든 인터페이스는 추가된 내용이 주석같이 `밑에 추가`가 된다.
+
+> 여러개의 인터페이스를 `확장` 시킬 수도 있다.
+
+    `,`  연산자를 사용해서 확장 한다.
+
+```ts
+interface PersonExtend {
+  name: string;
+  age: number;
+}
+
+interface Programmer {
+  Lang: string;
+}
+
+interface Korean extends PersonExtend, Programmer {
+  isLiveInSeoul: boolean;
+}
+```
+
+[코드로 이동](Practice/interface/인터페이스확장.ts)
+[[↑] Back to top](##목차)
+
+###### 인터페이스 합치기
+
+- 교차 타입을 이용하면 여러 인터페이스를 하나로 함칠 수 있음
+- 교차 타입은 집합에서의 교집합과 같은 기능
+
+```ts
+interface Person22 {
+  name: string;
+  age: number;
+}
+interface Product {
+  name: string;
+  price: number;
+}
+// -1-
+type PP = Person22 & Product;
+const pp: PP = {
+  name: 'a',
+  age: 23,
+  price: 1000,
+};
+// -1-
+```
+
+1. type PP는 합쳐진 두 인터페이스의 모든 속성값을 포함
+   - 교차 타입이 집합에서의 교집합과 같은 기능을 한다고 했지만
+   - PP 타입이 name 속성만 포함하는게 아니라 헷갈릴 수 있음
+   - 이는 속성의 교집합이 아닌 -> 타입이 가질 수 있는 값의 집합에 대한 교집합
+
+[코드로 이동](Practice/interface/교차타입_합치기.ts)
