@@ -797,16 +797,16 @@ function getInfoText2({ name, age = 15, language }: Param) {
 1. `명명된 매개변수` 타입을 `interface`로 정의
 2. `Param` `interface`를 사용
 
-### 인터페이스
+## 인터페이스
 
 - `Java` 에서의 `interface` -> `class` 구현가기 전 `메서드` 정의
 - `Typescript` 에서의 `interface` -> 좀 더 다양한 것을 정의
 
-#### 인터페이스로 객체 타입 정의
+### 인터페이스로 객체 타입 정의
 
 - 인터페이스로 타입을 정의 할 때 -> `interface` 키워드를 사용
 
-##### 인터페이스의 간단한 예
+#### 인터페이스의 간단한 예
 
 ```ts
 // -1-
@@ -825,7 +825,7 @@ const p2: Person = { name: 'mike', age: 'ten' }; // -3-
 3. age 속성 타입을 만족하지 못해 -> error
    - 하나 이상의 속성 타입을 만족하지 못하면 타입 에러가 발생하게 된다.
 
-#### 선택 속성
+### 선택 속성
 
 - 선택속성 : 객체에서 없어도 되는 속성을 말함
 - `interface`에서의 선택 속성은 `?`를 사용
@@ -838,7 +838,7 @@ interface Person2 {
 const p2: Person2 = { name: 'mike' };
 ```
 
-##### undefined가 유니온 타입에 포함된 경우
+#### undefined가 유니온 타입에 포함된 경우
 
 ```ts
 interface Person3 {
@@ -851,7 +851,7 @@ const p4: Person3 = { name: 'mike', age: undefined };
 
 1. `선택 속성`과 달리 명시적으로 age 속성을 입력하지 않으면 타입 에러 발생
 
-#### 읽기 전용 속성
+### 읽기 전용 속성
 
 - 객체에서 `읽기 전용 속성` -> 값이 변하지 않는 속성
 - `interface` 에서의 읽기 전용 속성은 `readonly` 키워드를 사용
@@ -870,7 +870,7 @@ p5.name = 'jone'; // -2-
 1. 변수를 정의하는 시점에서는 값을 할당할 수 있음
 2. 읽기 전용 속성의 값을 수정하려고 하면 컴파일 에러 발생
 
-#### 정의되지 않은 속성값에 대한 처리
+### 정의되지 않은 속성값에 대한 처리
 
 - 보통은 `객체`가 `interface`에 정의되지 않은 속성값을 가지고 있어도 할당이 가능
 - `리터럴`로 값을 초기화 하는 경우 -> `interface`에 정의되지 않은 속성값이 있으면 타입 에러 발생
@@ -901,9 +901,9 @@ const a3: Non = a2; // -3-
 
 > 리터럴에서 에러 발생 -> 개발자 실수를 줄이기 위한 편의 기능
 
-[[↑] Back to top](##목차)
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
-#### 인터페이스로 정의하는 인덱스 타입
+### 인터페이스로 정의하는 인덱스 타입
 
 - 인터페이스에서 속성 이름을 구체적으로 정의하지 않고 값의 타입만 정의
   - `인덱스(index)` 타입이라고 지칭
@@ -927,9 +927,9 @@ const p33: Index = {
 2. birthday 속성을 입력해도 컴파일 에러가 발생하지 않음
 3. age는 명시적으로 숫자로 정의 -> 문자열 입력 시 에러
 
-[[↑] Back to top](##목차)
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
-###### 여러개의 인덱스를 정의하는 경우
+##### 여러개의 인덱스를 정의하는 경우
 
 - 자바스립트에서 속성 이름에 숫자와 문자열 사용 가능
 - 속성 이름에 숫자를 사용하면 문자열로 변환된 후 사용
@@ -946,7 +946,7 @@ interface YearPriceMap {
 
 > 인덱스 속성 이름을 숫자로 지정하고 싶다면 문자열 속성에 포함을 시켜야 함
 
-#### 그 밖 인터페이스로 할 수 있는 것
+### 그 밖 인터페이스로 할 수 있는 것
 
 - 인터페이스로 함수 타입 정의하기
 
@@ -968,9 +968,9 @@ const InfoText: GetInfoText = function (name, age) {
 1. `interface`로 함수를 정의할 때는 속성 이름 없이 정의
    - 자바스크립에서는 함수도 속성값을 가질 수 있음
 
-[[↑] Back to top](##목차)
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
-###### 함수 타입에 속성값 추가하기
+##### 함수 타입에 속성값 추가하기
 
 ```ts
 interface GetInfoText3 {
@@ -993,9 +993,9 @@ getInfoText3.totalCall = 0;
 1. 숫자 타입의 속성값 정의
 2. 타입스크립트는 totalCall 속성값이 숫자라는 것을 알고 있음
 
-[[↑] Back to top](##목차)
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
-###### 인터페이스로 클래스 구현하기
+##### 인터페이스로 클래스 구현하기
 
 ```ts
 // -1-
@@ -1030,7 +1030,7 @@ class SomePerson implements Person {
    - `하나의 속성`이라도 구현하지 않으면 컴파일 에러 발생
 3. name, age 속성값은 `필숫값` -> 생성자에서 값 할당 안하면 `컴파일 에러`
 
-[[↑] Back to top](##목차)
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 > 리액트 에서의 `객체 지향 프로그래밍`
 
@@ -1038,7 +1038,7 @@ class SomePerson implements Person {
     그러나 `React` 에서는 객체지향 프로그래밍을 할 일이 많지 않음
     `클래스형 컴포넌트` -> `React Hook` 나오면서 의존도 down
 
-###### 인터페이스 확장하기
+##### 인터페이스 확장하기
 
 - 인터페이스 확장해서 새로운 인터페이스 생성 가능
 
@@ -1084,9 +1084,9 @@ interface Korean extends PersonExtend, Programmer {
 ```
 
 [코드로 이동](Practice/interface/인터페이스확장.ts)
-[[↑] Back to top](##목차)
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
-###### 인터페이스 합치기
+##### 인터페이스 합치기
 
 - 교차 타입을 이용하면 여러 인터페이스를 하나로 함칠 수 있음
 - 교차 타입은 집합에서의 교집합과 같은 기능
@@ -1116,3 +1116,148 @@ const pp: PP = {
    - 이는 속성의 교집합이 아닌 -> 타입이 가질 수 있는 값의 집합에 대한 교집합
 
 [코드로 이동](Practice/interface/교차타입_합치기.ts)
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+## 타입 호환성
+
+- `타입 호환성`은 어떤 타입을 다른 타입으로 취급해도 되는지 판단하는 것
+- 정적 타입 언어의 가장 중요한 역할은 타입 호환성을 통해 `컴파일 타임에 호환되지 않는 타입`을 찾아내는 것
+- 어떤 변수가 다른 변수에 할당 가능하기 위해서는 `해당 변수의 타입`이 `다른 쪽 변수의 타입`에 할당이 가능해야 함
+- 할당 가능은 다음과 같이 `서브타입(subtype)`으로 표현 되기도 도 함
+
+  - 타입 A가 B에 할당가능 -> 타입 A는 타입 B의 `서브타입` 이다.
+
+- 할당 가능을 판단할 때는 타입이 가질 수 있는 값의 집합을 생각하면 이해가 쉬움
+- A 타입의 집합이 B 타입의 값의 집합에 포함되면 A 타입은 B 타입에 할당 가능
+
+- `숫자`, `문자열`, `인터페이스`, `함수`의 경우 어떤 조건을 만족해야 할당 가능한지 학습
+
+### 숫자와 문자열의 타입 호환성
+
+- 숫자와 문자열 타입은 서로 포함 관계에 있지 않기 때문에 서로 할당 가능하지 않음
+- 반면 숫자의 집합은 `number | string` 값의 집합에 포함되기 때문에
+  - 숫자는 `number | string` 타입에 할당이 가능
+
+```ts
+function func1(a: number, b: number | string) {
+  const v1: number | string = a; // -1-
+  const v2: number = b; // type error // -2-
+}
+function func2(a: 1 | 2) {
+  const v1: 1 | 3 = a; // type  error // -3-
+  const v2: 1 | 2 | 3 = a; // -4-
+}
+```
+
+1. `number`는 `number | string` 타입에 `할당 가능`
+2. `number | string` 타입은 숫자에 할당 가능하지 않음
+3. `1 | 2` 타입은 `1 | 3` 타입에 할당 가능하지 않기 때문에 타입 에러
+4. `1 | 2` 타입은 `1 | 2 | 3` 타입에 `할당 가능`
+
+> 정리
+
+     `number` -> `number | string` === true
+     `number | string` -> `number` === false
+
+### 인터페이스의 타입 호환성
+
+- 타입스크립트는 값 자체의 타입보다는 `값이 가진 내부 구조`에 기반해서 `타입 호환성`을 검사
+- 이를 `덕 타이핑(duck typing)` or `구조적 타이핑(structural typing)`
+
+- 타입 스크립트 : `구조적 타이핑 도입 이유`
+
+  - `동적 타입 언어`인 `자바스크립트`를 기반으로 하기 때문
+
+- interface A 가 interface B로 할당 가능하려면 다음 조건 만족해야 함
+  1. B에 있는 모든 필수 속성의 이름이 A에도 존재해야 함
+  2. 같은 속성 이름에 대해 A의 속성이 B의 속성에 할당 가능해야 함
+
+```ts
+// -1-
+interface PersonInterface {
+  name: string;
+  age: number;
+}
+interface ProductInterface {
+  name: string;
+  age: number;
+}
+// -1-
+const person: PersonInterface = { name: 'mike', age: 23 };
+const product: ProductInterface = person; // -2-
+```
+
+1. Person과 Product는 이름이 다르지만 모든 속성 이름과 타입이 같음
+2. 타입 이름은 다르지만 내부 구조가 같기 때문에 Person과 Product는 서로 할당이 가능
+
+- 많은 수의 정적 타입 언어에서는 위 같은 `할당이 불가능함`
+
+  - 그러나 `타입스크립트`의 경우 `구조적 타이핑`을 사용하기 때문에 가능
+
+- 속성이 많을수록 타입에 더 많은 제약을 가하는 것이고
+  - 해당 타입의 값의 집합이 작아짐을 뜻함
+
+### 선택 속성이 타입 호환성에 미치는 영향
+
+- Person의 age가 `선택 속성`이라면 Person은 Product에 할당 가능하지 않음
+
+```ts
+interface PersonInterface {
+  name: string;
+  age?: number; // -1-
+}
+interface ProductInterface {
+  name: string;
+  age: number;
+}
+// -1-
+const person1: PersonInterface = { name: 'mike', age: 23 };
+const product1: ProductInterface = person; // type error // -2-
+```
+
+1. age가 `선택 속성`이면 Person 값의 집합은 Product 값의 집합보다 커지게 됨
+2. Person은 Product에 할당가능 하지 않음
+   - 반대로 Product의 age가 `선택 속성`이면 Product 값의 집합이 Person 값의 집합 보다 더 커짐
+   - `반대의 경우는 할당이 가능함`
+
+```ts
+interface PersonInterface2 {
+  name: string;
+  age: number;
+}
+interface ProductInterface2 {
+  name: string;
+  age?: number;
+}
+// -1-
+const person2: PersonInterface2 = { name: 'mike', age: 23 };
+const product2: ProductInterface2 = person;
+```
+
+> 정리
+
+     `선택 속성`이 포함된 경우라면 집합이 더 커지게됨
+
+### 추가 속성과 유니온 타입이 타입 호환성에 미치는 영향
+
+- `추가 속성`과 `유니온 타입`은 타입 호환성에 영향을 미침
+- `추가 속성`이 있으면 값의 집합이 더 작아짐
+
+- `유니온 타입`이 있으면 값의 집합은 더 커지게 됨 (`유니온 타입 === |`)
+
+```ts
+interface Person {
+  name: string;
+  age: number;
+  gender: string; // -1-
+}
+interface Product {
+  name: string;
+  age: number | string; // -2-
+}
+```
+
+1. 추가 속성이 있으면 값의 집합은 더 작아지게 됨
+   - Person을 Product에 할당하는 데 문제가 되지 않음
+2. 속성 타입의 범위가 넓어지면 값의 집합은 더 커짐
+   - Person 이 Product 에 할당이 가능하다는 사실에는 변함이 없음
