@@ -2,7 +2,25 @@
 
 Today I Learn
 
-# 공부하는 목록
+## 목차
+
+- [TIL](#til)
+  - [목차](#목차)
+  - [현재 공부중](#현재-공부중)
+  - [공부하는 목록](#공부하는-목록)
+    - [React](#react)
+    - [React_Testing_Learn](#react_testing_learn)
+    - [JavaScript](#javascript)
+    - [GraphQL](#graphql)
+    - [Docker](#docker)
+    - [CSS](#css)
+    - [CS지식](#cs지식)
+
+## 현재 공부중
+
+[Typescript 정리](./TypeScript/README.md)
+
+## 공부하는 목록
 
 - [React](./React)
 - [React_Testing](./React_Testing_Learn)
@@ -11,24 +29,6 @@ Today I Learn
 - [Docker](./Docker)
 - [CSS](./CSS)
 - [CS지식](./CS지식)
-
-## 현재 공부중
-
-[Typescript 정리](./TypeScript/README.md)
-
-## 목차
-
-- [TIL](#til)
-- [공부하는 목록](#공부하는-목록)
-  - [현재 공부중](#현재-공부중)
-  - [목차](#목차)
-    - [React](#react)
-    - [React_Testing_Learn](#react_testing_learn)
-    - [JavaScript](#javascript)
-    - [GraphQL](#graphql)
-    - [Docker](#docker)
-    - [CSS](#css)
-    - [CS지식](#cs지식)
 
 ### React
 
