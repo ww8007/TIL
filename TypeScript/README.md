@@ -1342,3 +1342,239 @@ const result = [1, 2, 3].map<number>(addOne); // -1-
      - `제네릭이 number`이기 때문
 
 - [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+## 타입스크립트 고급 기능
+
+- 각종 패키지의 정의 파일을 들여다 보면 우리가 알지 못하는 고급 기능이 많이 사용
+- 타입스크립트에서 타입을 정의하는데 많이 사용되는 타입들 학습
+  1. `제네릭`
+  2. `맵드 타입`
+  3. `조건부 타입`
+
+### 제네릭
+
+- `제네릭(generic)`은 타입 정보가 `동적으로 결정`되는 타입
+- `제네릭`을 통해 같은 규칙을 여러 타입에 적용할 수 있기 때문에 타입 코드 작성 시
+
+  - 발생되는 `중복 코드 제거 가능`
+
+- 배열의 크기와 초깃값을 입력받아서 배열을 생성하는 함수를 작성한다고 생각
+
+```ts
+// -1-
+function makeNumArr(defaultValue: number, size: number): number[] {
+  const arr: number[] = [];
+  for (let i = 0; i < size; i++) {
+    arr.push(defaultValue);
+  }
+  return arr;
+}
+// -2-
+function makeStringArr(defaultValue: string, size: number): string[] {
+  const arr: string[] = [];
+  for (let i = 0; i < size; i++) {
+    arr.push(defaultValue);
+  }
+  return arr;
+}
+
+const arr1 = makeNumArr(1, 10);
+const arr2 = makeStringArr('empty', 10);
+```
+
+- [코드로 이동](./Practice/advanced_feature/Generic/simple.ts)
+
+1. 숫자 배열을 생성하는 함수
+2. 문자열 배열을 생허나는 함수
+   - `중복된 코드`가 상당히 많이 보임
+
+- [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+#### 함수 오버로드로 개선한 코드
+
+- 숫자와 문자열만 필요하다면 `함수 오버로드`를 사용하면 됨
+
+```ts
+// -1-
+function makeArr(defaultValue: number, size: number): number[];
+function makeArr(defaultValue: string, size: number): string[];
+// -1-
+// @ts-ignore
+function makeArr(defaultValue, size) {
+  const arr = [];
+  for (let i = 0; i < size; i++) {
+    arr.push(defaultValue);
+  }
+  return arr;
+}
+```
+
+- [코드로 이동](./Practice/advanced_feature/Generic/simple_refactor_overload.ts)
+
+1. 숫자와 문자열 배열을 만들 수 있도록 함수 타입을 정의
+   - 문제가 존재
+     1. 타입을 추가할 때 마다 `코드 추가`
+     2. 타입 종류 많아지만 `가독성이 떨어짐`
+
+#### 제네릭으로 문제 해결하기
+
+```ts
+// -1-
+function makeArray<T>(defaultValue: T, size: number): T[] {
+  const arr: T[] = []; // -2-
+  for (let i = 0; i < size; i++) {
+    arr.push(defaultValue);
+  }
+  return arr;
+}
+// -3-
+const arr11 = makeArray<number>(1, 10);
+const arr22 = makeArray<string>('empty', 10);
+// -3-
+// -4-
+const arr33 = makeArray(1, 10);
+const arr44 = makeArray('empty', 10);
+// -4-
+```
+
+- [코드로 이동](./Practice/advanced_feature/Generic/simple_refactor_with_generic.ts)
+
+1. `타입 T`는 함수를 `사용하는 시점`에 입력되기 때문에 어떤 타입인지 `결정되지 않음`
+2. `함수 내부`에서도 `타입 T의 정보`를 이용
+3. 함수를 `호출`할 때 `타입 T`가 결정
+   - `타입 T`의 정보는 마찬가지로 `<> 기호`를 사용해서 전달
+4. makeArray 함수의 `첫 번째 매개변수`를 알면 타입 T도 알 수 있기 때문에 호출 시 타입 T의 정보를 명시적으로 `전달하지 않아도 됨`
+
+#### 제네릭으로 스택 구현하기
+
+- 제네릭은 데이터의 타입에 다양성을 부여해 주기 때문에 자료구조에서 많이 사용
+- 제네릭을 이용해서 스택(stack) 클래스를 구현
+
+```ts
+class Stack<D> {
+  private items: D[] = []; // -1-
+  // -2-
+  push(item: D) {
+    this.items.push(item);
+  }
+  // -3-
+  pop() {
+    this.items.pop();
+  }
+}
+// -4-
+const numberStack = new Stack<number>();
+numberStack.push(10);
+const vStack = numberStack.pop();
+// -4-
+// -5-
+const stringStack = new Stack<string>();
+stringStack.push('a');
+const vStringStack = stringStack.pop();
+// -5-
+let myStack: Stack<number>;
+myStack = numberStack;
+myStack = stringStack; // type error // -5-
+```
+
+- [코드로 이동](./Practice/advanced_feature/Generic/extends.ts)
+
+1. `타입 D`를 아이템으로 하는 배열을 정의
+2. `push` 메서드는 타입이 `D`인 아이템을 입력으로 받음
+3. `pop` 메서드의 `반환 타입`은 `D`이다.
+4. 숫자를 저장하는 스택을 생성해서 사용
+5. 문자열을 저장하는 스택을 생성해서 사용
+6. 숫자 스택에 문자열 스택 할당 불가
+
+#### extends 키워드로 제네릭 타입 제한하기
+
+- 지금까지 제네릭 타입에 아무 타입이나 입력 가능
+- But 리액트와 같은 라이브러리의 API는 입력 가능한 값의 범위를 제한
+
+  - 리액트의 속성값 전체는 객체 타입만 허용
+
+- 타입스크립트의 제네릭은 타입의 종류를 제한할 수 있는 기능 제공
+  - extends 키워드를 이용하면 제네릭 타입으로 입력할 수 있는 타입의 종류를 제한 가능
+
+```ts
+function identify<T extends number | string>(p1: T): T {
+  return p1;
+}
+identify(1);
+identify('a');
+identify([]); // type error
+```
+
+- [코드로 이동](./Practice/advanced_feature/Generic/extends.ts)
+
+1. 제네릭 T의 타입을 number | string에 할당 가능한 타입으로 제한
+2. 타입 T는 숫자 또는 문자열 타입만 가능
+3. 배열은 number | string 타입에 할당 가능하지 않기 때문에 타입 에러가 발생
+
+##### extends 키워드를 이용한 제네릭 타입의 활용 예
+
+```ts
+// -1-
+interface PersonExtends {
+  name: string;
+  age: number;
+}
+interface Korean2 extends PersonExtends {
+  liveInSeoul: boolean;
+}
+// -1-
+// -2-
+function swapProperty<T extends PersonExtends, K extends keyof PersonExtends>(
+  // -2-
+  p1: T,
+  p2: T,
+  name: K
+): void {
+  const temp = p1[name];
+  p1[name] = p2[name];
+  p2[name] = temp;
+}
+
+const pE: Korean2 = {
+  name: '홍길동',
+  age: 23,
+  liveInSeoul: true,
+};
+
+const p222: Korean2 = {
+  name: '김삿갓',
+  age: 31,
+  liveInSeoul: false,
+};
+swapProperty(pE, p222, 'age'); // -3-
+```
+
+- [코드로 이동](./Practice/advanced_feature/Generic/extends_advanced.ts)
+
+1. Korean2 인터페이스는 PersonExtends을 `확장해서 만들었음`
+   - -> Korean2 타입은 PersonExtends 타입에 `할당 가능`
+2. `제네릭 T`는 PersonExtends에 `할당 가능한` 타입이어야 함
+   - `제네릭 K`는 `속성 이름`이어야 함
+   - `keyof` 키워드는 `인터페이스`의 `모든 속성 이름을 유니온 타입으로 만들어줌`
+3. pE, p222는 PersonExtends에 할당 가능하기 때문에 타입 에러가 발생하지 않음
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### extends 에러 발생
+
+```ts
+interface product {
+  name: string;
+  price: number;
+}
+
+const p11: product = {
+  name: '시계',
+  price: 10000,
+};
+const p22: product = {
+  name: '자전거',
+  price: 20000,
+};
+swapProperty(p11, p22, 'name'); // type error
+```
