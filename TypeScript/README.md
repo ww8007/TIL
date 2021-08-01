@@ -1578,3 +1578,220 @@ const p22: product = {
 };
 swapProperty(p11, p22, 'name'); // type error
 ```
+
+- [코드로 이동](./Practice/advanced_feature/Generic/error_extends.ts)
+
+### 맵드 타입
+
+- `맵드(mapped)` 타입을 이용하면 `몇 가지 규칙으로 새로운 인터페이스`를 만들 수 있음
+- 맵드 타입은 다음과 같이 기존 인터페이스의 `모든 속성들을`
+  - -> `선택 속성`
+  - -> `읽기 전용` 으로 만들어줌
+
+```ts
+// -1-
+interface MPerson {
+  name: string;
+  age: number;
+}
+// -1-
+// -2-
+interface PersonOptional {
+  name?: string;
+  age?: number;
+}
+interface PersonReadOnly {
+  readonly name: string;
+  readonly age: number;
+}
+// -2-
+```
+
+- [코드로 이동](./Practice/advanced_feature/mapped_맵드/simple_mapped.ts)
+
+1. `맵드 타입`의 입력으로 사용될 인터페이스
+2. MPerson 맵드 타입을 적용해서 만들 수 있는 `인터페이스 예`
+
+- 맵드 타입은 `in 키워드`를 `사용해서 정의`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+#### 두 개의 속성을 불 타입으로 만드는 맵드 타입
+
+```ts
+type T1 = { [K in 'prop1' | 'prop2']: boolean }; // -1-
+// {prop1: boolean; prop2: boolean;} // -2-
+```
+
+- [코드로 이동](./Practice/advanced_feature/mapped_맵드/bool.ts)
+
+1. `in 키워드` `오른쪽`에는 `문자열의 유니온 타입`이 올 수 있음
+2. 맵드 타입으로 만들어진 `T1 타입`의 모습
+
+#### 인터페이스의 모든 속성을 불 타입 및 선택 속성으로 만들어 주는 맵드 타입
+
+```ts
+type MakeBool<T> = { [P in keyof T]?: boolean };
+const pMap: MakeBool<MPerson> = {};
+pMap.name = true;
+pMap.age = false;
+```
+
+- [코드로 이동](./Practice/advanced_feature/mapped_맵드/all_mapped.ts)
+
+#### Partial과 Readonly 내장 타입
+
+- 타입스크립트 `내장 타입`인 `Partial`과 `Readonly`는 맵드 타입으로 만들어져 있음
+- 아래에 두 내장 타입을 구현하는 코드 작성
+
+```ts
+type T11 = MPerson['name']; // string // -1-
+type ReadOnly<T> = { readonly [P in keyof T]: T[P] }; // -2-
+type Partial2<T> = { [P in keyof T]?: T[P] }; // -3-
+type T2 = Partial2<MPerson>;
+type T3 = ReadOnly<MPerson>;
+```
+
+- [코드로 이동](./Practice/advanced_feature/mapped_맵드/Partial_Readonly.ts)
+
+1. `인터페이스`에서 `특정 속성의 타입을 추출`할 때 사용되는 문법
+   - `맵드 타입`에서 많이 쓰임
+2. 인터페이스의 모든 속성을 `읽기 전용`으로 만들어주는 `맵드 타입`
+   - `keyof T`에 의해 인터페이스 T의 `모든 속성 이름`이 `유니온 타입`으로 만들어짐
+   - `T[P]`는 인터페이스 T에 있는 `속성 P의 타입을 그대로 사용`하겠다는 의미
+3. 인터페이스의 `모든 속성`을 `선택 속성`으로 만들어주는 `맵드 타입`
+
+> `Partial`, `ReadOnly`
+
+    `Partial` : 모든 속성을 `선택 속성`
+    `Readonly` : 모든 속성을 `유니온 타입`
+    `T[P]` : T에 있는 속성 P를 그대로 사용
+
+> 다시 정리하는 `유니온`과 `선택 속성`
+
+    1.  유티온 타입 -> `|` -> `중에 하나`
+    1.  선택 속성 -> ? `?` -> `있어도 되고 없어도 되고`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+#### Pick 내장 타입
+
+- 타입스크립트 내장 타입인 `Pick`은 인터페이스에서 `원하는 속성만 추출`할 때 사용됨
+- 맵드 타입으로 Pick을 구현한 코드
+
+```ts
+type Pick2<T, K extends keyof T> = { [P in K]: T[P] }; //-1-
+interface PickPerson {
+  name: string;
+  age: number;
+  lan: string;
+}
+type TPick = Pick2<PickPerson, 'name' | 'lan'>;
+// type TPick = {name: string, lang: string;} // -2-
+```
+
+- [코드로 이동](./Practice/advanced_feature/mapped_맵드/Pick.ts)
+
+1. `Pick`은 `인터페이스 T`와 `해당 인터페이스의 속성 이름 K`를 입력으로 받는다.
+2. PickPerson에서 name,lan을 `추출한 결과`
+   [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+#### Record 내장 타입
+
+- 타입스크립트 내장 타입인 `Record`는 입력된 `모든 속성을 같은 타입`으로 만들어주는 내장 맵드 타입
+
+```ts
+interface PickPerson {
+  name: string;
+  age: number;
+  lan: string;
+}
+
+type Record2<K extends string, T> = { [P in K]: T }; // -1-
+type TRecord = Record2<'p1' | 'p2', PickPerson>;
+// type type T1 = { p1: Person; p2: Person'}
+```
+
+- [코드로 이동](./Practice/advanced_feature/mapped_맵드/Record.ts)
+
+1. K는 문자열의 서브타입
+   - K로 입력된 모든 문자열을 속성 이름으로 하면서
+   - T를 각 속성 타입으로 만든다.
+
+> 모든 속성을 같은 타입으로 만든다.
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+#### 열거형 타입과 맵드 타입
+
+- 맵드 타입을 이용하면 열거형 타입의 활용도를 높일 수 있음
+- 열거형 타입의 모든 원소를 속성 이름으로 가지는 객체가 있다고 가정
+
+```ts
+enum Fruit {
+  Apple,
+  Banana,
+  Orange,
+}
+// -1-
+const FRUIT_PRICE = {
+  [Fruit.Apple]: 1000,
+  [Fruit.Banana]: 1500,
+  [Fruit.Orange]: 2000,
+};
+// -1-
+```
+
+- [코드로 이동](./Practice/advanced_feature/mapped_맵드/enum.ts)
+
+1. 과일 가격 정보를 가지고 있는 객체
+   - Fruit 열거형 타입에 새로운 파일을 추가한다면 FRUIT_PRICE에도 새로운 가격을 추가하는게 일반적
+   - 그러나 Fruit 열거형 타입에 과일을 추가하고 -> 가격 정보 깜빡해도 에러 X
+   - 그래서 맵드 타입 이용 -> 모든 원소를 속성으로 가지게 설정 가능
+
+##### 맵드 타입을 이용한 FRUIT_PRICE 타입 정의
+
+```ts
+enum Fruit {
+  Apple,
+  Banana,
+  Orange,
+}
+const FRUIT_PRICE = {
+  [Fruit.Apple]: 1000,
+  [Fruit.Banana]: 1500,
+  //   [Fruit.Orange]: 2000,
+};
+
+const FRUIT_PRICE2: { [key in Fruit]: number } = {
+  [Fruit.Apple]: 1000,
+  [Fruit.Banana]: 1500,
+  [Fruit.Orange]: 2000,
+};
+```
+
+#### 총정리
+
+- `맵드(mapped)` 타입을 이용하면 `몇 가지 규칙으로 새로운 인터페이스`를 만들 수 있음
+- 맵드 타입은 다음과 같이 기존 인터페이스의 `모든 속성들을`
+  - -> `선택 속성`
+  - -> `읽기 전용` 으로 만들어줌
+
+> `Partial`, `ReadOnly`
+
+    `Partial` : 모든 속성을 `선택 속성`
+    `Readonly` : 모든 속성을 `유니온 타입`
+    `T[P]` : T에 있는 속성 P를 그대로 사용
+
+> 다시 정리하는 `유니온`과 `선택 속성`
+
+    1.  유티온 타입 -> `|` -> `중에 하나`
+    1.  선택 속성 -> ? `?` -> `있어도 되고 없어도 되고`
+
+- 타입스크립트 내장 타입인 `Pick`은 인터페이스에서 `원하는 속성만 추출`할 때 사용됨
+
+- 타입스크립트 내장 타입인 `Record`는 입력된 `모든 속성을 같은 타입`으로 만들어주는 내장 맵드 타입
+
+- 맵드 타입을 이용하면 열거형 타입의 활용도를 높일 수 있음
+  - 필수 속성으로 가지게 가능
+  - 안하면 오류 안생김
