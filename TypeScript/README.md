@@ -1986,3 +1986,152 @@ const p2: T111 = {
 2. age 속성의 타입은 `문자열로 변경`, nation 속성은 `새로 추가`
 
 [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+### 생산성을 높이는 타입스크립트의 기능
+
+- `정적 타입 언어`를 사용할 때의 `단점` -> `타입을 정의`하는 것
+
+  - `시간과 노력`이 많이 들기 때문에 `생산성 저하 가능성`
+
+- 타입스크립트에서는 `다양한 경우`에 대해 `타입 추론`을 해주기 때문에
+
+  - `꼭 필요한 경우`에만 `타입을 정의`를 할 수 있음
+
+- 타입스크립트에서 제공하는 `타입 가드(guard)` -> `타입 단언(assertion)` 코드를 최소화
+
+#### 타입 추론
+
+- 명시적으로 타입 코드를 `작성하지 않아도` `타입스크립트가 타입을 추론`할 수 있는 경우가 많음
+- 타입 추론 덕분에 `덜 작성`하면서도 `같은 수준의 타입 안정성`을 `유지 가능`
+
+##### let 변수의 타입 추론
+
+```ts
+let v1 = 123; // -1-
+let v2 = 'abc';
+v1 = 'a';
+v2 = 456;
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/let.ts)
+
+1. 타입을 명시하지 않았지만 변수 v1의 `타입은 숫자`
+2. 위와 마찬가지
+3. 잘못된 타입의 값을 입력하면 `타입 에러`가 발생
+
+- 이처럼 타입을 명시하지 않아도 `컴파일 시점`에 `타입 에러`가 발생할 수 있음
+- `let 변수`는 재할당 가능하기 때문에 `융통성` 있게 타입이 결정
+
+- 반면 `const 변수`는 값이 변하지 않기 때문에 let 변수보다 `엄격하게` 타입이 결정
+
+##### const 변수의 타입 추론
+
+```ts
+const v11 = 123; // -1-
+const v22 = 'abc';
+let v3: typeof v11 | typeof v22; // -2-
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/const.ts)
+
+1. `const 변수`는 `리터럴 자체가 타입`이 됨
+   - 따라서 `변수 v1의 타입`은 숫자가 아닌 `123`
+2. `typeof` 키워드는 변수의 `타입을 추출`할 때 사용 가능
+   - v3 는 `123 | 'abc'`가 된다.
+
+##### 배열 객체의 타입 추론
+
+```ts
+const arr1 = [10, 20, 30]; // -1-
+const [n1, n2, n3] = arr1; // -2-
+arr1.push('a'); // type error // -3-
+
+const arr2 = { id: 'abcd', age: 123, lan: 'kor' }; // -4-
+//const arr2 = {id: string, age: number, lan: string}; // -5-
+const { id, age, lan } = arr2; // -6-
+console.log(id === age); // type error // -7-
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/arrary.ts)
+
+1. 배열의 타입을 정의하지 않았지만 타입 추론 덕분에
+   - -> 변수 arr1의 타입은 number[]가 됨
+2. 비구조화 할당의 경우에도 타입 추론이 되며
+
+- -> 세 변수의 타입은 모두 숫자가 됨
+
+3. 숫자 배열에 문자열을 넣으면 타입 에러가 발생
+4. 객체의 타입을 정의하지 않았지만 타입 추론 덕분에 변수 arr2의 타입은
+   - -> 5번 주석과 같게 됨
+5. 마찬가지로 비구조화 할당을 하면 자동으로 타입 정보가 포함
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### 여러 가지 타입으로 구성된 배열의 타입 추론
+
+```ts
+// -1-
+interface Person {
+  name: string;
+  age: number;
+}
+interface Korean extends Person {
+  liveInSeoul: boolean;
+}
+interface Jap extends Person {
+  liveInTokyo: boolean;
+}
+// -1-
+const p1: Person = { name: 'mike', age: 23 };
+const p2: Korean = { name: 'mike', age: 25, liveInSeoul: true };
+const p3: Jap = { name: 'mike', age: 27, liveInTokyo: false };
+const arr13 = [p1, p2, p3]; // -2-
+const arr23 = [p2, p3]; // -3-
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/serveral_type.ts)
+
+1. `Korean, Jap` 인터페이스는 Person을 확장해서 만들엇음
+   - 변수 arr13과 arr23의 `타입을 유추`
+2. 여러 가지 타입을 `하나로 통합하는 과정`을 거쳐야 함
+
+- 다른 타입으로 할당 가능한 타입은 제거
+- 제거 후 남은 모든 타입은 유니온 타입으로 만들어짐
+- `Korean, Jap`는 `Person`에 `할당 가능` -> 변수 arr13 타입은 `Person[]`
+- `Korean, Jap`는 서로 `할당 불가` -> arr23 타입은 `(Korean | Jap)[]`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### 함수의 매개변수와 반환값에 대한 타입 추론
+
+- 함수의 매개변수와 반환값도 타입추론이 적용
+
+```ts
+// -1-
+function func1(a = 'abc', b = 10) {
+  return `${a} ${b}`;
+}
+// -1-
+func1(3, 6); // type error // -2-
+const vFunc: number = func1('a', 1); // type error // -3-
+
+// -4-
+function func2(value: number) {
+  if (value < 10) {
+    return value;
+  } else {
+    return `${value} is too big`;
+  }
+}
+// -4-
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/function.ts)
+
+1. `기본값이 있는 매개변수`는 `자동`으로 타입 정보가 `추가`
+   - 함수의 `반환값`도 `타입 추론`에 의해 `자동`으로 타입 정보가 `추가`
+2. 첫 번째 매개변수는 `숫자`가 아니기 때문에 `타입 에러` 발생
+3. `반환값`은 숫자가 아니기 때문에 `타입에러`가 발생
+4. `return 키워드`가 `여러 번` 등장해도 `타입 추론은 잘 작동`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
