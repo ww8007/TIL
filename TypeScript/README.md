@@ -2135,3 +2135,246 @@ function func2(value: number) {
 4. `return 키워드`가 `여러 번` 등장해도 `타입 추론은 잘 작동`
 
 [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+#### 타입 가드
+
+- 타입 가드(guard)는 조건문을 이용해 타입의 범위를 좁히는 기능
+- 타입 가드를 잘 활용하면 타입 단언(assertion) 코드를 피할 수 있으므로 생산성과 가독성 up
+
+```ts
+function print(value: number | string) {
+  // -1-
+  if (typeof value === 'number') {
+    console.log((value as number).toFixed(2)); // -2-
+  } else {
+    console.log((value as string).trim()); // -3-
+  }
+}
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/typeguard/non_use.ts)
+
+1. `typeof` 키워드를 이용해서 `value가` 숫자인지 검사
+2. `타입 가드`가 없다면 `as` 키워드를 사용해서 타입스크립트에게 `value`는 `숫자`라고 알려야함
+3. 숫자가 아니라면 당연히 문자열이지만 타입 가드가 없다면 `as` 키워드를 사용해서 `타입 단언`을 해야함
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### typeof 키워드
+
+```ts
+function print(value: number | string) {
+  if (typeof value === 'number') {
+    console.log(value.toFixed(2)); // -1-
+  } else {
+    console.log(value.trim()); // -2-
+  }
+}
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/typeguard/typeof.ts)
+
+1. 타입스크립트는 `typeof`를 통해 `value를 숫자`로 인식
+   - -> `숫자`에만 존재하는 `toFixed` 메서드를 바로 호출 가능
+2. 마찬가지로 타입 스크립트는 `else 블록`에서 `value를 문자열`로 인식
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### instanceof 키워드
+
+```ts
+class Person {
+  name: string;
+  age: number;
+  constructor(name: string, age: number) {
+    this.name = name;
+    this.age = age;
+  }
+}
+class Product {
+  name: string;
+  price: number;
+  constructor(name: string, price: number) {
+    this.name = name;
+    this.price = price;
+  }
+}
+function print(value: Person | Product) {
+  console.log(value.name);
+  if (value instanceof Person) {
+    console.log(value.age); // -1-
+  } else {
+    console.log(value.price); // -2-
+  }
+}
+const person = new Person('mike', 23);
+print(person);
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/typeguard/instanceof.ts)
+
+1. `타입 가드` 덕분에 if 문 안에서 `Person의 age 속성에 접근`할 수 있음
+2. 타입스크립트는 `else 블록`에서 value 타입이 Product라고 `인식`
+
+- 인터페이스의 경우에는 `instanceof` `키워드`를 사용할 수 없음
+- `instanceof` 오른쪽에는 `생성자 함수`만 올 수 있기 때문
+
+> `instance`는 인터페이스에서 `사용 불가`
+
+     `인터페이스`는 `타입 검사`에만 사용
+     컴파일 후에는 `삭제` 되므로 `사용 불가`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### 식별 가능한 유니온 타입
+
+- 인터페이스를 구별하기 위한 한 가지 방법
+
+  - -> 식별 가능한 유니온(discriminated) 타입 이용
+
+- 인터페이스에서 식별 가능한 유니온 타입
+  - -> 같은 이름의 속성을 정의
+  - -> 속성의 타입은 모두 겹치지 않게 정의
+
+```ts
+interface Person {
+  type: 'person'; // -1-
+  name: string;
+  age: number;
+}
+interface Product {
+  type: 'product'; // -1-
+  name: string;
+  price: number;
+}
+function print(value: Person | Product) {
+  // -2-
+  if (value.type === 'person') {
+    console.log(value.age);
+  } else {
+    console.log(value.price);
+  }
+}
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/typeguard/식별가능유니온.ts)
+
+1. 두 인터페이스에서 `type`이라는 `같은 이름의 속성`을 정의
+   - 각 속성은 고유의 문자열 `리터럴 타입`으로 `정의`했기 때문에
+   - `서로 겹치는 부분이 없다`.
+2. `type` 속성의 값을 비교하는 것으로 `타입 가드가 동작`
+
+- 따라서 단순히 `type` 속성을 비교하는 것만으로 두 타입을 완전히 구별할 수 있다.
+- `식별 가능한 유니온 타입`은 서로 겹치지 않기 때문에 `switch 문에서 사용하기 좋음`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)™
+
+##### switch 문에서 식별 가능한 유니온 타입 사용하기
+
+```ts
+interface Person {
+  type: 'person'; // -1-
+  name: string;
+  age: number;
+}
+interface Product {
+  type: 'product'; // -1-
+  name: string;
+  age: number;
+}
+
+function print(value: Person | Product) {
+  switch (value.type) {
+    case 'person':
+      console.log(value.age);
+      break;
+    case 'product':
+      console.log(value.price);
+      break;
+  }
+}
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/typeguard/switch.ts)
+
+1. 타입스크립트는 `case 구문` `안`으로 들어오면 `value 타입`을 정확히 알 수 있음
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### 타입을 검사하는 함수
+
+- 타입 가드를 활용하는 또 다른 방법으로 `타입을 검사하는 함수`를 작성하는 방법으로
+  - -> `타입 가드 활용 가능`
+
+```ts
+// -1-
+function isPerson(x: any): x is Person {
+  // -1-
+  return (x as Person).age !== undefined; // -2-
+}
+function print(value: Person | Product) {
+  // -3-
+  if (isPerson(value)) {
+    console.log(value.age);
+  } else {
+    console.log(value.price);
+  }
+}
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/typeguard/with_function.ts)
+
+1. `입력된 인수`가 Person 타입인지 `검사하는 함수`를 작성
+   - `is 키워드`
+   - 왼쪽 : `매개변수 이름`
+   - 오른쪽 : `타입 이름`
+2. `age 속성`이 있으면` Person 타입이라고 정의`
+3. `isPerson` 함수를 이용하면 `타입 가드가 동작`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### in 키워드
+
+```ts
+interface Person2 {
+  type: 'person'; // -1-
+  name: string;
+  age: number;
+}
+interface Product2 {
+  type: 'product'; // -1-
+  name: string;
+  price: number;
+}
+
+function print(value: Person2 | Product2) {
+  // -1-
+  if ('age' in value) {
+    //-1-
+    console.log(value.age); // -2-
+  } else {
+    console.log(value.price);
+  }
+}
+```
+
+- [코드로 이동](./Practice/advanced_feature/생산성높히기/typeguard/in.ts)
+
+1. 단순히 `age 속성`이 있는지 검사
+2. `속성 이름의 존재`를 검사하는 것으로 `타입 가드 동작`
+
+- 식별 가능한 유니온 타입보다 `속성 이름`을 검사하는 방법이 `좀 더 간편`
+  - 그러나 `타입의 종류`가 많아지고 `같은 이름의 속성이 중복 사용` 되면
+  - -> `식별 가능한 유니온 타입`을 사용하도록 함
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+> 정리
+
+     `보통의 경우` : `in`을 사용해서 편하게 작성
+     `특별한 경우` : `식별가능한 유니온 타입`을 사용해서 확인
+
+> 인터페이스에서 식별 가능한 유니온 타입
+
+    - -> `같은 이름의 속성`을 정의
+    - -> `속성의 타입`은 `모두 겹치지 않게 정의`
