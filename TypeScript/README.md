@@ -1795,3 +1795,194 @@ const FRUIT_PRICE2: { [key in Fruit]: number } = {
 - 맵드 타입을 이용하면 열거형 타입의 활용도를 높일 수 있음
   - 필수 속성으로 가지게 가능
   - 안하면 오류 안생김
+
+### 조건부 타입
+
+- `조건부(conditional)` 타입은 입력된 `제네릭` 타입에 따라 타입을 결정할 수 있는 기능
+- 조건부 타입은 extends 키워드와 ? 기호를 사용해서 정의
+
+- 입력된 제네릭 타입이 문자열인지 여부에 따라 타입을 결정하는 조건부 타입 코드
+
+#### 기본적인 조건부 타입의 예
+
+```ts
+// T extends U ? X : Y // -1-
+type IsString<T> = T extends string ? 'yes' : 'no'; // -2-
+type Ts = IsString<string>; // 'yes'
+type Tn = IsString<number>; // 'no'
+```
+
+- [코드로 이동](./Practice/advanced_feature/조건부타입/simple.ts)
+
+1. `조건부 타입`의 기본 구조
+   - 입력된 제네릭 타입 T가 타입 U의 `서브 타입`이면 타입 `X 사용 or Y 사용`
+2. IsStringType은 문자열의 `서브타입`이 입력되면 yes를 사용
+   - 그렇지 않으면 no를 사용하는 `조건부 타입`
+
+- `조건부 타입`에서 `유니온 타입`을 이용하면 유용한 `유틸리티 타입`을 많이 만들 수 있음
+- `조건부 타입`에서 `유니온 타입`이 어떻게 처리되는지 학습
+
+##### IsStringType에 유니온 타입 입력 결과
+
+```ts
+type TUnion = IsString<string | number>; // -1-
+type TType = IsString<string> | IsString<number>; // -2-
+```
+
+- [코드로 이동](./Practice/advanced_feature/조건부타입/simple.ts)
+
+1. `조건부 타입`에 `유니온 타입`이 `입력`되면 `각 타입을 하나씩 검사`해서 `타입을 결정`하고
+   - `최종 결과`는 `유니온 타입`으로 만들어짐
+2. T1과 T2는 `결과적으로 같은 타입`
+
+#### Exclude, Extract 내장 타입
+
+- 타입스크립트에 내장된 `Exclude`, `Extract` 타입은 조건부 타입으로 만들 수 있음
+
+```ts
+type Te = number | string | never; // string | number // -1-
+type Exclude2<T, U> = T extends U ? never : T; // -2-
+type Ttwo = Exclude2<1 | 3 | 5 | 7, 1 | 5 | 9>; // 3 | 7 // -3-
+type TThree = Exclude2<string | number | (() => void), Function>; // string | number // -4-
+type Extract3<T, U> = T extends U ? T : never; // -5-
+type TFour = Extract3<1 | 3 | 5 | 7, 1 | 5 | 9>; // 1 | 5 // -6-
+```
+
+- [코드로 이동](./Practice/advanced_feature/조건부타입/Exclude_Extract.ts)
+
+1. `유니온 타입`에 있는 `never` 타입 제거 -> `조건부 타입`에서 `자주` 사용되는 기능
+2. `Exclude` 타입은 U의 `서브 타입을 제거`해주는 `유틸리티 타입`
+3. `3, 7`은 `1 | 5 | 9` 타입의 서브타입이 아니므로 T2 타입은 `3 | 7`이 됨
+4. `T3은 함수가 제거`된 `string | number` 타입
+5. `Extract`는 `Exclude와 반대`로 동작하는 `유틸리티 타입`
+6. `1, 5`는 `1 | 5 | 9` 에 포함되기 때문에 T4는 `1 | 5`가 됨
+
+#### ReturnType 내장 타입
+
+- 조건부 타입으로 만들어진 ReturnType 내장 타입은 함수의 반환 타입을 추출함
+
+```ts
+type ReturnType2<T> = T extends (...args: any[]) => infer R ? R : any; // -1-
+type Tone = ReturnType2<() => string>; // string
+function f1(s: string): number {
+  return s.length;
+}
+
+type Tt2 = ReturnType2<typeof f1>; // number
+```
+
+- [코드로 이동](./Practice/advanced_feature/조건부타입/ReturnType.ts)
+
+1. 입력된 타입 T가 함수이면 함수의 반환 타입이 사용
+   - 그렇지 않으면 any 타입이 사요됨
+
+- 타입 추론을 위해서 `infer` 키워드를 사용
+  - `infer` 키워드로 `함수의 반환 타입`을 `R` 이라는 `변수`에 담을 수 있음
+  - `infer` 키워드는 `조건부 타입`을 정의할 때 `extends 키워드 뒤`에 사용
+  - `infer` 키워드는 `중첩해서 사용 가능`
+
+```ts
+type Unpacked<T> = T extends (infer U)[] // -1-
+  ? U
+  : T extends (...args: any[]) => infer U // -2-
+  ? U
+  : T extends Promise<infer U>
+  ? U
+  : T; // -3-
+
+type Tz = Unpacked<string>; // string // -4-
+type To = Unpacked<string[]>; // string
+type Tt = Unpacked<() => string>; // string
+type Tth = Unpacked<Promise<string>>; // string
+type Tf = Unpacked<Promise<string>[]>; // Promise<string> // -5-
+type Tfi = Unpacked<Unpacked<Promise<string>[]>>; // string
+```
+
+- [코드로 이동](./Practice/advanced_feature/조건부타입/ReturnType.ts)
+
+1. `타입 T`가 `U의 배열`이면 `U`가 사용
+2. `함수` -> `반환 타입`이 사용
+3. `프로미스` -> 프로미스에 입력된 `제네릭 타입`이 사용
+4. `아무것도 만족하지 않기` 때문에 `자기 자신`
+5. `Promise<string>`의 배열 -> `Promise<string>`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+#### 조건부 타입으로 직접 만들어 보는 유틸리티 타입 문자열 추출
+
+- 조건부 타입을 사용해서 몇 가지 유틸리티 타입 생성
+- 인터페이스에서 문자열 속성만 추출해서 사용하는 두 개의 유틸리티 타입
+
+```ts
+// -1-
+type StringPropertyNames<T> = {
+  [K in keyof T]: T[K] extends String ? K : never;
+}[keyof T]; // -2-
+type StringProperties<T> = Pick<T, StringPropertyNames<T>>; // -3-
+interface Person {
+  name: string;
+  age: number;
+  nation: string;
+}
+type T1o = StringPropertyNames<Person>; // "name" | "nation"
+type T2t = StringProperties<Person>; // {name: string; nation: string;}
+```
+
+- [코드로 이동](./Practice/advanced_feature/조건부타입/유틸리티_문자열추출.ts)
+
+1. `타입 T`에서 `값이 문자열`인 `모든 속성`의 `이름`을 `유니온 타입`으로 만들어 주는 `유틸리티 타입`
+2. `[keyof T]`는 인터페이스에서 `모든 속성의 타입을 유니온으로 추출`
+   - `never 타입은 제거 됨`
+3. `StringProperties`는 인터페이스에서 `문자열인 모든 속성을 추출`하는 유틸리티 타입
+   [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### 일부 속성만 제거해 주는 유틸리티 타입 Omit
+
+```ts
+type Omit2<T, U extends keyof T> = Pick<T, Exclude<keyof T, U>>; // -1-
+interface Person {
+  name: string;
+  age: number;
+  nation: string;
+}
+type T1One = Omit2<Person, 'nation' | 'age'>;
+const p: T1One = {
+  name: 'mike', // -2-
+};
+```
+
+- [코드로 이동](./Practice/advanced_feature/조건부타입/유틸리티_일부속성제거.ts)
+
+1. 인터페이스 `T` 에서 입력된 속성 이름 `U를 제거`
+2. Person에서 nation, age 속성을 제거 했으므로 `T1에는 name 속성만 남음`
+
+> Omit
+
+    `원하는 일부 속성만 제거`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+##### 인터페이스를 덮어쓰는 유틸리티 타입 Overwrite
+
+```ts
+type Overwrite<T, U> = { [P in Exclude<keyof T, keyof U>]: T[P] } & U; // -1-
+interface Person {
+  name: string;
+  age: number;
+}
+type T111 = Overwrite<Person, { age: string; nation: string }>;
+const p2: T111 = {
+  name: 'mike',
+  // -2-
+  age: '23',
+  nation: 'korea',
+  // -2-
+};
+```
+
+- [코드로 이동](./Practice/advanced_feature/조건부타입/유틸리티_인터페이스덮어쓰기.ts)
+
+1. 인터페이스 `T`에 인터페이스 `U를 덮어씌움`
+2. age 속성의 타입은 `문자열로 변경`, nation 속성은 `새로 추가`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
