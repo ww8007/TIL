@@ -271,3 +271,76 @@ console.log('123'.padStart(5, '0')); // -1-
 > 웹팩 설정
 
       yarn add babel-loader @babel/core @babel/preset-react react react-dom
+
+## 리액트에 타입 적용하기
+
+- 타입스크립트 이용해서 리액트 컴포넌트와 리덕스에 타입 정보를 추가하는 방법을 학습
+- 타입을 정의할 때
+
+  - -> 리액트는 @types/react, @types/react-dom 패키지 이용
+
+- 리덕스는
+
+  - -> @types/react-redux 패키지와 리덕스에 내장된 타입 정보를 이용
+
+- 리액트의 함수형 컴포넌트와 클래스형 컴퍼넌트 각각에 대해서 타입을 정의하는 방법 학습
+
+### 리액트 컴포넌트에서 타입 정의하기
+
+- 함수형 컴포넌트에서 `타입을 정의하는 방법`을 학습
+- 리액트 컴포넌트에서 이벤트 처리 함수의 타입을 자주 작성하기 때문에
+  - -> `미리 타입`을 만들어 놓고 `재사용` 하는 것이 좋음
+
+```ts
+import React from 'react';
+type EventObject<T = HTMLElement> = React.SyntheticEvent<T>; // -1-
+type EventFunc<T = HTMLElement> = (e: EventObject<T>) => void; // -2-
+```
+
+1. 리액트에서 발생하는 대부분의 이벤트 객체는 `EventObject` 타입으로 정의할 수 있음
+   - 특정 이벤트에 특화된 타입을 원한다면 `제네릭 T`에 원하는 타입을 입력
+2. 대부분의 `이벤트 처리 함수`를 `EventFuc` 로 정의 가능
+   - 마찬가지로 특정 이벤트 타입을 원하면 `제네릭 T`에 원하는 타입 입력 가능
+   - 이 타입은 `이벤트 처리 함수`를 `속성 값`으로 전달 할 때 유용하게 사용 됨
+
+#### 함수형 컴포넌트의 타입 정의하기
+
+```ts
+import React from 'react';
+// -1-
+interface Props {
+  name: string;
+  age?: number;
+}
+// -1-
+// -2-
+export const MyComponent = ({ name, age = 23 }: Props) => {
+  // -2-
+  return (
+    <div>
+      <p>{name}</p>
+      {/* <p>{age.substr(0)}</p> 타입 에러 */} // -3-
+    </div>
+  );
+};
+
+// -2-
+export const MyComponent2: React.FunctionComponent<Props> = function ({
+  // -2-
+  name,
+  age = 23,
+}) {
+  return (
+    <div>
+      <p>{name}</p>
+      {/* <p>{age.substr(0)}</p> 타입 에러 */} // -3-
+    </div>
+  );
+};
+```
+
+1. `속성값의 타입`을 정의
+   - `속성값의 타입` 정보는 문서의 역할을 하므로 `파일의 최상단`에 위치하는게 좋음
+   - 물음표 기호를 이용해서 선택 속성을 정의
+2. `Props 타입`을 이용해서 `속성값의 타입`을 입력
+   - 컴포넌트 속성값의 기본값은 자바스크립트 `표준 문법` 사용
