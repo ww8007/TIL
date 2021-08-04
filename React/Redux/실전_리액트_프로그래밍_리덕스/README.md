@@ -263,3 +263,233 @@ export function removeAllTodo() {
       }
       ```
   3.  dispatch에 `액션 생성자 함수`를 집어넣어서 호출하도록 한다.
+
+### 미들웨어
+
+- `미들웨어(middleware)`는 `리듀서`가 `액션을 처리하기 전`에 실행되는 `함수`
+  ➡️ `디버깅 목적`으로 `상태값 변경`
+  ➡️ 리듀서에서 발생한 `예외`를 `서버로 전송`하는 목적으로 이용 가능
+
+- 리덕스 사용시 특별히 `미들웨어 설정하지 않았으면`
+  ➡️ `액션`은 바로 `리듀서`에게 보내짐
+
+```js
+const myMiddleware = (store) => (next) => (action) => next(action);
+```
+
+- 미들웨어는 함수 `세 개가 중첩된` 구조로 되어있음
+- 화살표 함수가 연속으로 표현된 코드가 익숙치 않으면 헷갈릴 수 있음
+
+#### 화살표 함수 사용하지 않은 미들웨어 코드
+
+```js
+const myMiddleware = function (store) {
+  return function (next) {
+    return function (action) {
+      return next(action);
+    };
+  };
+};
+```
+
+- 코드에서 알 수 있듯 미들웨어는 `스토어`와 `액션 객체`를 기반으로 필요한 작업 수행 가능
+- `next` 함수를 호출하면 `다른 미들웨어 함수가 호출`되면서 `최종적`으로 `리듀서 함수 호출`
+  ➡️ 위의 코드는 아무런 작업도 하지 않고 `next` 함수를 호출하기 때문에 무의미한 미들웨어 함수
+
+#### 미들웨어 설정법
+
+```js
+import { createStore, applyMiddleware } from 'redux';
+// -1-
+const middleware1 = (store) => (next) => (action) => {
+  console.log('미들웨어1 시작');
+  const result = next(action);
+  console.log('미들웨어1 종료');
+  return result;
+};
+
+const middleware2 = (store) => (next) => (action) => {
+  console.log('미들웨어2 시작');
+  const result = next(action);
+  console.log('미들웨어2 종료');
+  return result;
+};
+// -1-
+// -2-
+const myReducer = (state, action) => {
+  console.log('나의 리듀서');
+  return state;
+};
+// -2-
+const store = createStore(myReducer, applyMiddleware(middleware1, middleware2)); // -3-
+store.dispatch({ type: 'someAction' }); // -4-
+```
+
+1. 간단한 두 개의 미들웨어 정의
+2. 아무 일도 하지 않는 리듀서를 정의
+3. applyMiddleware 함수를 이용해서 `미들웨어가 입력된 스토어`를 생성
+4. 4번 코드에 의해 출력되는 로그를 순서대로 나열
+
+> 로그
+
+     1. 미들웨어1 시작
+     2. 미들웨어2 시작
+     3. 나의 리듀서
+     4. 미들웨어2 종료
+     5. 미들웨어1 종료
+
+1. `middleware1` 미들웨어에서 호출한 `next 함수`
+   ➡️ `middleware2` `미들웨어 함수` 실행하게 됨
+2. `middleware2` 미들웨어에서 호출한 next 함수
+   ➡️ `스토어`가 원래 갖고 있던 `dispatch 메서드`를 호출
+3. `최종적`으로 `스토어의 dispatch` 메서드는 `리듀서`를 호출
+
+- 각 미들웨어는 `리듀서 호출 전후`에 `필요한 작업`을 정의 가능
+
+#### 리덕스의 applyMiddleware 함수
+
+- `applyMiddleware` 함수의 내부 구현
+
+```js
+const applyMiddleware =
+  (...middlewares) =>
+  (createStore) =>
+  (...args) => {
+    const store = createStore(...args); // -1-
+    const funcsWithStore = middlewares.map((middleware) => middleware(store)); // -2-
+    const chainedFunc = funcsWithStore.reduce((a, b) => (next) => a(b(next))); // -3-
+    return {
+      ...store,
+      dispatch: chainedFunc(store.dispatch), // -4-
+    };
+  };
+```
+
+1. 입력된 `createStore` 함수를 호출해서 `스토어`를 `생성`
+2. 생성된 `스토어`와 함께 `모든 미들웨어의 첫 번째 함수`를 `호출`
+   - 미들웨어의 `첫 번째` 함수를 호출하면 `next 매개변수`를 갖는 `두 번째` 함수가 만들어짐
+   - `funcsWithStore` 의 모든 함수는 `클로저`를 통해 `store 객체 접근` 가능
+3. 모든 미들웨어의 `두 번째 함수`를 `체인`으로 연결 (`reduce` 이용)
+   ➡️ 미들웨어가 세개 였다면 chainedFunc 함수 ➡️ `next => a(b(c(next)))`
+4. `외부에 노출`되는 스토어의 `dispatch` 메서드는 미들웨어가 적용된 버전으로 변경됨
+   ➡️ 미들웨어 두 개 였다면 `a(b(store.dispatch))`와 같음
+   ➡️ 사용자가 `dispatch` 메서드를 호출하면 `첫 번째 미들웨어 함수`부터 실행
+   ➡️ `마지막` 미들웨어가 `store.dispatch` 메서드를 호출
+
+#### dispatch 메서드의 내부 구현
+
+```js
+function dispatch(action) {
+  currentState = currentReducer(currentState, action); // -1-
+  for (let i = 0; i < listeners.length; i++) {
+    listeners[i](); // -2-
+  }
+  return action;
+}
+```
+
+1. `리듀서` 함수를 호출해서 `상태값을 변경`
+2. `dispatch` 메서드가 호출될 때마다 등록된 `모든 이벤트 처리함수 호출`
+   ➡️ `상태값이 변경되지 않아도` 이벤트 처리 함수를 `호출`하는 것에 주목
+   ➡️ `상태값 변경`을 `검사`하는 코드는 각 `이벤트 처리 함수`에서 `구현`해야 함
+   ➡️ `react-redux` 패키지의 `connect` 함수에서는 `자체적`으로 상탯값 변경을 검사
+
+#### 미들웨어 활용 예
+
+- 개발 환경에서 디버깅 목적으로 미들웨어를 활용가능
+- 액션이 발생할 때마다 이전 상태값과 이후 상태값을 로그로 출력하는 미들웨어 코드
+
+##### 로그를 출력해 주는 미들웨어
+
+```js
+const printLog = (store) => (next) => (action) => {
+  console.log(`prev state = ${store.getState()}`);
+  const result = next(action); // -1-
+  console.log(`next state = ${store.getState()}`);
+  return result;
+};
+```
+
+1. next 함수를 호출하면 리듀서가 호출되기 때문에 next 함수 호출 전후로 로그를 출력
+
+##### 에러 정보를 전송해 주는 미들웨어
+
+```js
+const reportCrash = (store) => (next) => (action) => {
+  try {
+    return next(action);
+  } catch (err) {
+    // 서버로 예외 정보 전송
+  }
+};
+```
+
+- 참고로 리듀서뿐만 아니라 하위의 미들웨어 코드에서 발생하는 예외도 catch
+
+##### 실행을 연기할 수 있는 미들웨어
+
+```js
+const delayAction = (store) => (next) => (action) => {
+  // -1-
+  const delay = action.meta && action.meta.delay;
+  if (!delay) {
+    return next(action);
+  }
+  // -1-
+  const timeoutId = setTimeout(() => next(action), delay); // -2-
+  return function cancel() {
+    clearTimeout(timeoutId); // -3-
+  };
+};
+```
+
+1. 액션 객체에 `delay` 정보가 포함되어 있지 않다면 아무 일도 안한다.
+2. 만약 `delay` 정보가 포함되어 있다면 `정해진 시간만큼 연기`
+3. `반환된 함수를 호출`하면 `next` 함수의 `호출을 막을 수 있음`
+
+> 활용법
+
+```js
+const cancel = store.dispatch({
+  type: 'SomeAction',
+  meta: { delay: 1000 },
+});
+// ...
+cancel();
+```
+
+- 의문점 : 생성된 미들웨어를 여러 미들웨어를 엮어 뒀을 경우 이게 순서를 지켜서 실행이 될련지
+  ➡️ 나중에 실행 시켜보기로 결정
+
+##### 로컬 스토리지에 값을 저장하는 미들웨어
+
+```js
+const saveToLocalStorage = (store) => (next) => (action) => {
+  // -1-
+  if (action.type === 'SET_NAME') {
+    localStorage.setItem('name', action.name);
+  }
+  return next(action);
+};
+```
+
+1. 'SET_NAME' 애션이 발생할 때마다 로컬 스토리지에 값을 저장
+
+##### useStore를 사용하여 리덕스 스토어 사용하기
+
+- useStore Hooks 를 사용하면 `내부`에서 `리덕스 스토어 객체`를 직접 `사용 가능`
+- 직접 스토어에 접근할 일은 흔치 않으니 필요할 때만 사용
+
+```js
+const store = useStore();
+store.dispatch({ type: 'SAMPLE_ACTION' });
+store.getState();
+```
+
+#### 미들웨어 정리
+
+1. `미들웨어`는 `디버깅`, `실행연기`, `로컬스토리지 값 저장`, `오류 서버전송` 등 편하게 사용 가능
+2. `스토어`와 `액션 객체 기반`으로 필요한 작업 수행
+3. next : 다른 미들웨어 호출 ➡️ 최종적 리듀서 함수 호출
+4. 미들웨어를 여러개 생성하고 `createStore` 함수 이용
+   ➡️ `(combineReducer로 적용된 rootReducer, applyMiddleware(미들웨어들))`
