@@ -15,8 +15,8 @@
 ## 리덕스 사용 시 따라야 할 세 가지 원칙
 
 1. `전체 상태값`을 하나의 객체에 저장
-2. 상태값은 불변 객체
-3. 상태값은 순수 함수 함수에 의해서만 변경
+2. `상태값`은 `불변 객체`
+3. `상태값`은 `순수 함수 함수에 의해서만 변경`
 
 ### 하나의 객체에 프로그램 전체 상태값 저장
 
@@ -143,8 +143,8 @@ expect(sayHello2('장동현')toBe(
 | ---- | --- | -------- | --- | ------ | --- | ------ |
 | ⬆️   |     | ⬅️       | 뷰  | ⬅️     |     | ⬇️     |
 
-- 뷰는 리액트의 컴포넌트라고 생각할 수 있음
-- 상태값을 변경하는 과정에서 거치게 되는 리덕스의 4가지 요소
+- `뷰`는 리액트의 `컴포넌트`라고 생각할 수 있음
+- `상태값을 변경`하는 과정에서 거치게 되는 리덕스의 4가지 요소
   1. 액션
   2. 미들웨어
   3. 리듀서
@@ -152,10 +152,10 @@ expect(sayHello2('장동현')toBe(
 
 ### 액션
 
-- 액션(action)은 type 속성을 가진 자바스크립트 객체
-- 액션 객체를 dispatch 메서드에 넣어서 호출하면
-  - ➡️ 리덕스는 상태값을 변경하기 위해 위의 표 과정 실행
-  - ➡️ 액션 객체는 type 속성 이외에 원하는 속성값 얼마든지 넣을 수 있음
+- `액션(action)`은 `type 속성`을 가진 `자바스크립트 객체`
+- `액션 객체`를 `dispatch 메서드에 넣어서 호출`하면
+  - ➡️ 리덕스는 `상태값을 변경`하기 위해 위의 표 과정 실행
+  - ➡️ 액션 객체는 `type 속성 이외에 원하는 속성값` 얼마든지 넣을 수 있음
 
 #### 액션을 발생시키는 예제 코드
 
@@ -165,10 +165,10 @@ store.dispatch({ type: 'REMOVE', id: 123 });
 store.dispatch({ type: 'REMOVE_ALL' });
 ```
 
-- 각 액션은 고유한 type 속성값을 사용 ➡️ Typescript type guard와 비슷한 역할
-  - ➡️ 식별가능한 유니온 타입 이용
+- 각 액션은 `고유한 type 속성값`을 사용 ➡️ `Typescript type guard`와 비슷한 역할
+  - ➡️ `식별가능한 유니온 타입` 이용
 
-1. ADD 라는 단어 하나만으로 충돌을 피하기 위해서는 다음과 같이 접두사를 붙이는 방법 많이 사용
+1. ADD 라는 단어 하나만으로 충돌을 피하기 위해서는 다음과 같이 `접두사`를 붙이는 방법 많이 사용
 
 ```js
 store.dispatch({ type: 'todo/ADD', title: '영화 보기', priority: 'hight' }); // -1-
@@ -176,11 +176,90 @@ store.dispatch({ type: 'todo/REMOVE', id: 123 });
 store.dispatch({ type: 'todo/REMOVE_ALL' });
 ```
 
-- dispatch 메서드를 호출할 때 직접 `액션 객체`를 입력하는 방법은 사용하지 않는게 좋음
+- `dispatch` 메서드를 호출할 때 직접 `액션 객체`를 입력하는 방법은 사용하지 않는게 좋음
   - ➡️ 액션 객체 : type 속성값이 존재 해야함
 - `todo/App` 액션의 경우 title, priority라는 두 속성값이 항상 존재하도록 강제
-  - ➡️ 액션 생성자 함수를 이용해서 해결
+  - ➡️ `액션 생성자 함수`를 이용해서 해결
 
 ##### 액션 생성자 함수의 예
 
-function
+```js
+// -1-
+function addTodo({ title, priority }) {
+  return { type: 'todo/ADD', title, priority };
+}
+function removeTodo({ id }) {
+  return { type: 'todo/REMOVE', id };
+}
+function removeAllTodo() {
+  return { type: 'todo/REMOVE_ALL' };
+}
+// -1-
+// -2-
+store.dispatch(addTodo({ title: '영화보기', priority: 'high' }));
+store.dispatch(removeTodo({ id: 123 }));
+store.dispatch(removeAllTodo());
+// -2-
+```
+
+1. 세 개의 `액션 생성자 함수`를 정의
+   - `액션 생성자 함수`를 `필요한 인수`와 함께 호출하면
+   - 항상 같은 구조의 `액션 객체`가 만들어짐
+   - 나중에 `액션 객체`의 구조를 변경할 때는 `액션 생성자 함수`만 수정
+2. `dispatch 메서드를 호출`할 때는 `액션 생성자 함수`를 이용
+
+- `type 속성값`은 `리듀서`에서 `액션 객체를 구분`할 때도 사용되기 때문에 `상수 변수`로 만드는 것이 좋음
+
+##### 액션 타입 변수로 만들어서 관리하기
+
+```js
+// -1-
+export const ADD = 'todo/ADD';
+export const REMOVE = 'todo/REMOVE';
+export const REMOVE_ALL = 'todo/REMOVE_ALL';
+// -1-
+// -2-
+export function addTodo({ title, priority }) {
+  return { type: ADD, title, priority };
+}
+export function removeTodo({ id }) {
+  return { type: REMOVE, id };
+}
+export function removeAllTodo() {
+  return { type: REMOVE_ALL };
+}
+// -2-
+```
+
+1. `type 이름`을 `상수 변수`로 생성
+   - 위의 변수는 `리듀서`에서도 필요하기 때문에 `export 키워드`를 사용해서 외부에 노출
+2. `액션 생성자 함수`도 외부에서 호출해야 하므로 외부로 노출 ➡️ dispatch
+
+- 앞에서 살펴본 리덕스 3가지의 원칙에 위배 되지 않음 -> `액션 생성자 함수`에서는 `부수효과` 발생 괜찮
+
+  1. `전체 상태값`을 `하나의 객체`에 저장
+  2. `상태값`은 `불변 객체`
+  3. `상태값`은 `순수 함수 함수에 의해서만 변경`
+
+- Ex : `addTodo` 함수에서 새로운 할일을 서버에 저장하기 위해 `API 호출 가능`
+  - `액션 생성자 함수`에서 API 호출과 같은 비동기 코드 제어 방법 -> 추후에 설명
+
+#### 정리
+
+- `액션객체` : `type 속성`을 가진 자바스크립트 객체
+  - `type 속성`으로 구분하여 사용
+- 가장 많이 쓰는 액션 생성 방법
+  1.  `액션 타입 변수`로 `상수 변수` 생성
+      ```js
+      export const ADD = 'todo/ADD';
+      ```
+      -
+  2.  `액션 생성자 함수`에 `return 타입`으로 `상수 변수` 삽입 (action constructor function)
+      - return 값으로 객체 리턴하면서 `필요한 인수`를 같이 리턴 가능
+      - 함수에 인자로 `필요한 인수 받아오도록 export 설정`
+      ```js
+      export function addTodo({ title, priority }) {
+        return { type: ADD, title, priority };
+      }
+      ```
+  3.  dispatch에 `액션 생성자 함수`를 집어넣어서 호출하도록 한다.
