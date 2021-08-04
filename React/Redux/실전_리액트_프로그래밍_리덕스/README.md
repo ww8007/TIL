@@ -493,3 +493,127 @@ store.getState();
 3. next : 다른 미들웨어 호출 ➡️ 최종적 리듀서 함수 호출
 4. 미들웨어를 여러개 생성하고 `createStore` 함수 이용
    ➡️ `(combineReducer로 적용된 rootReducer, applyMiddleware(미들웨어들))`
+
+### 리듀서
+
+- `리듀서(reducer)`는 `액션이 발생했을 때` `새로운 상태값`을 만드는 `함수`
+- 리듀서의 구조
+
+```js
+(state, action) => nextState;
+```
+
+#### 할 일 목록 데이터를 처리하는 리듀서 함수
+
+```js
+// -1-
+function reducer(state = INITIAL_STATE, action) {
+  // -1-
+  switch (action.type) {
+    case REMOVE_ALL: // -2-
+      // -3-
+      return {
+        ...state,
+        todos: [],
+      };
+    // -3-
+    case REMOVE:
+      return {
+        ...state,
+        todos: state.todos.filter((todo) => todo.id !== action.id),
+      };
+    default:
+      return state; // -4-
+  }
+}
+```
+
+- `리덕스`는 `스토어를 생성`할 때 `상태값이 없는 상태`로 `리듀서를 호출`
+
+1. `매개변수의 기본값`을 사용해서 `초기 상태값`을 정의
+2. 각 `액션 타입별로 case 문` 만들어서 처리
+3. 상태값은 `불변 객체로 관리`해야 하므로 수정 할 때마다 `새로운 객체`를 생성
+   ➡️ `전개 연산자`를 사용하면 `상태값을 분변 객체`로 관리 가능
+4. 처리할 액션이 없다면 `상태값을 변경하지 않음`
+
+> 전개 연산자를 사용하더라도 수정하려는 값이 상태값의 깊은 곳에 있다면 쉽지 않음
+
+#### 리듀서 작성 시 주의 사항
+
+1. 데이터 참조
+   - 리덕스의 상태값은 `불변 객체`이기 때문에 언제든지 `객체의 참조값이 변경`될 수 있음
+     ➡️ 객체를 참조할 때는 `객체의 참조값`이 아니라 `고유한 ID` 값을 이용하는게 좋음
+
+```js
+switch (action.type) {
+    case REMOVE:
+      state.removeID = action.id;
+      break;
+```
+
+2. 순수 함수
+
+- `리듀서`는 `순수 함수`로 작성해야 함
+  - `랜덤함수`를 이용해서 다음 상태값을 만들지 말 것
+    ➡️ 같은 인수를 호출해도 `다른 값이 반환`될 수 있기 때문에 순수 함수가 `아님`
+  - `API 호출` 같은 부수효과를 내부에서 사용하지 않기
+    ➡️ `부수효과`를 호출하는 함수(API)는 순수 함수가 아님
+    ➡️ `API 호출`은 `액션 생성자 함수`, `미들웨어`에서 하면됨
+
+#### createReducer 함수로 리듀서 작성하기
+
+- 지금까지 리듀서 함수를 작성할 때 `switch 문` 사용
+- `createReducer` 함수를 이용하면 switch 문보다 더 `간결하게 리듀서 함수를 작성` 가능
+- `createReducer` 함수는 리덕스 `자체 제공은 아니`지만 많이 쓰임
+
+```js
+// -1-
+const reducer = createReducer(INITIAL_STATE, {
+  // -2-
+  [ADD]: (state, action) => state.todos.push(action.todo);
+  [REMOVE_ALL]: state => (state.todos = []);
+  [REMOVE]: (state, action) => (state.todos = state.todos.filter(todo => todo.id !== action.id))
+  // -2-
+})
+```
+
+1. createReducer 함수의 첫 번째 인자로 초기 상태 값 입력
+2. createReducer 함수의 두 번째 인자는 액션 처리 함수를 담고 있는 객체
+
+#### createReducer 함수의 코드
+
+```js
+import produce from 'immer';
+
+function createReducer(initialState, handlerMap) {
+  // -1-
+  return function (state = initialState, action) {
+    // -1-
+    // -2-
+    return produce(state, (draft) => {
+      // -2-
+      // -3-
+      const handler = handlerMap[action.type];
+      if (handler) {
+        handler(draft, action);
+      }
+      // -3-
+    });
+  };
+}
+```
+
+1. `createReducer` 함수는 `리듀서 함수를 반환`
+   - 초기 상태값인 `initialState` 변수를 `state 매개변수의 기본값`으로 사용
+2. `리듀서 함수 전체`를 `이머의 produce 함수`로 감싸기
+3. 등록된 액션 처리 함수가 있다면 실행
+
+#### 리듀서 정리
+
+1. `리듀서(reducer)`는 `액션이 발생했을 때` `새로운 상태값`을 만드는 `함수`
+2. `상태값`은 `불변 객체`로 관리 해야 하므로 수정 할 때마다 `새로운 객체` 생성
+   ➡️ `immer`를 사용하거나, `전개 연산자` 사용
+3. 리듀서는 `순수 함수`로 작성되어야 함
+   ➡️ `랜덤함수 불가`, `API 호출`같은 `부수효과 불가`
+   ➡️ 부수효과의 경우 `액션 생성자 함수`, `미들웨어`에서 이 역할 수행
+4. `createReducer`로 좀 더 편하게 리듀서 작성 가능
