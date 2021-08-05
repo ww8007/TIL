@@ -12,6 +12,46 @@
   6. `알림창`과 같은 `전역 컴포넌트 상태값` 관리
   7. `페이지가 전환`되어도 `데이터는 살아` 있어야 할 때 좋음
 
+## 목차
+
+- [리덕스로 상태 관리하기](#%EB%A6%AC%EB%8D%95%EC%8A%A4%EB%A1%9C-%EC%83%81%ED%83%9C-%EA%B4%80%EB%A6%AC%ED%95%98%EA%B8%B0)
+  - [리덕스 사용 시 따라야 할 세 가지 원칙](#%EB%A6%AC%EB%8D%95%EC%8A%A4-%EC%82%AC%EC%9A%A9-%EC%8B%9C-%EB%94%B0%EB%9D%BC%EC%95%BC-%ED%95%A0-%EC%84%B8-%EA%B0%80%EC%A7%80-%EC%9B%90%EC%B9%99)
+    - [하나의 객체에 프로그램 전체 상태값 저장](#%ED%95%98%EB%82%98%EC%9D%98-%EA%B0%9D%EC%B2%B4%EC%97%90-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%A8-%EC%A0%84%EC%B2%B4-%EC%83%81%ED%83%9C%EA%B0%92-%EC%A0%80%EC%9E%A5)
+    - [상태값을 불변객체로 관리](#%EC%83%81%ED%83%9C%EA%B0%92%EC%9D%84-%EB%B6%88%EB%B3%80%EA%B0%9D%EC%B2%B4%EB%A1%9C-%EA%B4%80%EB%A6%AC)
+    - [오직 순수 함수에 의해서만 상태값을 변경해야 한다.](#%EC%98%A4%EC%A7%81-%EC%88%9C%EC%88%98-%ED%95%A8%EC%88%98%EC%97%90-%EC%9D%98%ED%95%B4%EC%84%9C%EB%A7%8C-%EC%83%81%ED%83%9C%EA%B0%92%EC%9D%84-%EB%B3%80%EA%B2%BD%ED%95%B4%EC%95%BC-%ED%95%9C%EB%8B%A4)
+  - [리덕스 주요 개념 이해](#%EB%A6%AC%EB%8D%95%EC%8A%A4-%EC%A3%BC%EC%9A%94-%EA%B0%9C%EB%85%90-%EC%9D%B4%ED%95%B4)
+    - [액션](#%EC%95%A1%EC%85%98)
+      - [액션을 발생시키는 예제 코드](#%EC%95%A1%EC%85%98%EC%9D%84-%EB%B0%9C%EC%83%9D%EC%8B%9C%ED%82%A4%EB%8A%94-%EC%98%88%EC%A0%9C-%EC%BD%94%EB%93%9C)
+        - [액션 생성자 함수의 예](#%EC%95%A1%EC%85%98-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98%EC%9D%98-%EC%98%88)
+        - [액션 타입 변수로 만들어서 관리하기](#%EC%95%A1%EC%85%98-%ED%83%80%EC%9E%85-%EB%B3%80%EC%88%98%EB%A1%9C-%EB%A7%8C%EB%93%A4%EC%96%B4%EC%84%9C-%EA%B4%80%EB%A6%AC%ED%95%98%EA%B8%B0)
+      - [정리](#%EC%A0%95%EB%A6%AC)
+    - [미들웨어](#%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4)
+      - [화살표 함수 사용하지 않은 미들웨어 코드](#%ED%99%94%EC%82%B4%ED%91%9C-%ED%95%A8%EC%88%98-%EC%82%AC%EC%9A%A9%ED%95%98%EC%A7%80-%EC%95%8A%EC%9D%80-%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4-%EC%BD%94%EB%93%9C)
+      - [미들웨어 설정법](#%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4-%EC%84%A4%EC%A0%95%EB%B2%95)
+      - [리덕스의 applyMiddleware 함수](#%EB%A6%AC%EB%8D%95%EC%8A%A4%EC%9D%98-applymiddleware-%ED%95%A8%EC%88%98)
+      - [dispatch 메서드의 내부 구현](#dispatch-%EB%A9%94%EC%84%9C%EB%93%9C%EC%9D%98-%EB%82%B4%EB%B6%80-%EA%B5%AC%ED%98%84)
+      - [미들웨어 활용 예](#%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4-%ED%99%9C%EC%9A%A9-%EC%98%88)
+        - [로그를 출력해 주는 미들웨어](#%EB%A1%9C%EA%B7%B8%EB%A5%BC-%EC%B6%9C%EB%A0%A5%ED%95%B4-%EC%A3%BC%EB%8A%94-%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4)
+        - [에러 정보를 전송해 주는 미들웨어](#%EC%97%90%EB%9F%AC-%EC%A0%95%EB%B3%B4%EB%A5%BC-%EC%A0%84%EC%86%A1%ED%95%B4-%EC%A3%BC%EB%8A%94-%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4)
+        - [실행을 연기할 수 있는 미들웨어](#%EC%8B%A4%ED%96%89%EC%9D%84-%EC%97%B0%EA%B8%B0%ED%95%A0-%EC%88%98-%EC%9E%88%EB%8A%94-%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4)
+        - [로컬 스토리지에 값을 저장하는 미들웨어](#%EB%A1%9C%EC%BB%AC-%EC%8A%A4%ED%86%A0%EB%A6%AC%EC%A7%80%EC%97%90-%EA%B0%92%EC%9D%84-%EC%A0%80%EC%9E%A5%ED%95%98%EB%8A%94-%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4)
+        - [useStore를 사용하여 리덕스 스토어 사용하기](#usestore%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EC%97%AC-%EB%A6%AC%EB%8D%95%EC%8A%A4-%EC%8A%A4%ED%86%A0%EC%96%B4-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+      - [미들웨어 정리](#%EB%AF%B8%EB%93%A4%EC%9B%A8%EC%96%B4-%EC%A0%95%EB%A6%AC)
+    - [리듀서](#%EB%A6%AC%EB%93%80%EC%84%9C)
+      - [할 일 목록 데이터를 처리하는 리듀서 함수](#%ED%95%A0-%EC%9D%BC-%EB%AA%A9%EB%A1%9D-%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%A5%BC-%EC%B2%98%EB%A6%AC%ED%95%98%EB%8A%94-%EB%A6%AC%EB%93%80%EC%84%9C-%ED%95%A8%EC%88%98)
+      - [리듀서 작성 시 주의 사항](#%EB%A6%AC%EB%93%80%EC%84%9C-%EC%9E%91%EC%84%B1-%EC%8B%9C-%EC%A3%BC%EC%9D%98-%EC%82%AC%ED%95%AD)
+      - [createReducer 함수로 리듀서 작성하기](#createreducer-%ED%95%A8%EC%88%98%EB%A1%9C-%EB%A6%AC%EB%93%80%EC%84%9C-%EC%9E%91%EC%84%B1%ED%95%98%EA%B8%B0)
+      - [createReducer 함수의 코드](#createreducer-%ED%95%A8%EC%88%98%EC%9D%98-%EC%BD%94%EB%93%9C)
+      - [리듀서 정리](#%EB%A6%AC%EB%93%80%EC%84%9C-%EC%A0%95%EB%A6%AC)
+    - [스토어](#%EC%8A%A4%ED%86%A0%EC%96%B4)
+      - [스토어의 subscribe 메서드를 사용한 예](#%EC%8A%A4%ED%86%A0%EC%96%B4%EC%9D%98-subscribe-%EB%A9%94%EC%84%9C%EB%93%9C%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%9C-%EC%98%88)
+      - [스토어 정리](#%EC%8A%A4%ED%86%A0%EC%96%B4-%EC%A0%95%EB%A6%AC)
+  - [데이터 종류별로 상태값 나누기](#%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%A2%85%EB%A5%98%EB%B3%84%EB%A1%9C-%EC%83%81%ED%83%9C%EA%B0%92-%EB%82%98%EB%88%84%EA%B8%B0)
+    - [상태값 나누기 예제를 위한 사전 작업](#%EC%83%81%ED%83%9C%EA%B0%92-%EB%82%98%EB%88%84%EA%B8%B0-%EC%98%88%EC%A0%9C%EB%A5%BC-%EC%9C%84%ED%95%9C-%EC%82%AC%EC%A0%84-%EC%9E%91%EC%97%85)
+      - [createReducer.js](#createreducerjs)
+      - [리듀서 공통 기능 분리](#%EB%A6%AC%EB%93%80%EC%84%9C-%EA%B3%B5%ED%86%B5-%EA%B8%B0%EB%8A%A5-%EB%B6%84%EB%A6%AC)
+        - [값에 의한 호출과 참조에 의한 호출](#%EA%B0%92%EC%97%90-%EC%9D%98%ED%95%9C-%ED%98%B8%EC%B6%9C%EA%B3%BC-%EC%B0%B8%EC%A1%B0%EC%97%90-%EC%9D%98%ED%95%9C-%ED%98%B8%EC%B6%9C)
+
 ## 리덕스 사용 시 따라야 할 세 가지 원칙
 
 1. `전체 상태값`을 하나의 객체에 저장
@@ -691,3 +731,109 @@ store.dispatch({ type: 'INCREMENT' }); // -5-
      ```js
      if (state === prevState)
      ```
+
+## 데이터 종류별로 상태값 나누기
+
+- 프로그램 안에서 사용되는 데이터의 양이 많아지면 데이터를 체계적으로 구조화 하는 방법 필요
+- 프로그램의 모든 액션을 하나의 파일에 작성하거나 모든 액션 처리 로직
+
+  - → 리듀서 함수로 작성할 수 없음
+
+- 고로 폴더별로 분리해서 작성하는 것이 좋음
+- 리덕스에서 제공하는 combineReducer 함수를 이용하면 리듀서 함수를 여러개로 분리가능
+  - 이렇게 하면 공통 로직이 생기고 → 이를 별도로 분리해서 사용하는 법 학습
+
+> CRA
+
+     npx create-react-app redux-test
+
+> immer 설치
+
+     yarn add redux immer
+
+### 상태값 나누기 예제를 위한 사전 작업
+
+- 페이스북 웹사이트의 타임라인과 친구 목록 구현 가정
+
+1. 여러 게시물 관리
+   - 데이터 배열로 관리
+   - 배열을 추가하거나 배열을 삭제 가능
+2. 게시물의 좋아요 숫자는 배열에 추가된 게시물 데이터 수정
+3. 무한 스크롤 기능
+   - → 이미 로딩된 데이터 끝 도달 하면 이어지는 게시물 데이터 요청
+   - → 페이지 번호 관리
+4. 친구 목록 데이터 배열 관리
+   - → 게시물과 마찬가지로 배열 추가 수정 삭제 가능
+
+#### createReducer.js
+
+```js
+import { produce } from 'immer';
+
+export default function createReducer(initialState, handlerMap) {
+  return function (state = initialState, action) {
+    return produce(state, (draft) => {
+      const handler = handlerMap[action.type];
+      if (handler) {
+        handler(draft, action);
+      }
+    });
+  };
+}
+```
+
+#### 리듀서 공통 기능 분리
+
+```js
+import createReducer from './createReducer';
+
+export default function createItemsLogic(name) {
+  const ADD = `${name}/ADD`;
+  const REMOVE = `${name}/REMOVE`;
+  const EDIT = `${name}/EDIT`;
+
+  const add = (item) => ({ type: ADD, item });
+  const remove = (item) => ({ type: REMOVE, item });
+  const edit = (item) => ({ type: EDIT, item });
+
+  const reducer = createReducer(
+    { [name]: [] },
+    {
+      [ADD]: (state, action) => state[name].push(action.item),
+      [REMOVE]: (state, action) => {
+        const index = state[name].findIndex(
+          (item) => item.id === action.item.id
+        );
+        state[name].splice(index, 1);
+      },
+      [EDIT]: (state, action) => {
+        const index = state[name].findIndex(
+          (item) => item.id === action.item.id
+        );
+        if (index >= 0) {
+          state[name][index] = action.item;
+        }
+      },
+    }
+  );
+  return { add, remove, edit, reducer };
+}
+```
+
+##### 값에 의한 호출과 참조에 의한 호출
+
+- REMOVE 처리 부분의 filter 메서드를 이용하는 방법에서 splice로 변경
+
+> 매개변수의 값만 변경
+
+```js
+function myFunc(a) {
+  a = 20; // -1-
+}
+let v = 10;
+myFunc(v);
+console.log(v); //10
+```
+
+1. 매개변수의 값만 변경되고 인수로 사용된 변수 v는 변하지 않았음
+   - 이는 자바스크립트에서 함수의 호출은 `값에 의한 호출(call by value)`
