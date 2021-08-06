@@ -50,20 +50,20 @@
 - JSX문 자체를 변수에 담을 수 있음
   ```js
   const virtualDom = (
-    <SafeAreaView>
-      <Text>JSX world!</Text>
-    </SafeAreaView>
+  	<SafeAreaView>
+  		<Text>JSX world!</Text>
+  	</SafeAreaView>
   );
   ```
 - 변수에 담는 과정 생략하고 함수의 반환값으로 사용 가능
 
   ```js
   export default function App() {
-    return (
-      <SafeAreaView>
-        <Text>JSX world!</Text>
-      </SafeAreaView>
-    );
+  	return (
+  		<SafeAreaView>
+  			<Text>JSX world!</Text>
+  		</SafeAreaView>
+  	);
   }
   ```
 
@@ -93,10 +93,10 @@
    - JSX 파서 입장에서 undefined, null은 무시하면 그만
    ```js
    {
-     isLoading && <Text>hi</Text>;
+   	isLoading && <Text>hi</Text>;
    }
    {
-     !isLoading && <Text>hi</Text>;
+   	!isLoading && <Text>hi</Text>;
    }
    ```
 3. JSX 문을 변수에 담아 문제 해결
@@ -114,14 +114,266 @@
 
 ```js
 export default function App() {
-  const children = new Array(100)
-    .fill(null)
-    .map((notUsed, index) => <Text>Hello world! {index}</Text>);
+	const children = new Array(100)
+		.fill(null)
+		.map((notUsed, index) => <Text>Hello world! {index}</Text>);
 
-  return <SafeAreaView>{children}</SafeAreaView>;
+	return <SafeAreaView>{children}</SafeAreaView>;
 }
 ```
 
 - Array : 자바스크립트가 기본으로 제공하는 클래스
 - `undefined` 아이템이 있는 배열에는 map 메서드를 사용할 수 없음
 - `null`로 채운 배열에는 map 메서드 사용 가능
+
+## 02-3 컴포넌트와 속성 이해하기
+
+- 가짜 데이터를 생성 하기 위해서 faker 패키지 설정
+
+  > 설치
+
+      yarn add faker @types/faker
+
+### 널 병합 연산자
+
+- `??` 연산자는 ESNext 자바스크립트와 타입스크립트에서 널 병합 연산자
+  - → nulish coalescing operator
+  - name처럼 연산자 앞이 변숫값이 null, undefined → 연산자 뒤의 값에는 randomName()을 사용
+
+### JSX에서의 Text
+
+- `JSX 구문`에서 문자열이 아닌 person과 같은 `객체`는
+  - → Text 사이에 `객체를 바로 사용이 불가능` 하다.
+  - `XML 구문에서 자식 요소` : `문자열`, `XML 요소`여야 하기 때문
+- 이런 이유로 `JSON.stringfy`를 사용해서 `문자열로 변환`해서 사용
+
+```js
+<SafeAreaView>
+	<Text>{JSON.stringify(person, null, 2)}</Text>
+</SafeAreaView>
+```
+
+- 2개의 공백 문자를 속성값에 붙여 보기 좋게 출력
+
+### 리액트 네이티브가 제공하는 두 가지 서비스
+
+1. `Text` 와 같은 `코어 컴포넌트(core component, Platform)`
+   - → 화면에 `어떤 내용을 렌더링`
+2. `Alert` 과 같은 `API(Application Programming interface)`
+   - → `폰의 하드웨어`나 `운영체제`가 `제공하는 기능`이 필요할 때
+
+> 리액트와 같은 framework 에서는 자신만의 컴포넌트 생성가능
+
+     사용자 정의 컴포넌트 - `사용자 컴포넌트`
+     user-defined component - `user component`
+
+#### 사용자 컴포넌트
+
+- `객체지향 프로그래밍 `
+  - → `컴포넌트` : `UI를 담당`하는 `클래스` 의미
+- 오랫동안 React, R/N 은 객체지향 방식의 클래스 컴포넌트 사용
+
+- 그러나 `function component` 등장 후 `Hook` 등장
+  - Hook은 함수 방식으로 제작된 컴포넌트에서만 사용 가능
+- `사용자 컴포넌트`가 해야 할 일 : 네이티브가 제공하는 `코어 컴포넌트`를 `화면에 렌더링`
+  - 앱 사용자의 화면터치, 입력 → `이벤트로 형태`로 얻어 적절한 내용을 `코어 컴포넌트에 반영`
+
+#### 화살표 방식으로 함수 컴포넌트 만들기
+
+- `속성(property)`의 유무에 따라 `화살표`, `function` 분리
+
+- `속성이 없는` 경우 : `function`
+- `속성이 있는` 경우 : `화살표`
+
+- 타입스크립트 문법은 `화살표 함수`가 `익명 함수` 형태인 경우 `export default 허용`
+
+```ts
+export default () => null;
+```
+
+> 이걸 몰라서 지금까지 고생...
+
+> class는 Component 클래스 상속, render 메서드 구현 → 복잡
+
+### 속성이란?
+
+- 프로그래밍 용어에서 `속성(property)`
+
+  - → 클래스의 멤버 변수(member variable)
+
+- `컴포넌트` 또한 `화면 UI를 담당하는 클래스`
+
+  - → 속성을 가질 수 있음
+
+- But 속성은 그 값이 바뀔 수 있음
+
+- 가변(mutable) : 수시로 바뀜
+- 불변(immutable) : 한 번 설정되면 다시는 바뀌지 않음
+
+- 바뀐 속성값 화면 반영 → `재랜더링(re-rendering)`
+
+> React, R/N 에서의 속성 → `클래스 속성 + 재렌더링`
+
+#### JSX 속성 설정 구문
+
+> XML과 같은 마크업 언어에서 속성 → attribute
+
+     TypeScript → property 라고 속성을 지칭
+
+- `string` 타입 속성값 지정
+  - → `따옴표`로 감싸야함
+
+```js
+<Person name="Jack" />
+```
+
+- `number` 타입 속성값 지정
+  - → `중괄호 기호({})`
+
+```js
+<Person age={22}>
+```
+
+- `객체` 타입 속성값 지정
+  - → 중괄호 두개
+  1. 안쪽 : 객체를 만드는 구문
+  2. 바깥쪽 : JSX 구문
+
+```js
+<Person {{name : 'jack', age: 32}}>
+```
+
+### 속성의 용도
+
+> 부모 컴포넌트가 자식 컴포넌트에게 데이터를 전달하고 싶은 경우 사용
+
+```js
+const person = 'jang'
+
+export default function App() {
+  return <My person={person}>
+}
+```
+
+### 함수 컴포넌트의 타입
+
+- React.createElement 사용법
+
+```js
+가상_DOM_객체 = createElement(
+	컴포넌트_이름_또는_문자열,
+	속성_객체,
+	자식_컴포넌트
+);
+```
+
+- 타입스크립트로 속성을 구현하고자 createElement의 함수 정의 학습
+
+  - createElement 타입 정의를 확인하는 가장 쉬운 방법
+
+  1. 편집기에 함수 이름을 작성
+  2. 함수 이름을 클릭하고
+  3. 마우스 오른쪽 버튼을 클릭
+  4. `[정의로 이동]`을 실행
+
+- createElement 함수 정의
+
+```js
+    function createElement<P extends {}>( // -1-
+        type: FunctionComponent<P>,
+        props?: Attributes & P | null,
+        ...children: ReactNode[]): FunctionComponentElement<P>;
+```
+
+1. 타입 변수(type parameter) P는 Property의 첫 글자
+   - `FunctionComponent`는 이름이 너무 길기 때문에 react 패키지는 `좀 더 간단`한 이름 `FC` 타입을 제공
+   - 결론 : `FunctionComponent` 타입은 `FC` 타입, 함수 컴포넌트의 타입은 `FC`
+
+- FC 타입을 사용하기 전 타입스크립트 3.8버전 새로 등장한 import type 학습
+
+### 타입스크립트 3.8 버전의 import type 구문
+
+- `FC` 타입은 `import type` 구문을 사용
+- `Component 클래스`는 단순히 `import` 사용
+
+- 타입은 타입스크립트가 코드를 자바스크립트로 `컴파일할 때`만 필요한 정보
+
+  - → 타입스크립트 코드가 자바스크립트 코드로 `컴파일`되고 나면
+  - → 타입 관련 내용은 `코드에서 아예 사라지게` 됨
+
+- 이와 달리 클래스는 물리적으로 동작하는 메서드와 속성을 가짐
+
+  - → 자바스크립트로 변환 해도 컴파일된 형태 그대로 남아있음
+
+- `FC`는 컴파일되면 완전히 사라지는 정보
+  - → `import type` 구문을 이용해서 사용
+  - → `FC` 처럼 타입스크립트 컴파일에만 필요한 타입은 항상 `import type` 사용
+
+```ts
+import React from 'react';
+import { Text } from 'react-native';
+import * as D from '../data';
+
+export type PersonProps = {
+	person: D.IPerson;
+};
+export default function Person({ person }: PersonProps) {
+	return <Text>{JSON.stringify(person, null, 2)}</Text>;
+}
+export const Person2 = ({ person }: PersonProps) => {
+	return <Text>{JSON.stringify(person, null, 2)}</Text>;
+};
+```
+
+- stack overflow를 찾아본 결과 FC를 이용하는 것 보다 function을 이용하는게 가시적이고 직관적
+- 지금 업데이트된 리엑트에서는 class 형에 대한 제네릭을 딱히 보여주지 않음
+- 이에 대한 내용 벨로그 정리
+  - [velog]('https://velog.io/@ww8007/Typescript-React.FC')
+
+### ScrollView 코어 컴포넌트와 key 속성
+
+- 여러개의 Person 컴포넌트를 만들어 각각 다른 person 속성을 전달
+  - → 화면에서 칸이 부족해서 안보이는 현상이 발생
+  - → 이럴 때 사용하는 것이 `ScrollView`
+
+> ScrollView
+
+     Person 컴포넌트를 ScrollView의 자식 컴포넌트로 만들면
+     → 스크롤 기능 이용해서 모든 컴포넌트 확인 가능
+
+```ts
+import React from 'react';
+import { SafeAreaView, ScrollView } from 'react-native';
+
+import Person from './src/screens/Person';
+import * as D from './src/data';
+
+const people = D.makeArray(100).map(D.createRandomPerson);
+
+export default function App() {
+	const children = people.map((person) => (
+		<Person key={person.id} person={person} />
+	));
+	return (
+		<SafeAreaView>
+			<ScrollView>{children}</ScrollView>
+		</SafeAreaView>
+	);
+}
+```
+
+> ScrollView로 감싸면 스크롤 뷰로 동작하게 됨
+
+- 모든 리액트와 리액트 네이티브 컴포넌트
+
+  1. key
+  2. children
+  3. ref
+
+  - → 3개의 속성을 기본으로 가짐
+
+- key 속성은 리액트 프레임워크가 컴포넌트의 렌더링 속도를 최적화 하는데 필요한 속성
+
+- faker.random.uuid()로 생성 → 범용 고유 식별자(universally unique identifier)의 약자
+- 네트워크 카드의 MAC주소
+- 호출 시각 → 중복 값이 생성되지 않음
