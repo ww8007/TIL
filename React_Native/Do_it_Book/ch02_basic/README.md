@@ -247,7 +247,7 @@ export default () => null;
 
 > 부모 컴포넌트가 자식 컴포넌트에게 데이터를 전달하고 싶은 경우 사용
 
-```js
+```jsx
 const person = 'jang'
 
 export default function App() {
@@ -278,7 +278,7 @@ export default function App() {
 
 - createElement 함수 정의
 
-```js
+```jsx
     function createElement<P extends {}>( // -1-
         type: FunctionComponent<P>,
         props?: Attributes & P | null,
@@ -309,7 +309,7 @@ export default function App() {
   - → `import type` 구문을 이용해서 사용
   - → `FC` 처럼 타입스크립트 컴파일에만 필요한 타입은 항상 `import type` 사용
 
-```ts
+```tsx
 import React from 'react';
 import { Text } from 'react-native';
 import * as D from '../data';
@@ -325,7 +325,7 @@ export const Person2 = ({ person }: PersonProps) => {
 };
 ```
 
-- stack overflow를 찾아본 결과 FC를 이용하는 것 보다 function을 이용하는게 가시적이고 직관적
+- stack overflow를 찾아본 결과 `FC`를 이용하는 것 `보다` `function`을 이용하는게 가시적이고 직관적
 - 지금 업데이트된 리엑트에서는 class 형에 대한 제네릭을 딱히 보여주지 않음
 - 이에 대한 내용 벨로그 정리
   - [velog]('https://velog.io/@ww8007/Typescript-React.FC')
@@ -341,7 +341,7 @@ export const Person2 = ({ person }: PersonProps) => {
      Person 컴포넌트를 ScrollView의 자식 컴포넌트로 만들면
      → 스크롤 기능 이용해서 모든 컴포넌트 확인 가능
 
-```ts
+```tsx
 import React from 'react';
 import { SafeAreaView, ScrollView } from 'react-native';
 
@@ -362,18 +362,203 @@ export default function App() {
 }
 ```
 
-> ScrollView로 감싸면 스크롤 뷰로 동작하게 됨
+> `ScrollView`로 감싸면 스크롤 뷰로 동작하게 됨
 
 - 모든 리액트와 리액트 네이티브 컴포넌트
 
-  1. key
-  2. children
-  3. ref
+  1. `key`
+  2. `children`
+  3. `ref`
 
-  - → 3개의 속성을 기본으로 가짐
+  - → `3개의 속성`을 기본으로 가짐
 
-- key 속성은 리액트 프레임워크가 컴포넌트의 렌더링 속도를 최적화 하는데 필요한 속성
+- key 속성은 리액트 프레임워크가 컴포넌트의 `렌더링 속도를 최적화` 하는데 필요한 속성
 
-- faker.random.uuid()로 생성 → 범용 고유 식별자(universally unique identifier)의 약자
-- 네트워크 카드의 MAC주소
-- 호출 시각 → 중복 값이 생성되지 않음
+- `faker.random.uuid()`로 생성 → `범용 고유 식별자(universally unique identifier)`의 약자
+- 네트워크 카드의 `MAC 주소`
+- `호출 시각` → 중복 값이 생성되지 않음
+
+## 02-4 컴포넌트의 이벤트 속성 이해하기
+
+- 사용자가 버튼을 터치학서나 텍스트를 입력했을 때 발생하는 이벤트를 처리하는 방법
+
+### 이벤트 속성과 이벤트 처리기
+
+- React, R/N 컴포넌트 속성 중 `onPress`, `onChangeText` 처럼 `on~` 접두사
+
+  - → 이를 이벤트 속성(event property) 라고 부름
+  - → 이벤트 속성에는 항상 콜백 함수를 설정해야 함
+  - → → 이를 `이벤트 콜백 함수`, `이벤트 처리기(event handler)`
+
+- 컴포넌트에서 해당 이벤트가 발생하면 자동으로 이벤트 속성이 정한 함수를 호출
+
+#### Button 코어 컴포넌트
+
+- R/N은 `Button` `코어 컴포넌트`를 제공
+
+```js
+import { Button } from 'react-native';
+```
+
+- Button 코어 컴포넌트는 `onPress` 속성을 제공
+
+  - → 접두어가 on이므로 이 속성에는 `callback 함수` 지정
+
+- `콜백 함수 형태`
+  ```js
+  콜백_함수 = () => {
+  	/*함수 몸통*/
+  };
+  ```
+
+##### 버튼 사용 예
+
+```ts
+<Button title="home" color="blue" onPress={()=> console.log('home pressed')}> // -1-
+```
+
+1. `title` : 반드시 설정해야 하는 필수 속성
+2. `color?`: 있어도 되고 없어도 되고
+   - `ts의 선택 매개변수 느낌으로 생각`
+
+#### Alert API
+
+> API : Application Programming Interface
+
+- 리액트 네이티브에서 API는 `JSX 구문`에서 사용되는 `코어 컴포넌트`와 다름
+- `타입 스크립트 코드`에서 `사용하는 기능`
+
+```ts
+import { Alert } from 'react-native';
+```
+
+- `Alert` 은 다음과 같은 `alert 정적 메서드`를 제공
+  - → 메서드 `호출` 시 `대화상자(dialog)`가 화면에 나타남
+
+```tsx
+import React from 'react';
+import { SafeAreaView, Alert, Button } from 'react-native';
+
+export default function App() {
+	return (
+		<SafeAreaView>
+			<Button
+				title="Home" // -1-
+				onPress={() => Alert.alert('home pressed', 'message')} // -2-
+			/>
+		</SafeAreaView>
+	);
+}
+```
+
+1. `Button` 코어 컴포넌트의 `필수속성`인 `title` 지정
+2. `title` : home pressed
+   - → message : message 로 설정
+
+> `안드로이드`와 `ios`의 모습이 다름
+
+     보여지는 모양 또한 다르고
+     눌렀을 시 보여지는 모양도 다름 기억!!!
+
+#### 터처블 코어 컴포넌트
+
+- `Button`이 가지는 한가지 `문제점` : `디자인에 융통성`이 `없음`
+  - → 이렇기에 R/N은 접두어 `Touchable~` 이 붙는 두 가지 코어 컴포넌트 제공
+
+```tsx
+import { TouchableOpacity, TouchableHighlight } from 'react-native';
+```
+
+- 위의 컴포넌트들의 특징
+
+  1. 컴포넌트 영역에 터치가 일어나면 → `onPress` `이벤트 속성`에 설정된 `이벤트 핸들러 콜백 함수`를 호출
+  2. 단 한개의 자식 컴포넌트만 올 수 있음
+
+- `TouchableOpacity`, `TouchableHighlight`는 터치가 일어 났을 때 시각 효과만 다를 뿐
+
+  - 동작은 같다는 것을 기억
+
+- `TouchableOpacity`
+
+  - → `터치`가 일어나면 컴포넌트 `바탕색의 투명도(opacity)` 바뀜
+
+- `TouchableHighlight`
+  - → `터치`가 일어나면 컴포넌트 `바탕색의 전체 색`이 바뀜
+
+> 결과적으로 둘 다 화면에 `보여지는 모습은 같음`
+
+##### Text 코어 컴포넌트의 onPress 이벤트 속성
+
+- Text 컴포넌트도 onPress 이벤트 속성을 제공
+  - → Button 이나 터쳐블 컴포넌트처럼 텍스트 터치하면
+  - → onPress 에 설정된 이벤트 처리기를 호출
+
+> 터치 시 텍스트에 아무런 효과가 없다는 것이 다른 점
+
+```tsx
+import React from 'react';
+import { SafeAreaView, Alert } from 'react-native';
+import { Text } from 'react-native';
+
+const onPress = () => Alert.alert('home pressed', 'message');
+
+export default function App() {
+	return (
+		<SafeAreaView>
+			<Text onPress={onPress}>Press me</Text>
+		</SafeAreaView>
+	);
+}
+```
+
+##### TextInput 코어 컴포넌트
+
+> 텍스트를 입력하고 할 때는 TextInput 코어 컴포넌트를 사용
+
+```tsx
+import { TextInput } from 'react-native';
+```
+
+```tsx
+<TextInput
+	placeholder="enter your name"
+	onChangeText={(text: string) => console.log(text)}
+	onFocus={() => console.log('onFocus')}
+	onBlur={() => console.log('onBlur')}
+	onEndEditing={() => console.log('end edit')}
+/>
+```
+
+###### 특징
+
+1. `defaultValue` 가질 수 있음
+2. `입력된 텍스트`는 `value` 속성값으로 얻을 수 있음
+3. 텍스트 `입력` → `onChangeText` `이벤트 처리기` 실행
+4. `placeholder` 속성을 어떤 값을 설정해야 하는지 명시 가능
+5. `editable` 속성 → `false` 설정 시 → `입력 못하게` 가능
+6. `keyboardType` 속성
+   1. `default`
+   2. `numeric`
+   3. `email-address`
+7. `포커스를 가지게` 하는 → `focus` 메서드
+   - → `포커스를 잃게` 하는 → `blur` 메서드 존재
+8. 텍스트를 `입력할 수 있는` 상태(포커스 가짐) → `onFocus` 이벤트를 호출
+
+- → 입력 `못하는` 경우 → `onBlur` 이벤트 호출
+
+9. 텍스트 입력이 `모두 끝나면` → `onEndEditing` 이벤트 호출
+10. 자식 요소를 가지지 못함
+
+> onChangeText 속성에 설정할 수 있는 콜백 함수는 아래와 같은 함수 시그니처 가짐
+
+```tsx
+onChangeText(text: string) => void
+```
+
+> 함수 시그니처
+
+     타입스크립트에서는 `모든 변수는 어떤 타입`을 가지게 됨
+     `함수도 어떤 타입`을 가짐
+     함수 선언문에서 `이름만 제외한 부분`을
+      → `함수 시그니처`
+      → `함수 타입`
