@@ -1,5 +1,38 @@
 # 리액트 네이티브 기본 다지기
 
+## 목차
+
+- [리액트 네이티브 기본 다지기](#%EB%A6%AC%EC%95%A1%ED%8A%B8-%EB%84%A4%EC%9D%B4%ED%8B%B0%EB%B8%8C-%EA%B8%B0%EB%B3%B8-%EB%8B%A4%EC%A7%80%EA%B8%B0)
+  - [ch02-2](#ch02-2)
+    - [npx pod-install](#npx-pod-install)
+    - [JSX = Js + XML](#jsx--js--xml)
+    - [React.createElement와 JSX 구문과의 관계](#reactcreateelement%EC%99%80-jsx-%EA%B5%AC%EB%AC%B8%EA%B3%BC%EC%9D%98-%EA%B4%80%EA%B3%84)
+    - [JSX 구문에서 중괄호({})의 의미](#jsx-%EA%B5%AC%EB%AC%B8%EC%97%90%EC%84%9C-%EC%A4%91%EA%B4%84%ED%98%B8%EC%9D%98-%EC%9D%98%EB%AF%B8)
+    - [표현식과 실행문 그리고 JSX](#%ED%91%9C%ED%98%84%EC%8B%9D%EA%B3%BC-%EC%8B%A4%ED%96%89%EB%AC%B8-%EA%B7%B8%EB%A6%AC%EA%B3%A0-jsx)
+      - [조건에 따라 분기되는 JSX문 작성법](#%EC%A1%B0%EA%B1%B4%EC%97%90-%EB%94%B0%EB%9D%BC-%EB%B6%84%EA%B8%B0%EB%90%98%EB%8A%94-jsx%EB%AC%B8-%EC%9E%91%EC%84%B1%EB%B2%95)
+    - [배열을 JSX문으로 만들 때 조심할 점](#%EB%B0%B0%EC%97%B4%EC%9D%84-jsx%EB%AC%B8%EC%9C%BC%EB%A1%9C-%EB%A7%8C%EB%93%A4-%EB%95%8C-%EC%A1%B0%EC%8B%AC%ED%95%A0-%EC%A0%90)
+  - [02-3 컴포넌트와 속성 이해하기](#02-3-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%99%80-%EC%86%8D%EC%84%B1-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B8%B0)
+    - [널 병합 연산자](#%EB%84%90-%EB%B3%91%ED%95%A9-%EC%97%B0%EC%82%B0%EC%9E%90)
+    - [JSX에서의 Text](#jsx%EC%97%90%EC%84%9C%EC%9D%98-text)
+    - [리액트 네이티브가 제공하는 두 가지 서비스](#%EB%A6%AC%EC%95%A1%ED%8A%B8-%EB%84%A4%EC%9D%B4%ED%8B%B0%EB%B8%8C%EA%B0%80-%EC%A0%9C%EA%B3%B5%ED%95%98%EB%8A%94-%EB%91%90-%EA%B0%80%EC%A7%80-%EC%84%9C%EB%B9%84%EC%8A%A4)
+      - [사용자 컴포넌트](#%EC%82%AC%EC%9A%A9%EC%9E%90-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8)
+      - [화살표 방식으로 함수 컴포넌트 만들기](#%ED%99%94%EC%82%B4%ED%91%9C-%EB%B0%A9%EC%8B%9D%EC%9C%BC%EB%A1%9C-%ED%95%A8%EC%88%98-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+    - [속성이란?](#%EC%86%8D%EC%84%B1%EC%9D%B4%EB%9E%80)
+      - [JSX 속성 설정 구문](#jsx-%EC%86%8D%EC%84%B1-%EC%84%A4%EC%A0%95-%EA%B5%AC%EB%AC%B8)
+    - [속성의 용도](#%EC%86%8D%EC%84%B1%EC%9D%98-%EC%9A%A9%EB%8F%84)
+    - [함수 컴포넌트의 타입](#%ED%95%A8%EC%88%98-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-%ED%83%80%EC%9E%85)
+    - [타입스크립트 3.8 버전의 import type 구문](#%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8-38-%EB%B2%84%EC%A0%84%EC%9D%98-import-type-%EA%B5%AC%EB%AC%B8)
+    - [ScrollView 코어 컴포넌트와 key 속성](#scrollview-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%99%80-key-%EC%86%8D%EC%84%B1)
+  - [02-4 컴포넌트의 이벤트 속성 이해하기](#02-4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EC%86%8D%EC%84%B1-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B8%B0)
+    - [이벤트 속성과 이벤트 처리기](#%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EC%86%8D%EC%84%B1%EA%B3%BC-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EC%B2%98%EB%A6%AC%EA%B8%B0)
+      - [Button 코어 컴포넌트](#button-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8)
+        - [버튼 사용 예](#%EB%B2%84%ED%8A%BC-%EC%82%AC%EC%9A%A9-%EC%98%88)
+      - [Alert API](#alert-api)
+      - [터처블 코어 컴포넌트](#%ED%84%B0%EC%B2%98%EB%B8%94-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8)
+        - [Text 코어 컴포넌트의 onPress 이벤트 속성](#text-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-onpress-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EC%86%8D%EC%84%B1)
+        - [TextInput 코어 컴포넌트](#textinput-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8)
+          - [특징](#%ED%8A%B9%EC%A7%95)
+
 ## ch02-2
 
 ### npx pod-install
