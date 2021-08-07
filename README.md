@@ -9,6 +9,7 @@ Today I Learn
   - [현재 공부중](#현재-공부중)
   - [공부하는 목록](#공부하는-목록)
     - [React](#react)
+    - [React_Native](#react_native)
     - [React_Testing_Learn](#react_testing_learn)
     - [JavaScript](#javascript)
     - [GraphQL](#graphql)
@@ -18,7 +19,7 @@ Today I Learn
 
 ## 현재 공부중
 
-[Typescript 정리](./TypeScript/README.md)
+> [Do it R/N](./React_Native/Do_it_Book/README.md)
 
 ## 공부하는 목록
 
@@ -65,6 +66,12 @@ Today I Learn
    > [React_Testing_Learn 정리](./React/../React_Testing_Learn/JavaScript/README.md)
 
    [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+### React_Native
+
+> [Do it R/N](./React_Native/Do_it_Book/README.md)
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### React_Testing_Learn
 
