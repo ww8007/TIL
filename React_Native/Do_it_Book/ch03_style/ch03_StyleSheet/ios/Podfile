@@ -12,6 +12,8 @@ target 'ch03_StyleSheet' do
     :hermes_enabled => false
   )
 
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+
   target 'ch03_StyleSheetTests' do
     inherit! :complete
     # Pods for testing

@@ -426,3 +426,335 @@ paddingLeft: Platform.select({ ios: 0, android: 20 });
 ```
 
 ## 자원과 아이콘 사용하기
+
+- 모바일 앱 개발에서 `자원(assets, resource)`은 앱에 포함하여 배포하는
+  - → `이미지`, `폰트`, `아이콘` 등의 파일을 의미
+
+> 모바일 앱은 통신이 끊어지는 `오프라인 상황`에 `염두`를 두어야 함
+
+- 회사 로고 이미지, 폰트, 아이콘 등을 `백엔드`에서 가져오게 설정하면
+
+  - → `오프라인 때 아무것도 안뜨는 상황`이 발생가능
+  - 그러면 서버사이드 렌더링을 활용하면?
+  - → 필수 자원은 `앱에 포함해 배포`하는 것이 좋음
+
+- 여기서는 R/N 앱에 자원을 탑재하는 방법과 탑재된 자원을 코드에서 어떻게 활용하는지
+
+> 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker
+     yarn add @types/color @types/faker --dev
+     yarn add @types/react-native-vector-icons --dev
+
+> types 같은 경우는 dev를 활용해서 배포단계에서는 제거 되도록 설정!!!
+
+> 전 폴더 복사해서 가져오기
+
+     cp -r ../../ch02_basic/ch02/src . && rm src/screens/*.*
+     mkdir assets && cd assets
+     mkdir images fonts
+
+- mkdir `폴더1` `폴더2`
+  - → 두개의 폴더 생성 가능
+
+### 배경에서 사용할 이미지 내려받기
+
+[unsplash]('https://unsplash.com')
+
+> 다운로드 한 파일 복사 해오기
+
+      cp -R ../../../../../../Downloads bj.jpg
+
+### ImageBackground 코어 컴포넌트 사용하기
+
+> R/N은 `import` 문으로 얻을 수 있는 `ImageBackground` 라는 `코어 컴포넌트` 제공
+
+```tsx
+import { ImageBackground } from 'react-native';
+```
+
+> ImageBackground 사용하여 bg.jpg 이름의 이미지 파일 화면에 출력
+
+```tsx
+<ImageBackground style={{flex: 1}} source={require('./src/assets/images/bj.jpg')}>
+```
+
+- R/N에서 이름에 `Image` `포함`되어 있다면
+
+  - → 항상 `source 속성`에 `require` 사용해서 읽는 방식으로 파일 설정
+  - `Image`, `ImageBackground`
+
+> ImageBackground의 경우 이름에 View가 없지만 → View 가진 것 처럼 자식 컴포넌트 가질 수 있음
+
+- ImageBackground source 속성에 bg.jpg 파일의 내용을 전부 `로딩한 데이터 설정`
+
+  - → 이 코드가 bg.jpg 같은 이미지 파일 자원은 `별도의 파일이 아닌 소스 코드에 삽입된 형태로 배포`
+
+- 또한 width, height 스타일 속성값을 설정
+  - → `width`, `height` : 100% 가능하지만
+  - `직관적`으로 `flex : 1`
+
+```tsx
+<ImageBackground
+	style={[styles.flex]} // -1-
+	source={require('./src/assets/images/bg.jpg')} // -2-
+/>
+```
+
+1. `flex : 1` 설정
+   - width, height 두 번 보다 효과적
+2. `source`를 꼭 설정
+   - require 방식을 사용해서 `인코딩` 하여 js 파일에 `내장`한다는 점을 기억하자!!!
+
+#### base64 인코딩 방식 이미지 삽입
+
+> HTML에서 `이미지 파일`은 `base64` 방식으로 `삽입(embed)` 가능
+
+```tsx
+<img src='data:image/png;base64, iVB0MynNameIsHow...'>
+```
+
+- `Node.js` 가 기본 제공하는 `require API` 는 대상 파일이 `이미지`라면 `base64` 로 인코딩된 문자열 반환
+  - → R/N 앱에서 이미지 파일은 `자바스크립트 코드에 삽입된 형태`로 배포
+
+> 이 말이 import, require 하면 base64 인코딩 → js 코드에 포함 같은 말
+
+### Image 코어 컴포넌트
+
+> R/N은 다음과 같은 Image 코어 컴포넌트 제공
+
+```tsx
+import { Image } from 'react-native';
+```
+
+- Image 코어 컴포넌트는 ImageBackground 처럼 이미지 파일을 화면에 렌더링 기능 제공
+- Image는 ImageBackground와 달리 자식 컴포넌트를 가질 수 없음
+  - → `source` 속성에 `{uri: 이미지_파일_웹_주소}` 설정
+  - → `require` : `인코딩된 이미지를 앱내 배포`하겠다는 의미
+
+```tsx
+import React from 'react';
+import { SafeAreaView, StyleSheet, ImageBackground, Image } from 'react-native';
+import * as D from './src/data';
+
+const avatarUrl = D.randomAvatarUrl();
+const avatarSize = 50; // -3-
+
+export default function App() {
+	return (
+		<SafeAreaView style={[styles.flex]}>
+			<ImageBackground
+				style={[styles.imageBackground, styles.flex]}
+				source={require('./src/assets/images/bg.jpg')} // -1-
+			>
+				<Image source={{ uri: avatarUrl }} style={styles.image} /> // -2-
+			</ImageBackground>
+		</SafeAreaView>
+	);
+}
+
+const styles = StyleSheet.create({
+	flex: { flex: 1 },
+	imageBackground: { padding: 10 },
+	image: {
+		// -3-
+		width: avatarSize,
+		height: avatarSize,
+		borderRadius: avatarSize / 2,
+		// -3-
+	},
+});
+```
+
+1.  `source` 부분에 `require` 이용해서 Js 코드에 내장해서 내보낸다는 의미
+2.  `uri` 속성을 이용해서 서버 주소에서 `렌더링 시 가져온다는` 의미
+3.  `size`를 정해놓고 사용해야 함
+
+    - background의 경우 전체 속성이라 flex로 사용해도 무관
+    - 그러나 Image 의 경우 정해진 w,h 사용
+
+      > 정리
+
+           source : `{{url : ''}}` `css` 속성으로 사용
+           require : `{require: ''}`  `Node.js 제공` require API
+           SafeArea 부분에서의 padding만 ios, android 다른 값
+
+### 폰트 직접 설정하고 사용하기
+
+> 폰트를 내려받아 사용하는 법 학습
+
+- `./src/assets/fonts` directory에 다운받아서 놔두면 된다.
+
+- 원래 `R/N의` 경우 기본 폰트를 제공하기 때문에 특별히 폰트를 설치하지 않아도
+  - → `텍스트가 화면에 나타남`
+  - 그래도 사용하고 싶은 폰트가 따로 있을 수 있으므로 사용가능하게 설정해줌
+  - 이 때 `설정한 폰트가 정상 동작하지 않으면` `기본 폰트가 동작`하기 때문에 오류 검출 힘듬
+
+> 다음으로 폰트를 앱에 반영하는 방법 학습
+
+#### react-native.config.js
+
+> 폰트를 적용시키기 위해서는 react-native.config.js 파일 필요
+
+1. react-native.config.js 라는 구성 파일이 필요함
+2. npx react-native link 실행
+
+- react-native.config.js
+
+```tsx
+module.exports = {
+	// -1-
+	project: {
+		// -1-
+		ios: {}, // -2-
+		android: {}, // -2-
+	},
+
+	assets: ['./src/assets/fonts'],
+};
+```
+
+1. `project` 키가 반드시 있어야함
+2. project가 `ios`, `android` 키를 설정
+   - `link` 명령어 ios, android `디렉토리 대상`으로 동작 한다는 것을 명심
+
+#### react-native link 명령으로 폰트 자원 링크
+
+> 이미지 파일과 달리 폰트 파일은 그냥 사용할 수 없음
+
+> 명령어
+
+     npx react-native link
+
+- 명령어 의미
+  - → `project에` `ios`, `android` 키가 있으므로
+  - → `assets` 키에 설정된 내용을 `두 디렉터리에 반영`
+
+```text
+npx react-native link
+info Linking assets to ios project
+warn Group 'Resources' does not exist in your Xcode project. We have created it automatically for you.
+info Linking assets to android project
+success Assets have been successfully linked to your project
+```
+
+- 결과
+  - → `ios` : `Xcode` 프로젝트에 `Resources` 디렉터리 생성
+  - → `android` : `자원을 링크(Linking assets)`
+
+> 그러나 이러면 yarn ios 가 동작하지 않음
+
+     이 문제에 대해서는 뒤에서 설명
+
+#### src/assets 디렉터리와 네이티브 쪽 모듈과의 관계
+
+- `npx react-native link` 명령을 실행하면 `android` 쪽은
+
+  - → `src/assets/fonts` `dir` 파일이 네이티브 쪽으로 복사
+
+- `ios`
+  - `Resources` 항목 생성
+  - 지금 버전에는 잘되나 봄...
+  - 원래는 `yarn ios` 할 시 복사가 일어난다고 명시가 되어있음
+
+#### fontFamily 스타일 속성
+
+- 지금까지는 Text 컴포넌트는 `폰트 설정 없이` 사용
+
+  - → R/N이 `기본 폰트`를 제공
+
+- 그러나 설치한 폰트를 사용하려면
+
+  - → Text의 `fontFamily` 속성에 현재 자원 dir/폰트*파일*이름
+
+- R/N는 CSS와 달리 부모 요소에 텍스트 관련 스타일 속성을 지정 못함
+  - → 번거롭지만 자식 요소에 일일이 설정
+
+```tsx
+        <View style={[styles.flex, styles.padding10]}> // -1-
+          // -2-
+          <Text style={[styles.regular, styles.text]}>{text} []</Text>
+          <Text style={[styles.medium, styles.text]}>{text} []</Text>
+          <Text style={[styles.semiBold, styles.text]}>{text} []</Text>
+          <Text style={[styles.bold, styles.text]}>{text} []</Text>
+          // -2-
+        </View>
+
+
+  regular: {fontFamily: 'DancingScript-Regular', fontWeight: '400'},
+  medium: {fontFamily: 'DancingScript-Medium', fontWeight: '500'},
+  semiBold: {fontFamily: 'DancingScript-SemiBold', fontWeight: '600'},
+  bold: {
+    fontFamily: 'DancingScript-Bold',
+    fontWeight: Platform.select({ios: '700', android: '600'}), // -3-
+  }
+```
+
+1. 부모 컴포넌트에는 `flex`와 `padding` 속성만 지정
+2. 폰트의 경우 귀찮지만 따로 지정을 해야함
+3. 운영체제 별로 `ios : 700`, `android : 600` 다른 값 지정
+   - → android : 700 이 지원이 안됨
+
+#### fontWeight 스타일 속성
+
+> Text 컴포넌트 폰트 외에도 `fontWeight` 스타일 속성 이용
+
+- → 글꼴 두께 변경 가능
+
+- 11가지 지정 가능
+  - `normal`, `bold`, `'100 ~ 900'`
+
+#### textAlign 스타일 속성
+
+- Text 컴포넌트에 width, height 스타일 속성 적용 시
+
+  - → `전체 텍스트 크기 !== Text 컴포넌트 크기` 불일치
+  - → 꼭 `width, height 문제가 아닌` 그냥 `길어서` 문제 생기는 경우도 발생
+
+- 이럴 때 textAlign 사용
+  1. `left` : `default`
+  2. `center`
+  3. `right`
+
+#### react-native-icons 아이콘 패키지
+
+> 설치
+
+     npx react-native link react-native-vector-icons
+
+> 삭제
+
+     npx react-native unlink react-native-vector-icons
+
+- 아이콘 가져오기
+
+```tsx
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+```
+
+- Icon 컴포넌트 사용법
+
+```tsx
+<Icon name='아이콘_이름' size={아이콘_크기} colors='아이콘_색상' onPress={콜백_함수}>
+```
+
+### 맥에서 Xcode로 react-native-vector-icons 패키지 설정하기
+
+- 앞서 설정한 `npx react-native link react-native-vector-icons`
+
+  - → ios 디렉터리의 `Podfile`에 이 패키지와 관련된 내용을 삽입만 함
+
+- 즉 원격지의 패키지가 개발 컴퓨터 쪽에 설치되지 않은 상태
+  - → pod install 을 하여서 설치를 진행하여야 함
+
+> 진행
+
+     cd ios && npx pod-install
+
+> 오류 해결법
+
+1. 파일 디렉토리의 ios 폳더로 들어가서 .xcworkspace 파일을 더블클릭
+2. 설치 폰트 이외 다른 모든 것들은 삭제한다.
+   - → shift 키 누르고 모두 삭제
+
+### flex: 1의 의미

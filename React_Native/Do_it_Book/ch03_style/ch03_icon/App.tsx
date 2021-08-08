@@ -7,14 +7,17 @@ import {
   Platform,
   Text,
   View,
+  Alert,
 } from 'react-native';
 import * as D from './src/data';
+import {Colors} from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const avatarUrl = D.randomAvatarUrl();
 const avatarSize = 50;
 
 const text = 'Almost before we knew it, we had left the ground';
-
+const onIconPressed = () => Alert.alert('icon pressed');
 export default function App() {
   return (
     <SafeAreaView style={[styles.flex]}>
@@ -23,11 +26,17 @@ export default function App() {
         source={require('./src/assets/images/bg.jpg')}>
         <Image source={{uri: avatarUrl}} style={styles.image} />
         <View style={[styles.flex, styles.padding10]}>
-          <Text style={[styles.regular, styles.text]}>{text} []</Text>
-          <Text style={[styles.medium, styles.text]}>{text} []</Text>
-          <Text style={[styles.semiBold, styles.text]}>{text} []</Text>
-          <Text style={[styles.bold, styles.text]}>{text} []</Text>
+          <Text style={[styles.regular, styles.text]}>{text} [regular]</Text>
+          <Text style={[styles.medium, styles.text]}>{text} [medium]</Text>
+          <Text style={[styles.semiBold, styles.text]}>{text} [semi bold]</Text>
+          <Text style={[styles.bold, styles.text]}>{text} [bold]</Text>
         </View>
+        <Icon
+          name="home"
+          size={50}
+          color={Colors.lightBlue500}
+          onPress={onIconPressed}
+        />
       </ImageBackground>
     </SafeAreaView>
   );
