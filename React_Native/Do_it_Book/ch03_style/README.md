@@ -758,3 +758,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
    - → shift 키 누르고 모두 삭제
 
 ### flex: 1의 의미
+
+- View 컴포넌트에 `flex: 1` 스타일 속성이 없다면
+
+  - → `height(bgImage) - (paddingTop + paddingBottom)` 만큼의 높이 여분이 생김
+  - `flex 스타일 속성에 0 이 아닌 값`을 가지는 컴포넌트가 없다면 `여분이 남게됨`
+
+- 하지만 `flex: 1` 을 설정하게 된다면 `ImageBackground`와 같은 `부모 컴포넌트`의 `height 여분`이
+  - → 모두 `flex : 1` 인 `컴포넌트의 높이`가 됨
+
+## 컴포넌트 배치 관련 스타일 속성 탐구
