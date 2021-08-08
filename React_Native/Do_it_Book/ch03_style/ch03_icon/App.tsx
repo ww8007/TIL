@@ -1,115 +1,50 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
+import React from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  ImageBackground,
+  Image,
+  Platform,
+  Text,
+  View,
+} from 'react-native';
+import * as D from './src/data';
 
- import React from 'react';
- import {
-   SafeAreaView,
-   ScrollView,
-   StatusBar,
-   StyleSheet,
-   Text,
-   useColorScheme,
-   View,
- } from 'react-native';
+const avatarUrl = D.randomAvatarUrl();
+const avatarSize = 50;
 
- import {
-   Colors,
-   DebugInstructions,
-   Header,
-   LearnMoreLinks,
-   ReloadInstructions,
- } from 'react-native/Libraries/NewAppScreen';
+const text = 'Almost before we knew it, we had left the ground';
 
- const Section: React.FC<{
-   title: string;
- }> = ({children, title}) => {
-   const isDarkMode = useColorScheme() === 'dark';
-   return (
-     <View style={styles.sectionContainer}>
-       <Text
-         style={[
-           styles.sectionTitle,
-           {
-             color: isDarkMode ? Colors.white : Colors.black,
-           },
-         ]}>
-         {title}
-       </Text>
-       <Text
-         style={[
-           styles.sectionDescription,
-           {
-             color: isDarkMode ? Colors.light : Colors.dark,
-           },
-         ]}>
-         {children}
-       </Text>
-     </View>
-   );
- };
+export default function App() {
+  return (
+    <SafeAreaView style={[styles.flex]}>
+      <ImageBackground
+        style={[styles.imageBackground, styles.flex]}
+        source={require('./src/assets/images/bg.jpg')}>
+        <Image source={{uri: avatarUrl}} style={styles.image} />
+        <View style={[styles.flex, styles.padding10]}>
+          <Text style={[styles.regular, styles.text]}>{text} []</Text>
+          <Text style={[styles.medium, styles.text]}>{text} []</Text>
+          <Text style={[styles.semiBold, styles.text]}>{text} []</Text>
+          <Text style={[styles.bold, styles.text]}>{text} []</Text>
+        </View>
+      </ImageBackground>
+    </SafeAreaView>
+  );
+}
 
- const App = () => {
-   const isDarkMode = useColorScheme() === 'dark';
+const styles = StyleSheet.create({
+  flex: {flex: 1},
+  imageBackground: {padding: 10},
+  image: {width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2},
+  padding10: {padding: 10},
+  text: {textAlign: 'center', fontSize: 25, color: 'black', marginBottom: 10},
 
-   const backgroundStyle = {
-     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-   };
-
-   return (
-     <SafeAreaView style={backgroundStyle}>
-       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-       <ScrollView
-         contentInsetAdjustmentBehavior="automatic"
-         style={backgroundStyle}>
-         <Header />
-         <View
-           style={{
-             backgroundColor: isDarkMode ? Colors.black : Colors.white,
-           }}>
-           <Section title="Step One">
-             Edit <Text style={styles.highlight}>App.js</Text> to change this
-             screen and then come back to see your edits.
-           </Section>
-           <Section title="See Your Changes">
-             <ReloadInstructions />
-           </Section>
-           <Section title="Debug">
-             <DebugInstructions />
-           </Section>
-           <Section title="Learn More">
-             Read the docs to discover what to do next:
-           </Section>
-           <LearnMoreLinks />
-         </View>
-       </ScrollView>
-     </SafeAreaView>
-   );
- };
-
- const styles = StyleSheet.create({
-   sectionContainer: {
-     marginTop: 32,
-     paddingHorizontal: 24,
-   },
-   sectionTitle: {
-     fontSize: 24,
-     fontWeight: '600',
-   },
-   sectionDescription: {
-     marginTop: 8,
-     fontSize: 18,
-     fontWeight: '400',
-   },
-   highlight: {
-     fontWeight: '700',
-   },
- });
-
- export default App;
+  regular: {fontFamily: 'DancingScript-Regular', fontWeight: '400'},
+  medium: {fontFamily: 'DancingScript-Medium', fontWeight: '500'},
+  semiBold: {fontFamily: 'DancingScript-SemiBold', fontWeight: '600'},
+  bold: {
+    fontFamily: 'DancingScript-Bold',
+    fontWeight: Platform.select({ios: '700', android: '600'}),
+  },
+});
