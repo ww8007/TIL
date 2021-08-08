@@ -424,3 +424,5 @@ const styles = StyleSheet.create({
 ```tsx
 paddingLeft: Platform.select({ ios: 0, android: 20 });
 ```
+
+## 자원과 아이콘 사용하기
