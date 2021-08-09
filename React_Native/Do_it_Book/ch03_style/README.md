@@ -1048,3 +1048,460 @@ const styles = StyleSheet.create({
      yarn add react-native-vector-icons react-native-paper color faker
      yarn add @types/color @types/faker --dev
      yarn add @types/react-native-vector-icons --dev
+     yarn add moment moment-with-locales-es6
+
+> 복사
+
+     cp -r ../ch03_display/src .
+     rm ./src/screens/*.*
+
+### ScrollView 대신 FlatList 코어 컴포넌트 사용하기
+
+- 지금까지는 ScrollView 를 이용해서 배열 아이템 화면에 렌더링
+- → R/N 은 렌더링에 최적화된 FlatList 코어 컴포넌트 제공
+  - 똑같은 컴포넌트를 여러 개 렌더링할 때는 FlatList 사용하는 것이 좀 더 속도가 빠름
+
+```tsx
+import { FlatList } from 'react-native';
+```
+
+- FlatList는 ScrollView 보다 사용법이 조금 복잡
+  1.  `data` 라는 속성을 제공
+  2.  `renderItem` 속성 제공
+  3.  `keyExtractor` 속성 제공
+      - `item`, `index` 속성 이용해서
+      - → `renderItem` 이 반환하는 `콜백함수`에 지정할 `key` 값
+  4.  `ItemSeparatorComponent`
+      - 콜백 함수가 반환하는 컴포넌트를 아이템과 아이템 간의 구분자 역할
+
+```tsx
+<FlatList
+  data={person}
+  renderItem={({item})=> <Person person={item}>}
+  keyExtractor={(item, index) => item.id}
+  ItemSeparatorComponent={()=> <View style={styles.itemSeparator} />}
+  />
+```
+
+- Ts 관점에서 `type T의 배열` `T[]` 타입 데이터를 `data 속성에 설정`하려면
+
+  - `renderItem`에는 `({item}: {item: T}) => { }`
+  - `T 타입 데이터`, item 이란 이름의 속성이 있는 객체를 매개변수로 하는 콜백 함수
+
+- `renderItem` 이 반환하는 리액트 요소에는 `key 속성 설정 부분이 빠져있음`
+  - → `keyExtractor` 속성에 `item` 과 `index` 값이 `매개변수인 콜백 함수를 지정`해
+  - `renderItem` 에 설정한 `콜백 함수가 반환 하는 컴포넌트`의 `key 속성에 설정할 값 얻음`
+
+```tsx
+import React from 'react';
+import { SafeAreaView, StyleSheet, FlatList, View } from 'react-native';
+import { Colors } from 'react-native-paper';
+import color from 'color';
+import Person from './src/copy/Person';
+import * as D from './src/data';
+
+const people: D.IPerson[] = D.makeArray(10).map(D.createRandomPerson);
+
+export default function App() {
+	return (
+		<SafeAreaView style={styles.flex}>
+			<FlatList
+				// -1-
+				data={people}
+				renderItem={({ item }) => <Person person={item} />}
+				keyExtractor={(item, index) => item.id}
+				ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+				// -1-
+			/>
+		</SafeAreaView>
+	);
+}
+
+const styles = StyleSheet.create({
+	flex: { flex: 1 },
+	// -2-
+	itemSeparator: {
+		borderWidth: 1,
+		borderColor: color(Colors.green500).lighten(0.3).string(),
+	},
+	// -2-
+});
+```
+
+1. 위에 설명 되어 있는 `data`, `renderItem`, `keyExtractor`, `ItemSeparatorComponent` 설정
+2. `ItemSeparatorComponent` style 이용해서 `구분자`로 사용
+
+<img src="https://user-images.githubusercontent.com/54137044/128683884-702ea7ce-e505-47bf-b274-eba76f4537fb.png" width="200px" >
+
+### moment 패키지 기능 사용하기
+
+- Js, Ts 는 날짜와 시간 관련 기능을 처리하는 Date 클래스를 제공
+- Date : 클래스 → 기능 사용하기 위해서는 new 연산자를 이용해서 인스턴스를 생성
+
+- moment 는 Date 클래스가 제공하지 않는 몇 가지 편의기능을 제공하기 때문에 사용하게 됨
+
+```tsx
+import moment from 'moment';
+```
+
+### 재사용할 수 있는 컴포넌트란?
+
+- Icon 범용(`general purpose`) 으로 사용할 수 잇는 사용자 컴포넌트 적용
+
+- 하나의 목적에만 부합하는 것이 아니라
+
+  - → `어떤 패턴의 코드에 항상 적용`할 수있는 `사용자 컴포넌트`
+
+- Ts 에서의 `재사용 가능 컴포넌트`를 만들기 위해서는
+
+  1.  `ReactNode`
+  2.  `children`
+  3.  `수신한 속성`을 한꺼번에 다른 컴포넌트에 `전달`
+
+- 위의 사항들에 익숙해 져야함
+
+#### children 속성과 ReactNode 타입
+
+- React.createElement API 타입
+
+```tsx
+function createElement<P extends {}>(
+	type: FunctionComponent<P> | ComponentClass<P> | string,
+	props?: (Attributes & P) | null,
+	...children: ReactNode[]
+): ReactElement<P>;
+```
+
+- 위를 흉내내서 재 사용할 수 있는 컴포넌트를 만들 수 있다.
+
+> 재사용할 수 있는 컴포넌트
+
+```tsx
+import type { FC, ReactNode } from 'react';
+
+type SomeComponentProps = {
+	children?: ReactNode;
+};
+
+export const SomeComponent: FC<SomeComponentProps> = ({ children }) => {
+	return <View>{children}</View>;
+};
+```
+
+- SomeComponent 를 위와 같은 방법으로 구현하면
+  - → 자식 컴포넌트를 자유롭게 바꿔가며 자식 컴포넌트에는 없는 기능을 재사용 할 수 있는 방식으로 제공 가능
+
+##### 타입스크립트 교집합 타입 구문
+
+- Ts는 대수 `데이터 타입(algebraic data type, ADT)`을 지원
+  - 대수 데이터 타입은
+  1. A `또는` B → `A | B` → 합집합
+  2. A `타입 이면서` B → `A & B` → 교집합
+
+#### TouchableView 컴포넌트 만들기
+
+> 아래와 같이 사용하기 위해서 생성
+
+```tsx
+<TouchableView onPress={()=> Alert.alert('text pressed')}>
+  <Text>hello</Text>
+  <Text>world!<Text>
+</TouchableView>
+```
+
+- TouchableView
+
+```tsx
+import React from 'react';
+import type { ReactNode } from 'react';
+import { View, TouchableOpacity } from 'react-native';
+
+export type TouchableViewProps = {
+	children?: ReactNode;
+};
+
+export default function TouchableView({ children }: TouchableViewProps) {
+	return (
+		<TouchableOpacity>
+			<View>{children}</View>
+		</TouchableOpacity>
+	);
+}
+```
+
+- 위의 기본 코드에 onPress 와 viewStyle 같은 속성을 추가하려고 함
+  - → 그러기 위해서 ComponentProps 와 react-native 가 제공하는 StyleProp 학습
+
+```tsx
+<TouchableOpacity onPress={onPress}>
+	{' '}
+	// -1-
+	<View style={viewStyle}>{children}</View> // -2-
+</TouchableOpacity>
+```
+
+1. onPress 추가
+2. style 추가
+
+##### ComponentProps 타입
+
+> React 패키지는 ComponentProps 타입을 제공
+
+```tsx
+import type { ComponentProps } from 'react';
+```
+
+- ComponentProps 타입은 `제네릭(generic) type`
+
+```tsx
+속성_타입 = ComponentProps<typeof 컴포넌트_이름>
+// 사용법
+type TouchableOpacityProps = ComponentProps<typeof TouchableOpacity>
+```
+
+##### JSX {...props} 구문
+
+- 앞서 TouchableOpacity의 onPress 이벤트 속성에 다음처럼 onPress 속성을 설정한 코드를 본 적 있음
+
+```tsx
+<TouchableOpacity onPress={onPress}>
+```
+
+```tsx
+import React from 'react';
+import type { ReactNode, ComponentProps } from 'react';
+import { View, TouchableOpacity } from 'react-native';
+
+type TouchableOpacityProps = ComponentProps<typeof TouchableOpacity>;
+
+export type TouchableViewProps = {
+	children?: ReactNode;
+	onPress?: () => void; // -1-
+};
+
+export default function TouchableView({
+	children,
+	onPress,
+}: TouchableViewProps) {
+	return (
+		// -2-
+		<TouchableOpacity onPress={onPress}>
+			// -2-
+			<View>{children}</View>
+		</TouchableOpacity>
+	);
+}
+```
+
+1. `Props`에 `onPress` 함수 추가
+2. `재사용 가능 컴포넌트`로 만든 `TouchableView` 에 만들어준 `onPress` 추가
+
+> 좀 더 좋게 작성
+
+```tsx
+import React from 'react';
+import type { ReactNode, ComponentProps } from 'react';
+import { View, TouchableOpacity } from 'react-native';
+
+type TouchableOpacityProps = ComponentProps<typeof TouchableOpacity>;
+
+// -1-
+export type TouchableViewProps = TouchableOpacityProps & {
+	children?: ReactNode;
+};
+
+export default function TouchableView({
+	children,
+	...touchableProps // -2-
+}: TouchableViewProps) {
+	return (
+		// -2-
+		<TouchableOpacity {...touchableProps}>
+			<View>{children}</View>
+		</TouchableOpacity>
+	);
+}
+```
+
+1. Ts의 `교집합(&)`을 사용해서 `TouchableViewProps` 타입을 선언
+2. `잔여 연산자 구문`으로 `TouchableOpacityProps` 부분을 얻은 다음
+   - → `JSX`의 `{...props}` 구문을 이용해서 `TouchableOpacity의` 속성을 `한꺼번에 넘겨줌`
+
+#### 잔여 연산자
+
+> ESNext Js, Ts 는 점을 연이어 3개를 사용하는 `잔여 연산자(rest operator)`
+
+```tsx
+let address: any = {
+	county: 'Korea',
+	city: 'Seoul',
+	add1: 'abc',
+	add2: 'def',
+	add3: 'kij',
+};
+const { country, city, ...detail } = address; // -1-
+```
+
+1. `address` 변수의 5개 속성중 country, city 속성을 `제외한 나머지 속성`을
+   → `detail` 이라는 `변수로 저장`하고 싶다면 변수 앞에 `...(잔여 연산자)`를 붙이면 됨
+
+#### FC 타입과 children 속성
+
+- 함수 컴포넌트 타입인 `FC 타입`은 `ReactNode` 타입인 `children` 속성을 포함
+
+> FC를 사용하면 장점이 이거 하나는 있는듯 함
+
+     근데 굳이...? 난 그냥 함수형으로 작성할래
+
+#### StyleProp 타입
+
+- R/N 패키지는 다음과 같이 StyleProp 타입을 제공
+
+```tsx
+import type { StyleProp } from 'react-native';
+```
+
+- 모든 R/N 컴포넌트는 `컴포넌트_이름Style` 형식의 타입을 지원
+
+- StyleProp 타입은 제네릭 타입
+
+```tsx
+viewStyle?: StyleProp<ViewStyle>
+```
+
+```tsx
+import React from 'react';
+import type { ReactNode, ComponentProps } from 'react';
+import { View, TouchableOpacity } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
+
+type TouchableOpacityProps = ComponentProps<typeof TouchableOpacity>;
+
+export type TouchableViewProps = TouchableOpacityProps & {
+	children?: ReactNode;
+	viewStyle?: StyleProp<ViewStyle>; // -1-
+};
+
+export default function TouchableView({
+	children,
+	viewStyle, // -2-
+	...touchableProps
+}: TouchableViewProps) {
+	return (
+		<TouchableOpacity {...touchableProps}>
+			//-2-
+			<View style={[viewStyle]}>{children}</View>
+		</TouchableOpacity>
+	);
+}
+```
+
+1. `viewStyle` 을 `Props` 목록에 추가
+   - → `viewStyle?: StyleProp<ViewStyle>` 방법을 이용
+2. 넘겨받은 `style`을 `viewStyle에` 적용
+
+> 여기에는 flex: 1 과 같은 스타일링이 없음
+
+     `{children}` 의 크기를 자신의 크기로 하겠다는 의사표시
+
+#### Avatar 컴포넌트 만들기
+
+- 여기서 만들 컴포넌트는 JSX 코드를 염두에 두고 동작하도록 설계한 컴포넌트
+- `uri, size`는 Avatar의 `고유속성`
+- `viewStyle, onPress` 는 Avatar 를 구현 하는데 사용하는 TouchableView 의 속성
+
+```tsx
+import React, { ReactNode } from 'react';
+import { Image } from 'react-native';
+import type { StyleProp, ImageStyle } from 'react-native';
+import TouchableView, { TouchableViewProps } from './TouchableView';
+
+export type AvatarProps = TouchableViewProps & {
+	uri: string;
+	size: number;
+	imageStyle?: StyleProp<ImageStyle>;
+	children?: ReactNode;
+};
+
+export default function Avatar({
+	size,
+	uri,
+	imageStyle,
+	...touchableViewProp
+}: AvatarProps) {
+	return (
+		<TouchableView {...touchableViewProp}>
+			<Image
+				source={{ uri }}
+				style={[
+					imageStyle,
+					{ width: size, height: size, borderRadius: size / 2 },
+				]}
+			/>
+		</TouchableView>
+	);
+}
+```
+
+#### IconText 컴포넌트 만들기
+
+```tsx
+import React, { ComponentProps } from 'react';
+import { TextStyle, StyleProp, Text } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import TouchableView from './TouchableView';
+import type { TouchableViewProps } from './TouchableView';
+
+export type IconTextProps = TouchableViewProps &
+	ComponentProps<typeof Icon> & {
+		text: number | string;
+		textStyle: StyleProp<TextStyle>;
+	};
+
+export default function IconText({
+	name,
+	size,
+	color,
+	textStyle,
+	text,
+	...touchableView
+}: IconTextProps) {
+	return (
+		<TouchableView {...touchableView}>
+			<Icon name={name} size={size} color={color} />
+			<Text style={textStyle}>{text}</Text>
+		</TouchableView>
+	);
+}
+```
+
+#### 사용하기 편하게 내보내기
+
+> index.ts 를 통해 내보내서 어디서든 사용하기 편하게 함
+
+```tsx
+export * from './TouchableView';
+export * from './Avatar';
+export * from './IconText';
+```
+
+#### Text 코어 컴포넌트의 속성 탐구
+
+- `Text`는 화면에 `텍스트를 렌더링`하는 컴포넌트
+- 렌더링하는 `텍스트 줄 수를 제한`하려면 `numberOfLines` 속성에 원하는 줄 수를 설정
+
+```tsx
+<Text numberOfLines={3}>{text}</Text>
+```
+
+- 또한 `numberOfLines` 속성에 따라 텍스트 `일부가 나타나지 않는`다면
+  - → `ellipsizeMode` 속성을 사용해서 `남은 텍스트가 있음`을
+  - `...` 형태로 보여줄 수 있음
+
+> ellipsizeMode 속성 지정 가능 값
+
+     1. head
+     2. middle
+     3. tail
+     4. clip
+
