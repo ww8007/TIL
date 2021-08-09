@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {Colors} from 'react-native-paper';
-import * as D from '../data';
+
 const title = 'CopyMe';
 export default function CopyMe() {
   return (
