@@ -1,10 +1,80 @@
 # 컴포넌트 스타일링
 
+## 목차
+
+- [컴포넌트 스타일링](#%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EC%8A%A4%ED%83%80%EC%9D%BC%EB%A7%81)
+  - [03-1 style 속성과 StyleSheet API 이해](#03-1-style-%EC%86%8D%EC%84%B1%EA%B3%BC-stylesheet-api-%EC%9D%B4%ED%95%B4)
+    - [style 속성과 스타일 객체](#style-%EC%86%8D%EC%84%B1%EA%B3%BC-%EC%8A%A4%ED%83%80%EC%9D%BC-%EA%B0%9D%EC%B2%B4)
+      - [스타일 속성의 이름 표기법](#%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1%EC%9D%98-%EC%9D%B4%EB%A6%84-%ED%91%9C%EA%B8%B0%EB%B2%95)
+        - [요가 엔진](#%EC%9A%94%EA%B0%80-%EC%97%94%EC%A7%84)
+      - [style 속성에 배열 설정 구문](#style-%EC%86%8D%EC%84%B1%EC%97%90-%EB%B0%B0%EC%97%B4-%EC%84%A4%EC%A0%95-%EA%B5%AC%EB%AC%B8)
+      - ['뷰' 컴포넌트의 backgroundColor 스타일 속성](#%EB%B7%B0-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-backgroundcolor-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+      - [StyleSheet API](#stylesheet-api)
+        - [인라인 스타일과 StyleSheet 스타일의 차이](#%EC%9D%B8%EB%9D%BC%EC%9D%B8-%EC%8A%A4%ED%83%80%EC%9D%BC%EA%B3%BC-stylesheet-%EC%8A%A4%ED%83%80%EC%9D%BC%EC%9D%98-%EC%B0%A8%EC%9D%B4)
+      - [구글 material 디자인 색상과 react-native-paper 패키지](#%EA%B5%AC%EA%B8%80-material-%EB%94%94%EC%9E%90%EC%9D%B8-%EC%83%89%EC%83%81%EA%B3%BC-react-native-paper-%ED%8C%A8%ED%82%A4%EC%A7%80)
+        - [디자인 색상 테마와 color 패키지](#%EB%94%94%EC%9E%90%EC%9D%B8-%EC%83%89%EC%83%81-%ED%85%8C%EB%A7%88%EC%99%80-color-%ED%8C%A8%ED%82%A4%EC%A7%80)
+  - [View 컴포넌트와 CSS 박스 모델](#view-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%99%80-css-%EB%B0%95%EC%8A%A4-%EB%AA%A8%EB%8D%B8)
+    - [Platform과 Dimensions API](#platform%EA%B3%BC-dimensions-api)
+    - [뷰 컴포넌트의 backgroundColor 스타일 속성](#%EB%B7%B0-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-backgroundcolor-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+    - [width와 height 스타일 속성과 값 설정 방법](#width%EC%99%80-height-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1%EA%B3%BC-%EA%B0%92-%EC%84%A4%EC%A0%95-%EB%B0%A9%EB%B2%95)
+      - [1,2. 명시적으로 픽셀 단위의 값 설정](#12-%EB%AA%85%EC%8B%9C%EC%A0%81%EC%9C%BC%EB%A1%9C-%ED%94%BD%EC%85%80-%EB%8B%A8%EC%9C%84%EC%9D%98-%EA%B0%92-%EC%84%A4%EC%A0%95)
+      - [3. 부모 요소 크기를 기준으로 퍼센트를 설정](#3-%EB%B6%80%EB%AA%A8-%EC%9A%94%EC%86%8C-%ED%81%AC%EA%B8%B0%EB%A5%BC-%EA%B8%B0%EC%A4%80%EC%9C%BC%EB%A1%9C-%ED%8D%BC%EC%84%BC%ED%8A%B8%EB%A5%BC-%EC%84%A4%EC%A0%95)
+      - [4. flex 스타일 속성](#4-flex-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+      - [5. margin 스타일 속성](#5-margin-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+      - [padding 스타일 속성](#padding-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+      - [border 관련 스타일 속성](#border-%EA%B4%80%EB%A0%A8-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+      - [SafeAreaView in ios, android](#safeareaview-in-ios-android)
+        - [Platform.select 메서드](#platformselect-%EB%A9%94%EC%84%9C%EB%93%9C)
+  - [자원과 아이콘 사용하기](#%EC%9E%90%EC%9B%90%EA%B3%BC-%EC%95%84%EC%9D%B4%EC%BD%98-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+    - [배경에서 사용할 이미지 내려받기](#%EB%B0%B0%EA%B2%BD%EC%97%90%EC%84%9C-%EC%82%AC%EC%9A%A9%ED%95%A0-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%82%B4%EB%A0%A4%EB%B0%9B%EA%B8%B0)
+    - [ImageBackground 코어 컴포넌트 사용하기](#imagebackground-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+      - [base64 인코딩 방식 이미지 삽입](#base64-%EC%9D%B8%EC%BD%94%EB%94%A9-%EB%B0%A9%EC%8B%9D-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%82%BD%EC%9E%85)
+    - [Image 코어 컴포넌트](#image-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8)
+    - [폰트 직접 설정하고 사용하기](#%ED%8F%B0%ED%8A%B8-%EC%A7%81%EC%A0%91-%EC%84%A4%EC%A0%95%ED%95%98%EA%B3%A0-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+      - [react-native.config.js](#react-nativeconfigjs)
+      - [react-native link 명령으로 폰트 자원 링크](#react-native-link-%EB%AA%85%EB%A0%B9%EC%9C%BC%EB%A1%9C-%ED%8F%B0%ED%8A%B8-%EC%9E%90%EC%9B%90-%EB%A7%81%ED%81%AC)
+      - [src/assets 디렉터리와 네이티브 쪽 모듈과의 관계](#srcassets-%EB%94%94%EB%A0%89%ED%84%B0%EB%A6%AC%EC%99%80-%EB%84%A4%EC%9D%B4%ED%8B%B0%EB%B8%8C-%EC%AA%BD-%EB%AA%A8%EB%93%88%EA%B3%BC%EC%9D%98-%EA%B4%80%EA%B3%84)
+      - [fontFamily 스타일 속성](#fontfamily-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+      - [fontWeight 스타일 속성](#fontweight-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+      - [textAlign 스타일 속성](#textalign-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+      - [react-native-icons 아이콘 패키지](#react-native-icons-%EC%95%84%EC%9D%B4%EC%BD%98-%ED%8C%A8%ED%82%A4%EC%A7%80)
+    - [맥에서 Xcode로 react-native-vector-icons 패키지 설정하기](#%EB%A7%A5%EC%97%90%EC%84%9C-xcode%EB%A1%9C-react-native-vector-icons-%ED%8C%A8%ED%82%A4%EC%A7%80-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0)
+    - [flex: 1의 의미](#flex-1%EC%9D%98-%EC%9D%98%EB%AF%B8)
+  - [컴포넌트 배치 관련 스타일 속성 탐구](#%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EB%B0%B0%EC%B9%98-%EA%B4%80%EB%A0%A8-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1-%ED%83%90%EA%B5%AC)
+    - [flex:1 과 height : '100%'의 차이](#flex1-%EA%B3%BC-height--100%25%EC%9D%98-%EC%B0%A8%EC%9D%B4)
+    - [flexDirection 스타일 속성](#flexdirection-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+    - [alignItems 스타일 속성](#alignitems-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+    - [justifyContent](#justifycontent)
+    - [flexWrap 스타일 속성](#flexwrap-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+    - [overflow 스타일 속성](#overflow-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+    - [ScrollView의 contentContainerStyle 속성](#scrollview%EC%9D%98-contentcontainerstyle-%EC%86%8D%EC%84%B1)
+    - [화면에 뜬 효과 보여주기](#%ED%99%94%EB%A9%B4%EC%97%90-%EB%9C%AC-%ED%9A%A8%EA%B3%BC-%EB%B3%B4%EC%97%AC%EC%A3%BC%EA%B8%B0)
+    - [React.Fragment 컴포넌트와 <> 단축 구문](#reactfragment-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%99%80--%EB%8B%A8%EC%B6%95-%EA%B5%AC%EB%AC%B8)
+      - [left, right, top, bottom과 position 스타일 속성](#left-right-top-bottom%EA%B3%BC-position-%EC%8A%A4%ED%83%80%EC%9D%BC-%EC%86%8D%EC%84%B1)
+  - [재사용할 수 있는 컴포넌트 만들기](#%EC%9E%AC%EC%82%AC%EC%9A%A9%ED%95%A0-%EC%88%98-%EC%9E%88%EB%8A%94-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+    - [ScrollView 대신 FlatList 코어 컴포넌트 사용하기](#scrollview-%EB%8C%80%EC%8B%A0-flatlist-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+    - [moment 패키지 기능 사용하기](#moment-%ED%8C%A8%ED%82%A4%EC%A7%80-%EA%B8%B0%EB%8A%A5-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+    - [재사용할 수 있는 컴포넌트란?](#%EC%9E%AC%EC%82%AC%EC%9A%A9%ED%95%A0-%EC%88%98-%EC%9E%88%EB%8A%94-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EB%9E%80)
+      - [children 속성과 ReactNode 타입](#children-%EC%86%8D%EC%84%B1%EA%B3%BC-reactnode-%ED%83%80%EC%9E%85)
+        - [타입스크립트 교집합 타입 구문](#%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8-%EA%B5%90%EC%A7%91%ED%95%A9-%ED%83%80%EC%9E%85-%EA%B5%AC%EB%AC%B8)
+      - [TouchableView 컴포넌트 만들기](#touchableview-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+        - [ComponentProps 타입](#componentprops-%ED%83%80%EC%9E%85)
+        - [JSX {...props} 구문](#jsx-props-%EA%B5%AC%EB%AC%B8)
+      - [잔여 연산자](#%EC%9E%94%EC%97%AC-%EC%97%B0%EC%82%B0%EC%9E%90)
+      - [FC 타입과 children 속성](#fc-%ED%83%80%EC%9E%85%EA%B3%BC-children-%EC%86%8D%EC%84%B1)
+      - [StyleProp 타입](#styleprop-%ED%83%80%EC%9E%85)
+      - [Avatar 컴포넌트 만들기](#avatar-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+      - [IconText 컴포넌트 만들기](#icontext-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+      - [사용하기 편하게 내보내기](#%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0-%ED%8E%B8%ED%95%98%EA%B2%8C-%EB%82%B4%EB%B3%B4%EB%82%B4%EA%B8%B0)
+      - [Text 코어 컴포넌트의 속성 탐구](#text-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-%EC%86%8D%EC%84%B1-%ED%83%90%EA%B5%AC)
+
 ## 03-1 style 속성과 StyleSheet API 이해
 
 1. 컴포넌트의 `style` 속성
 2. `StyleSheet API`
 3. `구글 머터리얼 디자인` 색상
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### style 속성과 스타일 객체
 
@@ -17,6 +87,8 @@
 ```tsx
 <SafeAreaView style={{}}>
 ```
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### 스타일 속성의 이름 표기법
 
@@ -36,6 +108,8 @@
 </SafeAreaView>
 ```
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ##### 요가 엔진
 
 - `R/N`는 웹 브라우저에서 단순히 `Js 엔진만` 떼어 낸 것
@@ -50,8 +124,11 @@
 
 - div 와 같은 HTML 요소에는 `style attribute(속성)` 사용 가능
 - 모든 `R/N` 코어 컴포넌트에는 style 속성이 존재
+
   - → Yoga 엔진이 이를 해석해서 `안드로이드 프레임워크`
   - → `IOS`의 `UIKit` 프레임 워크가 요구하는 스타일링 수행
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### style 속성에 배열 설정 구문
 
@@ -62,6 +139,8 @@
 ```tsx
 <컴포넌트_이름 style={[스타일_객체1, 스타일_객체2]}>
 ```
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### '뷰' 컴포넌트의 backgroundColor 스타일 속성
 
@@ -80,6 +159,8 @@
   - → `color` 속성으로 자신의 `글자 색` 설정 불가
 
 > 스타일 객체를 style 속성에 지정하면 이는 `인라인 스타일(inline style)`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### StyleSheet API
 
@@ -102,6 +183,8 @@ import { StyleSheet } from 'react-native';
   - → 불필요한 자바스크립트 `엔진 스레드`와 `네이티브 UI` 스레드간 `데이터 전송이 없어`
   - → `렌더링 속도`가 `빨라짐`
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ##### 인라인 스타일과 StyleSheet 스타일의 차이
 
 - 컴포넌트는 필요에 따라 리액트 네이티브에 의해 `재렌더링`
@@ -112,6 +195,8 @@ import { StyleSheet } from 'react-native';
   - → 내용이 컴포넌트 로직에 의해 바뀌지 않을 때는 `디스플레이 속도 ↓`
 
 > `정적` 스타일 → `StyleSheet.create` > `동적`(컴포넌트 로직에 의해 변화) → `인라인 스타일`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### 구글 material 디자인 색상과 react-native-paper 패키지
 
@@ -139,6 +224,8 @@ import { Colors } from 'react-native-paper';
 > 설치
 
      yarn add react-native-vector-icons react-native-paper
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ##### 디자인 색상 테마와 color 패키지
 
@@ -204,9 +291,13 @@ const styles = StyleSheet.create({
 });
 ```
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ## View 컴포넌트와 CSS 박스 모델
 
 - CSS 박스 모델과 View의 스타일 속성 학습
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### Platform과 Dimensions API
 
@@ -231,6 +322,8 @@ const { width, height } = Dimensions.get('window');
 
 - 비구조화 할당 구문을 이용하여 width, height 정보를 알아냄
   - 폰을 회전(landscape) 모드라도 변하지 않음
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### 뷰 컴포넌트의 backgroundColor 스타일 속성
 
@@ -271,6 +364,8 @@ const styles = StyleSheet.create({
 2. `Dimensions.get('window')` 에서 구조분해 된 `width`, `height` 이용해서 너비, 높이 파악
 3. `fontSize` 속성에는 무조건 `undefined, number` 가 들어가야함
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ### width와 height 스타일 속성과 값 설정 방법
 
 - R/N은 CSS 박스 모델을 적용한 컴포넌트를 사용
@@ -282,6 +377,8 @@ const styles = StyleSheet.create({
 2. `pixel` 단위의 `숫자`를 직접 설정
 3. `부모 요소`의 `w, h 기준`으로 `자식 컴포넌트` 크기 `퍼센트(%)` 로 설정
 4. `flex` 속성을 사용하여 `여러 자식 컴포넌트`가 부모 컴포넌트의 크기 분할
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### 1,2. 명시적으로 픽셀 단위의 값 설정
 
@@ -303,6 +400,8 @@ const styles = StyleSheet.create({
 
      값을 담은 변수부분 `생략 가능`
      이를 `단축 구문` 이라고 함
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### 3. 부모 요소 크기를 기준으로 퍼센트를 설정
 
@@ -345,6 +444,8 @@ const styles = StyleSheet.create({
      `w, h 속성`의 `적용 우선순위가 더 높음`
      flex 우선순위가 낮으므로 `flex`를 쓰고 싶다면 `w, h 작성 X`
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### 5. margin 스타일 속성
 
 - `View` 자가 들어간 컴포넌트뿐만 아니라 대부분의 코어 컴포넌트
@@ -385,6 +486,8 @@ const styles = StyleSheet.create({
 });
 ```
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### padding 스타일 속성
 
 - `부모/자식 관계`에서 `부모 컴포넌트 쪽`에 적용하는 스타일 속성
@@ -393,6 +496,8 @@ const styles = StyleSheet.create({
   - → `간격을 주는 것`이 시각적으로 좋아 보임
 
 > margin 에서 사용했던 `Horizontal`, `Vertical` 사용 가능
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### border 관련 스타일 속성
 
@@ -414,6 +519,8 @@ const styles = StyleSheet.create({
     - `padding 스타일 동작 X`
 
 > 아래에서 이 문제를 해결한 방법 제시
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ##### Platform.select 메서드
 
@@ -457,6 +564,8 @@ paddingLeft: Platform.select({ ios: 0, android: 20 });
 - mkdir `폴더1` `폴더2`
   - → 두개의 폴더 생성 가능
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ### 배경에서 사용할 이미지 내려받기
 
 [unsplash]('https://unsplash.com')
@@ -464,6 +573,8 @@ paddingLeft: Platform.select({ ios: 0, android: 20 });
 > 다운로드 한 파일 복사 해오기
 
       cp -R ../../../../../../Downloads bj.jpg
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### ImageBackground 코어 컴포넌트 사용하기
 
@@ -505,6 +616,8 @@ import { ImageBackground } from 'react-native';
    - width, height 두 번 보다 효과적
 2. `source`를 꼭 설정
    - require 방식을 사용해서 `인코딩` 하여 js 파일에 `내장`한다는 점을 기억하자!!!
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### base64 인코딩 방식 이미지 삽입
 
@@ -592,6 +705,8 @@ const styles = StyleSheet.create({
 
 > 다음으로 폰트를 앱에 반영하는 방법 학습
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### react-native.config.js
 
 > 폰트를 적용시키기 위해서는 react-native.config.js 파일 필요
@@ -617,6 +732,8 @@ module.exports = {
 1. `project` 키가 반드시 있어야함
 2. project가 `ios`, `android` 키를 설정
    - `link` 명령어 ios, android `디렉토리 대상`으로 동작 한다는 것을 명심
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### react-native link 명령으로 폰트 자원 링크
 
@@ -646,6 +763,8 @@ success Assets have been successfully linked to your project
 
      이 문제에 대해서는 뒤에서 설명
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### src/assets 디렉터리와 네이티브 쪽 모듈과의 관계
 
 - `npx react-native link` 명령을 실행하면 `android` 쪽은
@@ -656,6 +775,8 @@ success Assets have been successfully linked to your project
   - `Resources` 항목 생성
   - 지금 버전에는 잘되나 봄...
   - 원래는 `yarn ios` 할 시 복사가 일어난다고 명시가 되어있음
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### fontFamily 스타일 속성
 
@@ -695,6 +816,8 @@ success Assets have been successfully linked to your project
 3. 운영체제 별로 `ios : 700`, `android : 600` 다른 값 지정
    - → android : 700 이 지원이 안됨
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### fontWeight 스타일 속성
 
 > Text 컴포넌트 폰트 외에도 `fontWeight` 스타일 속성 이용
@@ -715,6 +838,8 @@ success Assets have been successfully linked to your project
   1. `left` : `default`
   2. `center`
   3. `right`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### react-native-icons 아이콘 패키지
 
@@ -737,6 +862,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 ```tsx
 <Icon name='아이콘_이름' size={아이콘_크기} colors='아이콘_색상' onPress={콜백_함수}>
 ```
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### 맥에서 Xcode로 react-native-vector-icons 패키지 설정하기
 
@@ -766,6 +893,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 - 하지만 `flex: 1` 을 설정하게 된다면 `ImageBackground`와 같은 `부모 컴포넌트`의 `height 여분`이
   - → 모두 `flex : 1` 인 `컴포넌트의 높이`가 됨
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ## 컴포넌트 배치 관련 스타일 속성 탐구
 
@@ -816,6 +945,8 @@ const styles = StyleSheet.create({
 1. 이름과는 달리 아래쪽에 위치 하지 않는 모습을 볼 수 있음
    <img src="https://user-images.githubusercontent.com/54137044/128640636-38aa2d1d-40db-4bd9-9889-5d05bd1eaba6.png" width="200px" >
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ### flex:1 과 height : '100%'의 차이
 
 - 앞 부분에서 flex : 1 을 통해서 아이콘을 화면 아래에 배치
@@ -825,6 +956,8 @@ const styles = StyleSheet.create({
 - 결국 flex 값을 설정하면 내가 expo에서 했던 것과 동일하게 크기를 나눠가지게됨
 
 - `여분 높이 / (1 + 2) X 1` , `여분 높이 / (1 + 2) X 2`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### flexDirection 스타일 속성
 
@@ -888,6 +1021,8 @@ const style = StyleSheet.create({
 2. alignItems 속성을 이용
 3. Text 에 직접적으로 flex 속성을 설정할 수 없으므로 이렇게 View를 이용해서 Text를 감싸도록 한다.
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ### alignItems 스타일 속성
 
 - `alignItems` 스타일 속성은 이름대로 `부모 요소의 높이나 넓이에 여분`이 있을 경우
@@ -901,6 +1036,8 @@ const style = StyleSheet.create({
 - alignItems 는 flexDirection 속성값에 따라서 동작 방향이 달라짐
   - → row : 수직 방향 배치에 영향
   - → column : 수평 방향 배치에 영향
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### justifyContent
 
@@ -927,6 +1064,8 @@ const style = StyleSheet.create({
   - `부모 컴포넌트 - (자식 컴포넌트 넓이의 합)`
   - `(자식 컴포넌트의 수 + 1) 로 나누어` 얻은 `여분 넓이 균등 부여`
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ### flexWrap 스타일 속성
 
 - `줄을 바꿔가며` 정상적으로 렌더링 하고 싶은 경우
@@ -940,6 +1079,8 @@ const style = StyleSheet.create({
      3. wrap-reverse
 
 <img src="https://user-images.githubusercontent.com/54137044/128673437-dd00af18-b874-4976-aeef-f0421e2ae654.png" width="200px" >
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### overflow 스타일 속성
 
@@ -959,6 +1100,8 @@ const style = StyleSheet.create({
 3. `scroll`
    - 웹과 달리 `scroll`을 설정해도 스크롤 효과는 발생하지 않음
    - → 스크롤은 `ScrollView`, `FlatList` 코어 컴포넌트에서만 가능
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### ScrollView의 contentContainerStyle 속성
 
@@ -986,10 +1129,14 @@ export default function CopyMe() {
 1. View → ScrollView, style → contentContainerStyle 두개를 바꿔야지 잘 작동
 2. style 속성에서 `flex : 1` 속성 `없애주는거` 잊지 말기
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ### 화면에 뜬 효과 보여주기
 
 - `화면위에 아이콘이 떠 있는 느낌`
   - → `플로팅 액션 버튼(floating action button)`
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### React.Fragment 컴포넌트와 <></> 단축 구문
 
@@ -1014,6 +1161,8 @@ import React, { Fragment } from 'react';
 > `JSX는` `XML` 문이어야 하기 때문에 `부모 컴포넌트 없이는 여러개의 컴포넌트가 올 수 없음`
 
 - Fragment 는 `실제 존재 하지는 않지만` XML 문법이 요구하는 `부모 컴포넌트로 동작`하도록 만들어짐
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### left, right, top, bottom과 position 스타일 속성
 
@@ -1041,6 +1190,8 @@ const styles = StyleSheet.create({
 
 <img src="https://user-images.githubusercontent.com/54137044/128676584-b7d6eab4-2558-4323-b779-f390cf201460.png" width="200px" >
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ## 재사용할 수 있는 컴포넌트 만들기
 
 > 설치
@@ -1054,6 +1205,8 @@ const styles = StyleSheet.create({
 
      cp -r ../ch03_display/src .
      rm ./src/screens/*.*
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### ScrollView 대신 FlatList 코어 컴포넌트 사용하기
 
@@ -1144,6 +1297,8 @@ const styles = StyleSheet.create({
 import moment from 'moment';
 ```
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 ### 재사용할 수 있는 컴포넌트란?
 
 - Icon 범용(`general purpose`) 으로 사용할 수 잇는 사용자 컴포넌트 적용
@@ -1159,6 +1314,8 @@ import moment from 'moment';
   3.  `수신한 속성`을 한꺼번에 다른 컴포넌트에 `전달`
 
 - 위의 사항들에 익숙해 져야함
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### children 속성과 ReactNode 타입
 
@@ -1197,6 +1354,8 @@ export const SomeComponent: FC<SomeComponentProps> = ({ children }) => {
   - 대수 데이터 타입은
   1. A `또는` B → `A | B` → 합집합
   2. A `타입 이면서` B → `A & B` → 교집합
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### TouchableView 컴포넌트 만들기
 
@@ -1258,6 +1417,8 @@ import type { ComponentProps } from 'react';
 // 사용법
 type TouchableOpacityProps = ComponentProps<typeof TouchableOpacity>
 ```
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ##### JSX {...props} 구문
 
@@ -1327,6 +1488,8 @@ export default function TouchableView({
 2. `잔여 연산자 구문`으로 `TouchableOpacityProps` 부분을 얻은 다음
    - → `JSX`의 `{...props}` 구문을 이용해서 `TouchableOpacity의` 속성을 `한꺼번에 넘겨줌`
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### 잔여 연산자
 
 > ESNext Js, Ts 는 점을 연이어 3개를 사용하는 `잔여 연산자(rest operator)`
@@ -1345,6 +1508,8 @@ const { country, city, ...detail } = address; // -1-
 1. `address` 변수의 5개 속성중 country, city 속성을 `제외한 나머지 속성`을
    → `detail` 이라는 `변수로 저장`하고 싶다면 변수 앞에 `...(잔여 연산자)`를 붙이면 됨
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### FC 타입과 children 속성
 
 - 함수 컴포넌트 타입인 `FC 타입`은 `ReactNode` 타입인 `children` 속성을 포함
@@ -1352,6 +1517,8 @@ const { country, city, ...detail } = address; // -1-
 > FC를 사용하면 장점이 이거 하나는 있는듯 함
 
      근데 굳이...? 난 그냥 함수형으로 작성할래
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### StyleProp 타입
 
@@ -1404,6 +1571,8 @@ export default function TouchableView({
 
      `{children}` 의 크기를 자신의 크기로 하겠다는 의사표시
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### Avatar 컴포넌트 만들기
 
 - 여기서 만들 컴포넌트는 JSX 코드를 염두에 두고 동작하도록 설계한 컴포넌트
@@ -1443,6 +1612,8 @@ export default function Avatar({
 }
 ```
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### IconText 컴포넌트 만들기
 
 ```tsx
@@ -1475,6 +1646,8 @@ export default function IconText({
 }
 ```
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
 #### 사용하기 편하게 내보내기
 
 > index.ts 를 통해 내보내서 어디서든 사용하기 편하게 함
@@ -1484,6 +1657,8 @@ export * from './TouchableView';
 export * from './Avatar';
 export * from './IconText';
 ```
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 #### Text 코어 컴포넌트의 속성 탐구
 
@@ -1505,3 +1680,4 @@ export * from './IconText';
      3. tail
      4. clip
 
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
