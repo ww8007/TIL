@@ -1040,3 +1040,11 @@ const styles = StyleSheet.create({
 3. bottom의 경우는 ios, android 경우가 다르기 때문에 이렇게 설정
 
 <img src="https://user-images.githubusercontent.com/54137044/128676584-b7d6eab4-2558-4323-b779-f390cf201460.png" width="200px" >
+
+## 재사용할 수 있는 컴포넌트 만들기
+
+> 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker
+     yarn add @types/color @types/faker --dev
+     yarn add @types/react-native-vector-icons --dev
