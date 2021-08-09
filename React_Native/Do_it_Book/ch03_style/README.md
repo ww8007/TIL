@@ -768,3 +768,275 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
   - → 모두 `flex : 1` 인 `컴포넌트의 높이`가 됨
 
 ## 컴포넌트 배치 관련 스타일 속성 탐구
+
+> 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker
+     yarn add @types/react-native-vector-icons @types/color @types/faker --dev
+
+> `flexDirection`, `justifyContent`, `alignItems`, `flexWrap` 등 `flexbox`, `position` 관련 스타일 학습
+
+> dir 복사
+
+     cp -r ../ch03_icon/src .
+
+> 폴더 생성
+
+     mkdir -p src/copy
+     touch src/copy/CopyMe.tsx
+
+> 파일 복사
+
+     cp copy/CopyMe.tsx screens/TopBar.tsx
+     cp copy/CopyMe.tsx screens/Content.tsx
+     cp copy/CopyMe.tsx screens/BottomBar.tsx
+
+```tsx
+import React from 'react';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import { Colors } from 'react-native-paper';
+import TopBar from './src/screens/TopBar';
+import BottomBar from './src/screens/BottomBar';
+import Content from './src/screens/Content';
+export default function App() {
+	return (
+		<SafeAreaView style={[styles.flex]}>
+			<TopBar />
+			<Content />
+			<BottomBar /> // -1-
+		</SafeAreaView>
+	);
+}
+
+const styles = StyleSheet.create({
+	flex: { flex: 1, backgroundColor: Colors.lightBlue100 },
+});
+```
+
+1. 이름과는 달리 아래쪽에 위치 하지 않는 모습을 볼 수 있음
+   <img src="https://user-images.githubusercontent.com/54137044/128640636-38aa2d1d-40db-4bd9-9889-5d05bd1eaba6.png" width="200px" >
+
+### flex:1 과 height : '100%'의 차이
+
+- 앞 부분에서 flex : 1 을 통해서 아이콘을 화면 아래에 배치
+
+> 가운데 컨텐츠에 flex : 1 을 똑같이 적용
+
+- 결국 flex 값을 설정하면 내가 expo에서 했던 것과 동일하게 크기를 나눠가지게됨
+
+- `여분 높이 / (1 + 2) X 1` , `여분 높이 / (1 + 2) X 2`
+
+### flexDirection 스타일 속성
+
+- `flexbox` 레이아웃은 `부모 컴포넌트의 크기가 고정`일 떼
+
+  - → 자식 컴포넌트를 `자신의 영역에 배치`하는 기법
+
+- But `flexbox 레이아웃`은 부모 컴포넌트가 자식 컴포넌트를 배치할 때
+  - → `수직`이나 `수평` 방향 `한쪽`으로만 배치가 가능
+  - 이 `방향`은 `flexDirection` 으로 조정 가능
+
+> 설정 가능 값
+
+     1. row
+     2. column
+
+- 기본값 : `column` → 지금까지 화면 `아래로 아이템이 배치된 이유`
+
+- 실전적용
+
+- 아바타 이미지와 아이콘 사이의 공간을 모두 `Text` 가 차지하도록 해야 함
+  - 그러나 `Text` 컴포넌트에는 flex 스타일 속성을 부여 불가
+  - → `Text` 를 `View 로 감싸고` 이 감싼 `View` 에 `flex : 1` 부여
+
+```tsx
+import React from 'react';
+import { View, Text, StyleSheet, Image } from 'react-native';
+import { Colors } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import * as D from '../data';
+
+const name = D.randomName();
+const avatarUrl = D.randomAvatarUrl(name);
+
+export default function CopyMe() {
+	return (
+		<View style={[style.view]}>
+			<Image style={style.avatar} source={{ uri: avatarUrl }} />
+			<View style={style.centerView}>
+				<Text style={[style.text]}>{name}</Text>
+			</View>
+			<Icon name="menu" size={24} color="white" />
+		</View>
+	);
+}
+
+const style = StyleSheet.create({
+	view: {
+		padding: 5,
+		backgroundColor: Colors.blue900,
+		flexDirection: 'row', // -1-
+		alignItems: 'center', // -2-
+	},
+	text: { fontSize: 20, color: 'white', textAlign: 'center' },
+	avatar: { width: 40, height: 40, borderRadius: 20 },
+	centerView: { flex: 1 }, // -3-
+});
+```
+
+1. `flexDirection` 을 `row`로 설정하여서 가로 방향으로 요소가 배치되도록 설정
+2. alignItems 속성을 이용
+3. Text 에 직접적으로 flex 속성을 설정할 수 없으므로 이렇게 View를 이용해서 Text를 감싸도록 한다.
+
+### alignItems 스타일 속성
+
+- `alignItems` 스타일 속성은 이름대로 `부모 요소의 높이나 넓이에 여분`이 있을 경우
+
+  - → `여분을 이용하여 배치 간격을 조정`하는데 사용
+
+- stretch
+
+  - 부모 컴포넌트의 크기에 여분이 있으면 → 자식 컴포넌트의 크기를 늘림
+
+- alignItems 는 flexDirection 속성값에 따라서 동작 방향이 달라짐
+  - → row : 수직 방향 배치에 영향
+  - → column : 수평 방향 배치에 영향
+
+### justifyContent
+
+- 기본값 : flex-start
+- flexDirection 값에 따라 진행 방향이 달라짐
+
+> 지정 가능 값
+
+     1. flex-start
+     2. center
+     3. flex-end
+     4. space-around
+     5. space-between
+     6. space-evenly
+
+- 접두사가 space- 인 경우 부모 요소의 여백을 자식 요소의 간격에 반영
+- `space-around`
+
+- `space-between`
+
+  - 폰 `좌 우측`에 `padding`을 적용 하는지, 아닌지
+
+- `space-evenly`
+  - `부모 컴포넌트 - (자식 컴포넌트 넓이의 합)`
+  - `(자식 컴포넌트의 수 + 1) 로 나누어` 얻은 `여분 넓이 균등 부여`
+
+### flexWrap 스타일 속성
+
+- `줄을 바꿔가며` 정상적으로 렌더링 하고 싶은 경우
+  - → `wrap`, `wrap-reverse` 속성을 부여
+- 기본값 : nowrap
+
+> 설정 가능 값
+
+     1. nowrap
+     2. warp
+     3. wrap-reverse
+
+<img src="https://user-images.githubusercontent.com/54137044/128673437-dd00af18-b874-4976-aeef-f0421e2ae654.png" width="200px" >
+
+### overflow 스타일 속성
+
+- `overflow` 스타일 속성은 `전체 콘텐츠의 크기가 컴포넌트보다 클 때`
+  - → 이를 어떻게 할지 결정
+
+> 설정 가능 값
+
+      1. visible
+      2. hidden
+      3. scroll
+
+1. `visible`
+   - 콘텐츠는 컴포넌트 크기와 무관하게 컴포넌트 바깥으로 렌더링
+2. `hidden`
+   - 컴포넌트 바깥으로 `렌더링 되지 않음`
+3. `scroll`
+   - 웹과 달리 `scroll`을 설정해도 스크롤 효과는 발생하지 않음
+   - → 스크롤은 `ScrollView`, `FlatList` 코어 컴포넌트에서만 가능
+
+### ScrollView의 contentContainerStyle 속성
+
+- `ScrollView` 는 다른 코어 컴포넌트와 달리 style 속성 이외에
+
+  - → `contentContainerStyle` 속성을 별도로 제공
+
+- `contentContainerStyle` 속성은 `스크롤 대상 컴포넌트`에 적용되는 속성
+  - 앞의 `View` 와 달리 `View` → `ScrollView` 변경 → `contentContainerStyle` `속성에 스타일 객체`를 설정
+  - `flex : 1` 또한 없어야 함
+
+```tsx
+export default function CopyMe() {
+	const children = avatars.map((avatarUrl, index) => (
+		<View key={index.toString()} style={style.avatarView}>
+			<Image style={style.avatar} source={{ uri: avatarUrl }} />
+		</View>
+	));
+	return (
+		<ScrollView contentContainerStyle={[style.view]}>{children}</ScrollView> // -1-
+	);
+}
+```
+
+1. View → ScrollView, style → contentContainerStyle 두개를 바꿔야지 잘 작동
+2. style 속성에서 `flex : 1` 속성 `없애주는거` 잊지 말기
+
+### 화면에 뜬 효과 보여주기
+
+- `화면위에 아이콘이 떠 있는 느낌`
+  - → `플로팅 액션 버튼(floating action button)`
+
+### React.Fragment 컴포넌트와 <></> 단축 구문
+
+- 아래와 같이 아이콘을 이용해서 자식 컴포넌트 형태로 `JSX` 구성
+
+```tsx
+<View style={styles.absoluteView}>
+  <Icon name="feather" size={50} color="white">
+</View>
+```
+
+- FAB 효과 : 화면에 뜬 효과 주기 위해서는
+  - → 아이콘이 `SafeAreaView` 의 `자식 컴포넌트여서는 안됨`
+  - 그러나 지금까지 해 온 것들은 싹다 `SafeAreaView` 가 `최상위 컴포넌트` 였음
+
+> 그래서 React 는 `Fragment` 라는 컴포넌트를 제공
+
+```tsx
+import React, { Fragment } from 'react';
+```
+
+> `JSX는` `XML` 문이어야 하기 때문에 `부모 컴포넌트 없이는 여러개의 컴포넌트가 올 수 없음`
+
+- Fragment 는 `실제 존재 하지는 않지만` XML 문법이 요구하는 `부모 컴포넌트로 동작`하도록 만들어짐
+
+#### left, right, top, bottom과 position 스타일 속성
+
+- left, right, top, bottom 스타일 속성은 컴포넌트가 렌더링되는 위치를 바꾸고 싶은 경우 사용
+
+- 스타일 속성은 `position : absolute` 인 경우 컴포넌트에 반영
+
+```tsx
+const styles = StyleSheet.create({
+	flex: { flex: 1, backgroundColor: Colors.lightBlue100 },
+	absoluteView: {
+		backgroundColor: Colors.purple900,
+		position: 'absolute', // -1-
+		right: 30, // -2-
+		bottom: Platform.select({ ios: 100, android: 80 }), // -3-
+		padding: 10,
+		borderRadius: 35,
+	},
+});
+```
+
+1. position : 'absolute' 를 설정행줘야지 제대로 동작
+2. right : 30 속성을 줘서 오른쪽에서 30 만큼 떨어지게 설정
+3. bottom의 경우는 ios, android 경우가 다르기 때문에 이렇게 설정
+
+<img src="https://user-images.githubusercontent.com/54137044/128676584-b7d6eab4-2558-4323-b779-f390cf201460.png" width="200px" >
