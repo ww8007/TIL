@@ -282,3 +282,70 @@ useEffect(콜백_함수, 의존성_목록);
 
 > 하지만 여기서는 `setInterval` 호출이 한 번 발생 하였을 뿐 갱신한 시각 반영 X
 > 그러기에 갱신한 시각 반영 → `useState` 라는 또 다른 리액트 훅을 사용
+
+#### useState 훅 사용하기
+
+- React 패키지는 useState 훅 제공
+
+  ```tsx
+  import React, { useState } from 'react';
+  ```
+
+- useState 사용법
+
+  ```tsx
+  const [현재_값, set_함수] = useState(초기_값);
+  set_함수 = (새로운_값) : void;
+  ```
+
+> useState 가 반환하는 `set함수(setter 함수)` 값이 바뀌면 `자동으로` 컴포넌트 `재렌더링`
+
+- useEffect, useState 활용해서 시계 만들어보기
+
+```tsx
+export default function App() {
+	const [time, setTime] = useState(new Date()); // -1-
+	// -2-
+	useEffect(() => {
+		const id = setInterval(() => {
+			setTime(new Date());
+		}, 1000);
+		return () => clearInterval(id);
+	}, []);
+	// -2-
+	return <></>;
+}
+```
+
+1. `useState를` 이용해 `초기값`을 `new Date()`로 설정
+   - → `return` 되는 값을 `time, setTime` 로 받아서 설정
+2. useEffect의 콜백 함수 내부에 있는 `setInterval`의 콜백 함수에서
+   - → 1초 간격으로 `setTime(new Date())`를 실행
+   - time의 값을 변경
+   - → 이러면 `setTime` 은 `time` 이 `변경` 시 → 컴포넌트 `reRender`
+
+> 이를 useClock.ts 파일로 옮기고 커스텀 훅 생성
+
+#### useClock 커스텀 훅 제작
+
+```tsx
+import { useState, useEffect } from 'react';
+
+export function useClock() {
+	const [time, setTime] = useState(new Date());
+	useEffect(() => {
+		const id = setInterval(() => {
+			setTime(new Date());
+		}, 1000);
+		return () => clearInterval(id);
+	}, []);
+
+	return time;
+}
+```
+
+> index.ts 를 통해서 쉽게 가져올 수 있도록 설정
+
+```tsx
+export * from './useClock';
+```
