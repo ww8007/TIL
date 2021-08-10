@@ -349,3 +349,14 @@ export function useClock() {
 ```tsx
 export * from './useClock';
 ```
+
+## useMemo와 useCallback 훅 이해하기
+
+> 설치
+
+    yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6
+    yarn add @types/react-native-vector-icons @types/color @types/faker --dev
+
+> 복사
+
+     cp -r ../
