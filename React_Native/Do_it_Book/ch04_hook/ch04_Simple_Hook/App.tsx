@@ -1,7 +1,9 @@
 import React from 'react';
 import {StyleSheet, SafeAreaView, Text} from 'react-native';
-const time = new Date();
+import {useClock} from './src/hooks';
+
 export default function App() {
+  const time = useClock();
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <Text style={[styles.digitFont, styles.time]}>
