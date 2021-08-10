@@ -167,3 +167,118 @@ const styles = StyleSheet.create({
 	time: { fontSize: 40 },
 });
 ```
+
+#### setInterval 함수로 시계 만들기
+
+- Js는 `setInterval` 이라는 함수를 기본 제공
+  - → `갱신주기(duration)` 마다 `콜백 함수`를 계속 호출
+
+```tsx
+const id = setInterval(콜백_함수, 갱신_주기);
+콜백_함수 = () => {};
+```
+
+- `setInterval` : `id 값을 반환`
+
+  - → `더 이상 호출 하지 않으`려면 `clearInterval` 함수 호출
+  - `setInterval` 함수는 `시스템 메모리 자원`을 사용함
+  - 그러기에 `setInterval` 함수가 동작하지 않도록 `clearInterval` 함수 호출
+
+- `메모리 누수 방지`
+
+```tsx
+clearInterval(id);
+```
+
+> 시계 만드는 코드
+
+```tsx
+let time = new Date();
+const duration = 1000; // 1 sec
+const id = setInterval(() => {
+	time = new Date();
+}, duration);
+```
+
+- App 컴포넌트가 갱신한 시각을 화면에 반영하기 위해서
+  - → 다음과 같은 코드 형태를 가져야함
+
+```tsx
+export default function App() {
+	let time = new Date();
+	const id = setInterval(() => {
+		time = new Date();
+		// 갱신한 시각이 반영되도록 App 재랜더링 하는 함수 필요
+		forceUpdate();
+	}, 1000);
+	return <></>;
+}
+```
+
+- 위의 코드의 심각한 문제점은 App을 `재렌더링` 할 때 마다 `setInterval` 호출
+  - → setInterval 쪽 코드는 `컴포넌트가 처음 렌더링될 때 한 번만 호출해야 함`
+
+#### useEffect 훅 사용하기
+
+- React Hook → R/N 이 아닌 React 에서 제공하는 기능
+
+```tsx
+import React, { useEffect } from 'react';
+```
+
+- useEffect는 의존성 목록에 있는 조건 중 어느 하나라도 충족되면 콜백 함수 다시 실행
+
+```tsx
+useEffect(콜백_함수, 의존성_목록);
+콜백_함수 = () => {};
+```
+
+- 컴포넌트를 생성 할 때 한 번만 실행
+
+  - → 의존성 목록에 `빈 배열[]`을 지정
+  - `[]`일 경우 `첫 번째 매개변수`의 `콜백 함수`를 단 한번만 실행
+
+  ```tsx
+  useEffect(() => {}, []);
+  ```
+
+- useEffect의 콜백 함수에 setInterval 지정
+
+  ```tsx
+  export default function App() {
+  	let time = new Date();
+  	useEffect(() => {
+  		const id = setInterval(() => {
+  			time = new Date(); // 현재 시각을 갱신
+  		}, 1000);
+  	}, []);
+  	return <></>;
+  }
+  ```
+
+- useEffect가 반환하는 함수
+
+  ```tsx
+  useEffect(()=> {
+  	컴포넌트 생성 시 한 번 실행
+  	return () => {} // 컴포넌트 파괴 시 한 번 실행
+  }, [])
+  ```
+
+- 이를 이용해서 setInterval 의 메모리 누수를 막기 위해
+  - → clearInterval 을 반환 하도록 설정하면 됨
+    ```tsx
+    export default function App() {
+    	let time = new Date();
+    	useEffect(() => {
+    		const id = setInterval(() => {
+    			time = new Date(); // 현재 시각을 갱신
+    		}, 1000);
+    		return () => clearInterval(id);
+    	}, []);
+    	return <></>;
+    }
+    ```
+
+> 하지만 여기서는 `setInterval` 호출이 한 번 발생 하였을 뿐 갱신한 시각 반영 X
+> 그러기에 갱신한 시각 반영 → `useState` 라는 또 다른 리액트 훅을 사용
