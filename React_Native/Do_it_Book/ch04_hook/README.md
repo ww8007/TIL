@@ -359,4 +359,335 @@ export * from './useClock';
 
 > 복사
 
-     cp -r ../
+     cp -r ../ch04_Simple_Hook/src .
+
+### 수평 방향으로 ScrollView 스크롤
+
+- R/N 코어 컴포넌트 중 `ScrollView`, `FlatList` 처럼 스크롤 기능이 있는 컴포넌트
+
+  - → 부모/자식 관계에 있을 때 스크롤 방향을 각기 다르게 해야 하는 물리적인 제약
+
+- `Cache.tsx, Memo.tsx` 등 에서 수직 방향으로 스크롤 되는 FlatList 사용
+
+  - → 위 컴포넌트들을 자식 컴포넌트로 가지는 App.tsx 파일의 ScrollView → 스크롤 방향 : 수평
+
+- ScrollView 코어 컴포넌트는 horizontal 이라는 속성을 제공
+  - → true를 설정하면 수평 방향으로 스크롤 가능
+
+```tsx
+  <ScrollView horizontal={true}/> // true를 생략해도 동일하게 동작
+  <ScrollView horizontal/>
+```
+
+- 그러나 수평으로 스크롤하기 위해서는 `위의 방법만으로 부족`
+  - `스크롤할 컴포넌트 개수`에 `폰 넓이`를 `곱한 값` → `width 속성`에 설정
+
+```tsx
+import { Dimensions, ScrollView } from 'react-native';
+const { width } = Dimensions.get('window');
+const numberOfComponents = 3;
+<ScrollView
+	horizontal
+	contentContainerStyle={{ width: width * numberOfComponents }}
+/>;
+```
+
+### 전역 변수와 캐시
+
+- 지금까지의 코드들은 컴포넌트 바깥쪽에서 `전역 변수(global variable)` 형태로 구현
+  - → 데이터를 한 번 만들면 바뀌지 않게 하고 싶었기 때문
+
+```tsx
+export default function Cache() {
+	const people = D.makeArray(2).map(D.createRandomPerson); // -1-
+	return (
+		<View style={[styles.view]}>
+			<Text style={[styles.text]}>{title}</Text>
+		</View>
+	);
+}
+```
+
+1. 만약 people을 컴포넌트 안쪽에 둔다면 reRender 할 때 마다 데이터 2개씩 생성
+   - → Cache 컴포넌트가 함수, people은 지역 변수 이기 때문에 당연함
+
+- 리액트 훅의 탄생 배경은 로컬 변수인 people을 마치 전역 변수처럼 사용하고 싶기 때문
+  - → 리액트 팀은 `로컬 변수 people`이 `실제 데이터를 가지지 않고`
+  - `실제 데이터` : `어딘가 캐시`
+  - 로컬 변수 people : 필요할 때 `캐시한 데이터를 찾을 수` 있는 `일종의 키 저장`
+  - → 이를 `참조(reference)`라고 함
+
+```tsx
+const 컴포넌트_캐시 = {
+	키1: 값1,-----------------------> useState
+	키2: 값2,-----------------------> useMemo
+	키3: 값3,-----------------------> useCallback
+};
+```
+
+- 이를 알아보기 위해서 파일 생성
+
+```ts
+const cache: Record<string, any> = {}; // -1-
+
+export const createOrUse = <T>(key: string, callback: () => T) => {
+	// -2-
+	if (!cache[key]) {
+		// -2-
+		cache[key] = callback();
+	}
+	return cache[key];
+};
+```
+
+1. `cache` 라는 이름의 `전역 변수` 존재
+   - → 변수의 타입은 `Record<string, any>`
+   - Ts 에서 기본 제공하는 타입
+   - → `2`번의 형태 코드를 컴파일 오류 없이 실행하게 해줌
+   - → Record 는 `Record<키_타입, 값_타입>` 형태로 사용 하는 `제네릭 타입(generic type)`
+
+- cache
+  - → `키` 타입 : `string(문자열)`
+  - → `값` 타입 : `any(색인 타입(index type))`
+
+> 위 코드는 `cache[key] 존재` → 그 값을 반환
+> 없으면 `callback 호출` → cache[key]에 저장하고 반환
+
+- `캐시를 구현하는 전형적인 방법`
+
+  - → 앞의 파일에서 본 `createOrUse` 부분이 Cache.tsx 파일의 사용방법이
+  - `리액트 훅의 구현 원리`임
+
+- 리액트 훅의 뛰어난 점은 `people` 같은 `키 부분`을 `사용자 코드에서 관리 하지 않고`
+  - → `리액트 프레임워크 내부에서 관리`하여 `호출 부분을 매우 간결`하게 해줌
+
+#### FlatList 코어 컴포넌트의 특징
+
+- View가 들어간 컴포넌트와 달리 부모 컴포넌트의 `width` 속성을 자동으로
+
+  - → 자신의 `width` 속성값으로 설정하지 않음
+
+- 부모 컴포넌트인 View 스타일 속성에 설정된 `alignItems` 영향 받지 않기 위해
+  - → `FlatList` 스타일에 `width : '100%'`를 설정하여 `View의 width 값을 얻어야 함`
+
+### 의존성이란?
+
+- React 프레임워크 내부에서 관리하는 캐시는 어떤 상황이 일어나면 `갱신해야 할 경우가 생김`
+
+  - → `React Hook` 에서는 이것을 `의존성(dependency)` 이라고 함
+  - 캐시한 값을 갱신하는 `의존성은 여러개일 수` 있음
+
+- 리액트 훅에서 이와 같은 `여러 개의 의존성`을 `배열 형태`로 모아 놓은 것을 `의존성 목록`
+  - → `의존성 목록 중 어느 것 하나라도 조건이 충족`하면
+  - `캐시를 자동 갱신`하고 해당 컴포넌트를 `reRender` 하게 됨
+
+> 의존성이 전혀 없다면 의존성 목록에 단순히 빈 배열 사용
+
+### useMemo 훅
+
+- 다음의 코드는 people을 반복적으로 생성해서 비효율적
+
+```tsx
+import * as D from '../data';
+
+export default function Memo() {
+	const people = D.makeArray(2).map(D.createRandomPerson);
+	return <></>;
+}
+```
+
+> 이럴 때 사용 할 수 있도록 React는 useMemo hook 제공
+
+- 사용법
+
+```tsx
+const 캐시된_데이터 = useMemo(콜백_함수, [의존성1, 의존성2, ...]);
+콜백_함수 = () => 원본_데이터;
+```
+
+- `useMemo` 뿐만 아닌 `useCallback`, `useEffect` 훅
+
+  - → 의존성 목록에 있는 `의존성에 변화` 있다면
+  - `콜백 함수를 자동으로 호출`하여서 `의존성을 반영`
+  - 대부분의 콜백 함수는 `한 번만 호출하면 충분` → `의존성 없다([ ]) 빈 배열 사용`
+
+- Ts 관점에서의 useMemo 함수 시그니처
+
+```tsx
+useMemo<T>(()=> T, [의존성1, 의존성2, ...]): T
+```
+
+> 의존성이 동작 잘하는지 확인 하기
+
+```tsx
+import React, { useMemo } from 'react';
+import { StyleSheet, View, Text, FlatList } from 'react-native';
+import { Colors } from 'react-native-paper';
+import color from 'color';
+import Person from '../copy/Person';
+import * as D from '../data';
+// import {createOrUse} from './createOrUse';
+import { useClock } from '../hooks';
+
+const title = 'Memo';
+export default function Memo() {
+	const time = useClock(); // -1-
+	const people = useMemo(
+		() => D.makeArray(2).map(D.createRandomPerson),
+		[
+			// time
+		]
+	); // -2-
+	return (
+		<View style={[styles.view]}>
+			<Text style={[styles.text]}>{title}</Text>
+			<FlatList
+				style={styles.flatList}
+				data={people}
+				renderItem={({ item }) => <Person person={item} />}
+				keyExtractor={(item) => item.id}
+				ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+			/>
+		</View>
+	);
+}
+const styles = StyleSheet.create({
+	view: { flex: 1, padding: 5, backgroundColor: Colors.blue900 },
+	text: { fontSize: 20, color: 'white' },
+	flatList: { width: '100%' },
+	itemSeparator: {
+		borderWidth: 1,
+		borderColor: color(Colors.grey500).lighten(0.5).string(),
+	},
+});
+```
+
+1. 1초 마다 변경 되도록 `time` 가져오기
+2. 주석 해제하고 마우스를 이용해서 오른쪽으로 밀어보면 `1초 마다 변경`되는 것을 확인할 수 있음
+
+#### useMemo의 메모이제이션 기능
+
+- useMemo : Memo의 `메모이제이션(Memoization)`의 줄임말
+
+- `메모이제이션`은 `과거에 계산한 값을 반복해서 사용`할 때 `그 값을 캐싱`
+
+  - → 계산 속도를 높이는 `코드 최적화 기법(optimization technique)`의 하나
+
+- 다음 코드는 `피보나치 수`를 구하는 `알고리즘`
+  - → 지속적으로 `fibonacci(1)`, `fibonacci(2)`, `fibonacci(3)`을 계산하고 저장
+  - 과거에 계산한 값을 어딘가 별도로 저장했다가 필요할 때 불러와서 사용
+  - 전체 함수 호출 속도를 높일 수 있다는게 최대 장점
+
+```tsx
+import React, { useMemo } from 'react';
+import { StyleSheet, View, Text, FlatList } from 'react-native';
+import { Colors } from 'react-native-paper';
+import * as D from '../data';
+import { fibonacci } from './fibonacci';
+
+const title = 'Fibo';
+export default function Fibo() {
+	const memorizedFibonacci = useMemo(() => fibonacci, []); // -1-
+	// -2-
+	const fibos = useMemo(
+		() =>
+			D.makeArray(21).map((my, index) => ({
+				number: index,
+				fibonacci: memorizedFibonacci(index),
+			})),
+		[]
+	);
+	// -2-
+	return (
+		<View style={[styles.view]}>
+			<Text style={[styles.text]}>{title}</Text>
+			<FlatList
+				contentContainerStyle={styles.contentContainerStyle}
+				style={styles.flatList}
+				data={fibos}
+				renderItem={({ item }) => (
+					<Text style={styles.text}>
+						{item.number} : {item.fibonacci}
+					</Text>
+				)}
+				keyExtractor={(item) => item.number.toString()}
+			/>
+		</View>
+	);
+}
+const styles = StyleSheet.create({
+	view: { flex: 1, padding: 5, backgroundColor: Colors.blue900 },
+	text: { fontSize: 20, color: 'white' },
+	flatList: { width: '100%' },
+	contentContainerStyle: { alignItems: 'center' },
+});
+```
+
+1. useMemo 훅을 사용해서 fibonacci 함수가 계산한 값을 메모
+2. 0 부터 20 까지의 피보나치 값을 계산하고 이를 화면에 렌더링 함
+
+### useCallback 훅
+
+- 다음 컴포넌트의 비효율은 Person 컴포넌트가 reRender 될 때 마다
+  - → iconPressed 함수를 지속적으로 생성
+
+```tsx
+export default function Person() {
+	const iconPressed = () => Alert.alert('onPressed');
+	return <Icon onPress={iconPressed} />;
+}
+```
+
+> 그래서 React는 useCallback 훅을 제공
+
+```tsx
+const 캐시된_콜백_함수 = useCallback(원본_콜백_함수, 의존성_목록);
+```
+
+- useMemo 훅 : 데이터나 함수 호출의 결과 값을 캐시
+- useCallback 훅 : 콜백 함수를 캐시
+
+> useCallback 훅을 이용한 avatarPressed 이벤트 처리 함수를 캐시
+> 매개변수가 있는 콜백 함수에도 적용 가능
+
+```tsx
+import React, { useCallback } from 'react';
+export default function Person() {
+	const avatarPressed = useCallback(() => Alert.alert('Avatar Pressed'), []);
+	return <Avatar onPress={avatarPressed} />;
+}
+
+export default function Person() {
+	const textChanged = useCallback((text: string) => console.log(text), []);
+	return <TextInput onChangeText={avatarPressed} />;
+}
+```
+
+> 고차 함수에 적용
+
+```tsx
+export default function Person() {
+	const iconPressed = useCallback(
+		(what: string) => () => Alert.alert(`${what} pressed.`),
+		[]
+	);
+	return (
+		<View>
+			<IconText onPress={iconPressed('comment')} name="comment" />
+			<IconText onPress={iconPressed('retweet')} name="twitter-retweet" />
+		</View>
+	);
+}
+```
+
+### 고차 함수란?
+
+- Ts 에서 함수는 변수에 담긴 `함수 표현식`
+
+  - → `함수 표현식` : 일종의 값
+
+- 따라서 `함수`의 `반환값으로 함수를 사용` 가능
+  - → 어떤 `함수가 또 다른 함수를 반환` 할 때 그 함수를 고차 함수라고 부름
+  - `high-order function`
+
+> 우리가 React 에서 평범하게 쓰는 `return XML 문`이 고차 함수!!!
