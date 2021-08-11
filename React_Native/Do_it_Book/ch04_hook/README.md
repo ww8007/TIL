@@ -1201,3 +1201,93 @@ useEffect(() => {
      2. 콜백함수가 `반환한 종료 함수` 호출(위의 clearInterval())
      3. `콜백 함수 파괴`
      4. 자신의 매개변수로 입력한 `콜백함수 다시 호출`
+
+### fetch API 사용하기
+
+- fetch는 Js 엔진에서 제공하는 API
+  - HTTP 프로토콜의 GET, POST, PUT, DELETE 제공
+
+> blob, json, text 와 같은 method가 있는 Response 타입 객체 Promise로 받아옴
+
+```tsx
+function fetch(input: RequestInfo, init?: RequestInit): Promise<Response>;
+interface Response {
+	blob(): Promise<Blob>;
+	json(): Promise<any>;
+	text(): Promise<string>;
+}
+```
+
+#### Promise 객체의 then-체인
+
+- Promise 객체는 then 메서드를 통해 실제 데이터를 얻어야 함
+  - → `then 메서드`는 `또 다른 Promise 객체`나 `어떤 값`을 `반환` 가능
+  - 계속해서 엮을 수 있음 : 이를 then-체인
+
+#### any 타입 데이터에서 원하는 정보만 추출하기
+
+- 백엔드에서 받아온 정보가 어떤 것을 내포하고 있는지 모를 수 있음
+  - → `res.json()` 으로 얻은 `데이터 타입 : any[]`
+
+> ICountry.ts
+
+```tsx
+export type ICountry = {
+	region: string;
+	subregion: string;
+	name: string;
+	capital: string;
+	population: string;
+};
+```
+
+```tsx
+fetch('https://google.com')
+	.then((res) => res.json())
+	.then((result: any[]) => {});
+```
+
+> any 타입 데이터 result에서 특정 타입이 정의한 속성만 골라내는 법
+
+- 현재 `result : any[]` 타입의 배열
+
+  - → `result.map()` 메서드 호출 가능
+
+- 그러면 목표는 `any[] 배열`에서
+
+  - → `ICountry` 타입이 `정의한 속성만 추려낸`
+  - → → `ICountry[]` 타입 데이터를 얻는 것으로 바뀜
+
+- 이 때 any → ICountry 타입 변환은 코드에서 보듯
+- 골라낸 속성이 있는 객체를 Ts 타입 구문의 타입 단언 방식으로 구현 가능
+
+> 타입 단언
+
+```tsx
+.then((result: any[])=> {
+	return result.map((data: any)=> {
+		const {region, subregion, name, capital, population} = data;
+		return {region, subregion, name, capital, population} as ICountry; // -1-
+	})
+})
+```
+
+1. 타입 딘언을 통한 타입 변환
+
+##### 타입 단언이란?
+
+- Ts 에는 독특하게타입 변환이 아닌
+  - → 타입 단언(type assertion)이라는 용어를 사용
+
+> 타입 단언의 두 형태
+
+```tsx
+<타입>객체;
+```
+
+```tsx
+객체 as 타입;
+```
+
+- 위 둘은 ES5 Js 구문이 아님
+  - → 따라서 Js 타입 변호나 구문과 구분하고자 타입 단언이라는 용어 사용
