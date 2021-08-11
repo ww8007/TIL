@@ -1002,3 +1002,202 @@ const equal = people == newPeople; // false
 ```tsx
 const children = useMemo([...생략...], [people.length])
 ```
+
+## useEffect와 useLayoutEffect 훅 이해하기
+
+- useLayoutEffect와 useEffect 생명 주기 후
+
+> 사용법
+
+```tsx
+useEffect(콜백_함수, 의존성_목록);
+useLayoutEffect(콜백_함수, 의존성_목록);
+콜백_함수 = () => {};
+```
+
+- 두 훅의 콜백함수는 함수를 반환할 수 있음
+  - → 반환 함수는 컴포넌트를 언마운트 할 때 단 한 번 실행
+
+```tsx
+콜백_함수 = () => {
+	return 반환_함수; // 언마운트 때 단 한 번 실행
+};
+```
+
+### 컴포넌트의 생명주기란?
+
+- React, R/N 에서는 컴포넌트를 `생성`하여 `최초 렌더링` 과정을 마치면
+  - → 컴포넌트를 `마운트(mount)` 했다고 함
+- 마운트한 컴포넌트는 이후 구현 로직에 따라 재렌더링을 거듭 하다가
+  - → 어떤 시점에서 `구현 로직에 의해 파괴(destroy)` 되어 화면에서 사라지게됨
+  - → → 이를 컴포넌트가 `언마운트(unmount)` 되었다고 함
+
+> 컴포넌트의 `마운트 과정`과 `언마운트 과정`을 합쳐서 `생명주기(life-cycle)` 이라고 함
+
+### 리액트 네이티브 컴포넌트의 onLayout 이벤트 속성
+
+- 모든 R/N 코어 컴포넌트는 onLayout 이벤트 속성을 제공
+  - → 또한 LayoutChangeEvent 타입을 제공
+
+```tsx
+import type { LayoutChangeEvent } from 'react-native';
+```
+
+- 이 타입은 `onLayout` 이벤트 속성에 설정하는 이벤트 처리기의 `입력 매개변수 타입`
+
+```tsx
+const onLayout = (e: LayoutChangeEvent) => {};
+```
+
+> LayoutChangeEvent 타입 layout 얻기
+
+```tsx
+export interface LayoutChangeEvent {
+	nativeEvent: {
+		layout: LayoutRectangle;
+	};
+}
+```
+
+> LayoutRectangle의 멤버 변수
+
+```tsx
+export interface LayoutRectangle {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}
+```
+
+> 위 둘을 이용해서 렌더링한 컴포넌트의 위치와 크기를 알 수 있게 됨
+
+```tsx
+const onLayout = (e: LayoutChangeEvent) => {
+	const { layout } = e.nativeEvent;
+	console.log('onLayout', layout);
+};
+<View onLayout={onLayout} />;
+```
+
+#### useLayoutEffect와 useEffect 훅의 호출 순서
+
+- onLayout 이벤트를 호출했다는 것은 컴포넌트의 렌더링이 끝났다는 것을 의미
+  - → `useLayoutEffect`, `useEffect`, `onLayout` 이벤트가 발생하는 순서
+
+| 컴포넌트 | <center> → </center> | useLayoutEffect 호출     | <center> → </center> | useEffect 호출                 | <center> → </center> | onLayout 이벤트 발생 |
+| -------- | -------------------- | ------------------------ | -------------------- | ------------------------------ | -------------------- | -------------------- |
+|          | 컴포넌트 렌더링 시작 |                          | 화면 나타남          |                                |                      |                      |
+| 컴포넌트 | <center> → </center> | useEffect 반환 함수 호출 | <center> → </center> | useLayoutEffect 반환 함수 호출 | <center> → </center> | 컴포넌트 파괴        |
+
+#### useLayoutEffect와 useEffect 훅의 차이점
+
+- React 프레임워크에서
+
+  - → `useLayoutEffect` : `동기(synchronous)`로 실행
+  - → `useEffect` : `비동기(asynchronous)`로 실행
+
+- 위의 말의 의미는 `useLayoutEffect` 훅은 `콜백 함수가 끝날 때 까지`
+  - → `프레임워크가 기다`린다는 의미
+  - `but` `useEffect`는 기다리지 `않음`
+
+> 공식문서에서는 가능한 useEffect 훅을 사용
+> 구현할 수 없을 때에 한하여 useLayoutEffect 훅을 사용할 것을 권고
+
+### ActivityIndicator 코어 컴포넌트
+
+- 대부분의 모바일 앱은 원격지 서버에서 데이터를 가져올 때
+  - → 기다림을 의미하는 회전 아이콘을 화면에 표시
+
+```tsx
+import { ActivityIndicator } from 'react-native';
+
+<ActivityIndicator size="large" color="black" />;
+```
+
+#### setTimeout API 호출하기
+
+- ActivityIndicator 컴포넌트는 작업이 끝나기를 기다림을 의미하는 컴포넌트
+  - → 작업이 끝났을 때는 화면에서 사라져야 함
+  - useState 를 이용해서 loading 변수를 만들어서 true 일 경우만 render 하게 가능
+
+```tsx
+useEffect(() => {
+	const id = setTimeout(() => seLoading(false), 3000);
+	return () => clearTimeout(id);
+}, [loading]);
+```
+
+### 타입스크립트 제공 Pick 타입
+
+- 타입스크립트는 `Pick` 이라는 타입을 제공
+  - → `Pick` 타입은 `제네릭 타입`으로
+  - → → 대상 타입의 `전체 속성 중 필요한 속성만 선택`해 `간결한 속성`의
+  - → → `새로운 타입`을 만들어냄
+
+```tsx
+type ResultType = Pick<대상_타입, 속성1 | 속성2 | .../>
+```
+
+> 앞에서의 예제처럼 IPerson 타입 중 'id', 'avatar' 속성만 빼와서 사용하고 싶은 경우
+
+```tsx
+type ResultType = Pick<D.IPerson, 'id' | 'avatar'/>
+```
+
+### setInterval API 호출하기
+
+> 1초 마다 랜덤한 아바타 이미지가 차례 대로 나오게 하는 법
+
+1. avatars 배열 생성
+   - useState 훅을 사용하여 빈 avatars 배열을 만드는 것 부터 시작
+
+```tsx
+export default function interval() {
+	const [avatars, setAvatars] = useState<IdAndAvatar[]>([]);
+	return <></>;
+}
+```
+
+2. 아바타 렌더링
+   - 배열에 유요한 데이터가 있으면 여러개의 데이터 렌더링
+
+```tsx
+export default function interval() {
+	const [avatars, setAvatars] = useState<IdAndAvatar[]>([]);
+	const children = avatars.map(({ id, avatar }) => (
+		<Avatar key={id} uri={avatar} />
+	));
+	return <ScrollView>{children}</ScrollView>;
+}
+```
+
+3. 1초에 한 개씩 아바타 추가
+   - → useEffect 훅의 콜백 함수에 setInterval 호출
+   - → → 콜백 함수에서 setAvatars를 사용해서 랜덤하게 추가 하도록 설정
+
+```tsx
+useEffect(() => {
+	const id = setInterval(() => {
+		if (start) {
+			setAvatars((avatars) => [
+				...avatars,
+				{ id: D.randomId(), avatar: D.randomAvatarUrl() },
+			]);
+		}
+	}, 1000);
+	return () => clearInterval(id);
+}, [start]); // -1-
+```
+
+1. 코드에서 중요한 곳은 start 변수를 의존성 목록에 추가하는 부분
+   - → useEffect와 같은 생명주기 훅은 자신의 의존성 목록에
+   - → → start 와 같은 의존성이 있고, 이 값이 변하면 콜백 함수가 반환한 종료 함수
+   - → → 호출하여서 콜백 함수를 파괴한 다음, 자신의 매개변수로 입력한 콜백 함수 다시 호출
+
+> useEffect 의존성 배열
+
+     1. `의존성 목록`에 있는 항목이 `변하면`
+     2. 콜백함수가 `반환한 종료 함수` 호출(위의 clearInterval())
+     3. `콜백 함수 파괴`
+     4. 자신의 매개변수로 입력한 `콜백함수 다시 호출`
