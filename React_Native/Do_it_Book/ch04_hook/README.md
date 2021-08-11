@@ -691,3 +691,314 @@ export default function Person() {
   - `high-order function`
 
 > 우리가 React 에서 평범하게 쓰는 `return XML 문`이 고차 함수!!!
+
+## useState 훅 이해하기
+
+- 컴퓨터 분야에서 상태(state)
+
+  - → 시간이 지나도 값이 유지되며 필요에 따라서는 값을 바꿀 수 있는 어떤 것을 의미
+
+  1.  클래스의 멤버 속성
+  2.  전역 변수 형태로 만들어짐
+
+- 보통은 함수 몸통의 지역 변수 형태로는 상태를 만들지 못함
+- useState : 컴포넌트 내부에 클래스의 멤버 속성 처럼 값을 유지하고 변경 가능
+
+### 상태란
+
+- 프로그래밍 용어로 상태(state)
+  - → 어떤 값을 유지(preserve) 하는 변수
+  - → 저장된 값을 변경(가변, mutable) 할 수 있어야함
+  - 클래스의 `속성(property)`, `지역변수(member variable)`로 구현
+
+> React, R/N에서 상태는 속성(property)와 마찬가지로 값이 변하면 reRendering 하는 특징을 가지고 있음
+
+### useState 훅
+
+```tsx
+import React, { useState } from 'react';
+```
+
+- 사용법
+
+```tsx
+const [값, 값을_변경하는_함수] = useState(초기값);
+```
+
+- 값을\_변경하는 함수(setter 함수)를 호출하면 `값` 부분을 변경하고
+  - → 동시에 컴포넌트를 reRender 함
+
+> 위의 reRender 때문에 `useState 훅`은 `값`과 `setter 함수`를 `튜플(tuple)` 형태의 배열로 반환
+
+- 이에 해당하는 것이 `배열에 적용하는 비구조화 할당 구문`
+
+  - → 객체에 적용하는 비구조화 할당과 다르게 이름을 자유롭게 적을 수 있다는 점이 특징
+
+- Ts의 관점에서 useState 타입 정의
+  - → `타입 변수(type parameter) : S` 는 상태 타입 State의 첫 글자
+
+```tsx
+function useState<S>(initialState: S | (()=>S): [S, Dispatch<SetStateActions<S>>])
+```
+
+- 값을 변경하는 함수 시그니처(함수타입) `Dispatch<SetStateAction<S>>`
+  - → `Dispatch`, `SetStateAction`의 타입 정의는 아래와 같음
+
+```tsx
+type Dispatch<A> = (value: A) => void;
+type SetStateAction<S> = S | ((previousState: S) => S);
+```
+
+- `SetStateAction<S>`를 S로 단순화 하면 `Dispatch<SetStateActions<S>>`
+  - → `(value: S) => void` 타입이 됨
+  - SetStateAction<S> = ((previousState: S)=> S) 에 해당하는 부분은 뒤에 설명
+
+#### 상태를 사용하는 컴포넌트 구현
+
+- React, R/N 에서 속성은 `불변 데이터(immutable, read-only data)`
+- 다음 코드의 Person 컴포넌트의 매개변수 person 은 내부에서 데이터가 변하지 않고 단순히 사용만 가능한 변수
+
+```tsx
+const Person: FC<PersonProps> = ({person}) => {...}
+```
+
+- React, R/N `컴포넌트 속성`의 특징이 `불변성`임
+  - → person `내용 전부나 일부를 바꾸`려면 `컴포넌트 배개변수` person → `initialPerson` 등의 이름으로 `바꾸는게 좋음`
+  - 이래야 코드 작성자와 열람자가 헷갈리는 요소가 적음
+
+```tsx
+function PersonUsingValueState({ person: initialPerson }: PersonPros) {...}
+```
+
+#### 값을 상태로 했을 때 구현 방법
+
+- 아래에서의 setter 함수는 컴포넌트의 매개변수 person의 멤버를 바꾸는 것이 아닌
+  - → 지역변수 comment, retweet, heart 의 값을 바꾸기 위한 용도의 함수
+
+> commentPressed 함수
+
+```tsx
+const commentPressed = () => {/*comment 변수 +1 하는 내용 구현*/}
+<IconText onPress={commentPressed} text={comment}>
+```
+
+> commentPressed 함수 구현
+
+```tsx
+const commentPressed = () => {
+	setComment(comment + 1); // -1-
+};
+```
+
+1. 최적화 문제가 있음
+   - → reRender 할 때 마다 똑같은 내용의 함수를 반복 생성
+   - 이를 useCallback Hook을 이용해서 최적화
+
+> useCallback Hook을 이용한 최적화
+
+```tsx
+const commentPressed = useCallback(() => {
+	setComment(comment + 1); // -1-
+}, []);
+```
+
+1. 심각한 문제 존재
+   - → comment 값이 `단 한 번만 +1` 증가하는 버그
+   - 버그의 이유는 comment의 `초기값이 N`으로 설정되었다고 할 때
+   - 한 번 실행하면 `+1` 정상 동작
+   - → → 그러나 `의존성 배열(dependency array)`에 comment가 없음
+
+- N + 1 로 바뀐 comment가 useCallback에 설정된 콜백 함수에 반영되려면 comment가 의존성 목록에 존재햐아함
+  - → 그러나 여기서는 의존성이 없다는 의미로 `빈 배열[]`을 사용했음
+  - 그래서 바뀐 comment의 값을 콜백함수에 반영하지 않는 버그가 생긴 것
+
+> 그러므로 comment를 useCallback 의존성 목록에 추가
+
+```tsx
+const commentPressed = useCallback(() => {
+	setComment(comment + 1);
+}, [comment]);
+```
+
+> 더 좋은 해결법
+
+- 앞서 봤던 `SetStateAction<S>`의 `(previousState:S) => S` 형태로 setComment 함수를 호출
+  - → 이 방식의 장점은 의존성 목록에 comment를 추가할 필요가 없음
+
+```tsx
+const commentPressed = useCallback(() => {
+	setComment((comment) => comment + 1);
+}, []);
+```
+
+#### 겍체를 상태로 했을 때의 구현 방법
+
+- PersonUsingValueState useState 훅 코드 3개 사용
+  - → 이를 객체를 대상으로 사용이 가능하다.
+
+```tsx
+const [person, setPerson] = useState<D.IPerson>({
+	...initialPerson,
+	counts: { comment: 0, retweet: 0, hear: 0 },
+});
+```
+
+> 다만 객체를 사용할 때는 얕은 복사(shallow copy), 깊은 복사(deep copy) 현상과 관련
+
+##### 얕은 복사, 깊은 복사
+
+- 얕은 복사의 예
+
+```tsx
+let person = { comment: 1 };
+let newPerson = person;
+newPerson.comment = 10;
+const equal = person === newPerson; //true
+```
+
+- 문제점 : `얕은 복사`를 해서 메모리 주소를 가져와버림
+  - → newPerson 에서 `값을 변경해도 본 객체에 영향을 미침`
+
+> 이래서 깊은 복사를 사용해야함
+
+```tsx
+let person = { comment: 1 };
+let newPerson = { ...person };
+newPerson.comment = 10;
+const equal = person === new Person(); //false
+```
+
+- `깊은 복사`가 일어나면 person 과 다른 새로운 newPerson 생성하고 person의 모든 속성값
+
+  - → newPerson에 `복사(member-wise copy)`
+  - 그러므로 newPerson의 comment 속성값 변경하더라도 기존 객체는 기존 값 유지
+
+- 제대로 구현해서 사용하기
+
+```tsx
+const commentPressed = useCallback(
+	() =>
+		setPerson((person) => ({
+			...person,
+			counts: { ...person.counts, comment: person.counts.comment + 1 },
+		})),
+	[]
+);
+```
+
+#### 자식 컴포넌트에서 부모 컴포넌트의 상태 변경하기
+
+- 컴포넌트를 개발할 때 리액트 훅 함수를 사용하여 로직을 추가하다 보면
+  - → 코드 분량이 점점 늘어남
+  - 가독성도 떨어지고 관리하기도 점점 어려워짐
+  - 그렇기에 컴포넌트를 작은 기능의 컴포넌트 여러 개로 분활하여 개발하는 것은 필수 작업
+
+```tsx
+const [person, setPerson] = useState<D.IPerson>({
+	...initialPerson,
+	counts: { comment: 0, retweet: 0, heart: 0 },
+});
+return <PersonIcons person={person} setPerson={setPerson}> // -1-
+```
+
+1. 이런 식으로 person 상태와 상태를 변경할 수 있는 setter 함수(setPerson)를 넘겨주면
+   - 부모 컴포넌트에서 구현할 로직을 자식 컴포넌트에서 충분히 구현이 가능함
+
+> 여기서 중요한 것은 setPerson 함수의 타입
+
+```tsx
+export type PersonIconsProps = {
+	person: D.IPerson;
+	setPersonState: Dispatch<SetStateAction<D.IPerson>>;
+};
+```
+
+- 다음 코드는 useState 타입 정의
+  - → 상태 타입을 S라고 했을 때
+  - setter 함수의 타입은 `Dispatch<SetStateAction<S>>`
+  - `부모의 상태` 타입 : `D.IPerson`
+  - `setPerson` 의 타입 : `Dispatch<SetStateAction<D.IPerson>>`
+
+> useState 훅의 타입
+
+```tsx
+function useState<S>(
+	initialState: S | (() => S)
+): [S, Dispatch<SetStateAction<S>>];
+```
+
+#### 배열을 상태로 했을 때의 구현 방법
+
+- 앞에서는 people 데이터를 useMemo 훅을 사용하여 만들었음
+  - → 이 부분은 useState 훅을 사용하여 `D.IPerson[]` 타입의 상태로 구현 가능
+
+```tsx
+export default function App() {
+	// const people = useMemo(() => D.makeArray(10).map(D.createRandomPerson), []);
+	// 기존 배열 추가 코드
+	const [people, setPeople] = useState<D.IPerson[]>([]); // -1-
+	const add = () =>
+		setPeople((perviousPeople) => [D.createRandomPerson(), ...previousPeople]); // -2-
+}
+```
+
+1. useState를 이용한 D.IPerson 타입의 빈 배열 생성
+2. setter 함수를 이용한 기존 배열에 새롭게 만든 목록 추가
+
+> D.IPerson 타입 객체를 배열에서 삭제
+
+```tsx
+const deleteAll = () => setPeople((notUsed) => []);
+```
+
+- 하지만 이렇게 구현해도 화면에는 여전히 아무런 변화가 없음
+  - → 그 `원인`은 다음 코드의 `people` 변수에 있음
+  - 코드에서 `children`은 `useMemo` 훅을 사용 중
+  - App 컴포넌트 처음 렌더링 할 때 → `초기값인 [ ]` 으로 설정된 people을 참조하여 생성된 값을 사용
+  - → 따라서 add 버튼을 누를 때 마다 people 배열에는 새로운 배열이 생겨야 하지만
+  - → → `의존성 배열`(목록)이 `[ ]` 이므로 바뀐 부분이 전혀 반영이 되지 않음
+
+> 결론적으로 `부모 컴포넌트`에서 `useMemo`를 이용해서 `최적화`를 하고 있지만
+> `의존성 배열`에 `빈 배열이 들어 있기 때문`에 `변경 내용이 감지`가 안되고 `캐싱된 값`이 계속 사용되고 있는 것 이다.
+
+- 여기서 알 수 있는 점은 `부모 컴포넌트`에서 useState를 사용해서 내려주는 것을 사용하고
+  - → `최적화`를 사용한다면 `useMemo`, `useCallback`의 `의존성 배열`을 신경을 잘 쓰도록 한다.
+
+##### 배열 데이터를 컴포넌트의 상태로 만들 때 주의할 점
+
+- Js, Ts 언어에서 배열은 Array 클래스의 인스턴스
+
+  - → 새로운 아이템을 기존 배열의 가장 앞에 추가하는 `prepend` 와
+  - → 가장 마지막에 추가하는 `append`(또는 push) 메서드를 사용하면 안됨
+
+- 객체를 상태를 했을 때 구현 방법 중 객체의 얕은 복사와 깊은 복사를 살펴 보았음
+
+- 자바스크립트와 타입스크립트에서 배열은 객체
+  - → 즉 배열에서도 얕은 복사와 깊은 복사에 대한 문제가 발생하게 됨
+
+> 얕은 복사 후 두 값 비교
+
+```tsx
+let people = [];
+let newPeople = people;
+newPeople.prepend(10);
+const equal = people == newPeople; // true
+```
+
+> 깊은 복사 후 두 값 비교
+
+```tsx
+let people = [];
+let newPeople = [...people];
+newPeople.add(10);
+const equal = people == newPeople; // false
+```
+
+> 무조건 객체나 배열을 사용해서 값을 변경하거나 추가 할 때는 ... (전개 연산자)를 사용해서 복사
+> 깊은 복사를 하지 않으면 문제가 생기게됨
+
+> 또한 useMemo 에서도 배열의 길이 → people.length를 의존성 배열에서 검사하는게 좋음
+
+```tsx
+const children = useMemo([...생략...], [people.length])
+```
