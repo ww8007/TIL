@@ -751,7 +751,7 @@ type SetStateAction<S> = S | ((previousState: S) => S);
 
 - `SetStateAction<S>`를 S로 단순화 하면 `Dispatch<SetStateActions<S>>`
   - → `(value: S) => void` 타입이 됨
-  - SetStateAction<S> = ((previousState: S)=> S) 에 해당하는 부분은 뒤에 설명
+  - `SetStateAction<S> = ((previousState: S)=> S)` 에 해당하는 부분은 뒤에 설명
 
 #### 상태를 사용하는 컴포넌트 구현
 
@@ -1409,3 +1409,113 @@ export default function MainNavigator() {
     MaterialCommunityIcons 아이콘 세트를 사용한다.
     이 세트가 제공하는 아이콘의 이름은
     ('materialdesignicons.com') 에서 확인 가능
+
+### 커스텀 훅 이란?
+
+- `커스텀 훅`은 리액트 프레임워크가 기본으로 제공하는 `useState`, `useEffect와` 같은 `훅을 조합`
+
+  - → 만들어낸 `새로운 훅 함수`를 뜻함
+  - `커스텀 훅`은 이전 리액트 컴포넌트에서는 불가능했던 `로직 공유의 유연성`을 제공
+
+- 보통 여러 컴포넌트에서 공통으로 사용하는 코드를 추려내서 만들게 됨
+  - → 시계를 만들었을 때 사용했던 useClock
+  - → → 컴포넌트의 로직 부분 코드가 훨씬 간결해지므로 코드의 가독성이 높아지고 관리가 편해진다는 장점
+
+> 커스텀 훅을 만들 때 함수 이름은 항상 `use~`
+
+     특징 : 함수 몸통에서 다른 커스텀 훅 함수를 호출 가능
+
+#### useToggle 커스텀 훅 제작
+
+- 앞 timer 에서 다음 패턴의 코드를 구사
+
+```tsx
+export default function Timer() {
+	const [loading, setLoading] = useState(false);
+	const toggleLoading = useCallback(
+		() => setLoading((loading) => !loading),
+		[]
+	);
+}
+```
+
+- Interval 컴포넌트는 변수 이름만 다를 뿐 다음처럼 같은 패턴의 코드를 사용
+
+```tsx
+export default function Interval() {
+	const [start, setStart] = useState(false);
+	const toggleStart = useCallback(() => setStart((start) => !start), []);
+}
+```
+
+> 같은 패턴의 코드를 hook 으로 생성하기 위해서 복사
+
+```tsx
+import { useState, useCallback } from 'react';
+// -1-
+export default function Timer(initialValue: boolean = false, deps: any[] = []) {
+	// -1-
+	const [value, setValue] = useState(initialValue); // -2-
+	const toggleValue = useCallback(() => setValue((value) => !value), deps); // -2-
+	return [value, toggleValue];
+}
+```
+
+1. `deps`란 이름의 `의존성 목록`을 `입력 매개변수`로 하는 부분을 추가
+   - → 또한 initialValue를 입력으로 추가여서 초기값을 지정해서 받아옴
+2. `loading` 이라는 변수 이름을 `value와 같이 알기 쉬운 이름`으로 바꿈
+   - → deps에 기본값([]) 빈 배열을 추가하여서 호출 쪽 코드가 간결해 지도록 설정
+
+> 커스텀 훅의 반환값 타입을 명시하지 않으면 useToggle을 사용할 때 타입 스크립트 오류 메시지
+
+    	반환 타입을 지정해준다.
+
+```tsx
+import { useState, useCallback } from 'react';
+
+export default function Timer(
+	initialValue: boolean = false,
+	deps: any[] = []
+): [boolean, () => void] {
+	// -1-
+	const [value, setValue] = useState(initialValue);
+	const toggleValue = useCallback(() => setValue((value) => !value), deps);
+	return [value, toggleValue];
+}
+```
+
+1. return 값의 타입 지정
+   - → `initialState` : `boolean`
+   - → `setter(세터함수)` : `() => void`
+
+#### useTimeout 커스텀 훅 제작
+
+> 기본 Timer 컴포넌트의 구성
+
+```tsx
+useEffect(() => {
+	const id = setTimeout(() => setLoading(false), 3000);
+	return () => clearTimeout(id);
+}, [loading]);
+```
+
+- 기존 코드를 옮겨서 useTimeout 커스텀 훅을 제작 가능
+
+```tsx
+import { useEffect } from 'react';
+
+export const useTime = (
+	callback: () => void,
+	duration: number,
+	deps: any[] = []
+): void => {
+	useEffect(() => {
+		console.log(deps);
+		if (duration === 0) return; // -1-
+		const id = setTimeout(callback, duration);
+		return () => clearTimeout(id);
+	}, [duration, ...deps]);
+};
+```
+
+1.
