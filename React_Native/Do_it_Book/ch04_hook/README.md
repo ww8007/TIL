@@ -1291,3 +1291,121 @@ fetch('https://google.com')
 
 - 위 둘은 ES5 Js 구문이 아님
   - → 따라서 Js 타입 변호나 구문과 구분하고자 타입 단언이라는 용어 사용
+
+> 만약 data를 뽑아온것을 타입 별로 분리해서 다른 타입으로 변경해서 사용하고 싶은 경우 이렇게 사용하면 된다.
+
+## 커스텀 훅 이해하기
+
+- 지금까지 컴포넌트의 훅 함수 코드 패탠을 보면 비슷한 점을 발견할 수 있음
+
+  - → 이럴 때는 비슷한 패턴의 훅 호출을 조합해서 재사용할 수 있는 조금 더 간결하게 구현하는 것이 좋음
+
+- 커스텀 훅(custom hooks)은 여러 개의 리액트 훅과 커스텀 훅을 조합하여 재사용할 수 있는 새로운 훅을 만드는 기능
+
+> 예제 yarn 설치
+
+    yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6
+    yarn add @types/react-native-vector-icons @types/color @types/faker
+
+### react-native-paper 패키지 제공 BottomNavigation 컴포넌트 사용하기
+
+- `react-native-paper` 패키지가 제공하는 `BottomNavigation`
+
+  - → 화면 아래쪽에 화면을 전활할 수 있는 아이콘 버튼을 표시
+
+- BottomNavigation 컴포넌트를 사용하기 위해서
+  1.  navigationState
+  2.  onIndexChange
+  3.  renderScene
+  - 위 3개의 속성에 적절한 값을 설정해야 함
+
+> BottomNavigation의 3개 속성
+
+```tsx
+<BottomNavigation
+	navigationState={{ index, routs }}
+	onIndexChange={setIndex}
+	renderScene={renderScene}
+/>
+```
+
+> MainNavigator 코드
+
+```tsx
+import React, { useState } from 'react';
+import { BottomNavigation } from 'react-native-paper';
+
+export default function MainNavigator() {
+	const [index, setIndex] = useState<number>(0); // -1-
+	const [routes] = useState([]); // -2-
+
+	const renderScene = BottomNavigation.SceneMap({}); // -3-
+	return (
+		<BottomNavigation
+			navigationState={{ index, routes }}
+			onIndexChange={setIndex}
+			renderScene={renderScene}
+		/>
+	);
+}
+```
+
+1. `BottomNavigation` 에서 사용할 `initialState`와 `setter 함수` 설정
+   - → initialState : index
+   - → setter : setIndex
+2. `routes` `빈배열` 설정
+
+> BottomNavigation에 출력하고 싶은 화면 컴포넌트 Home이 있다고 가정
+
+```tsx
+import Home from './Home';
+```
+
+> key, title, icon 키가 있는 객체를 routes에 추가
+
+```tsx
+const [routs] = useState([{ key: 'home', title: 'Home', icon: 'home' }]);
+```
+
+> 마지막으로 `routes의 key 값`(여기서는 home)에 해당하는 컴포넌트를 `SceneMap`에 설정
+
+```tsx
+const renderScene = BottomNavigation.SceneMap({
+	home: Home,
+});
+```
+
+> 최종적 복사해서 사용할 모습
+
+```tsx
+import React, { useState } from 'react';
+import { BottomNavigation } from 'react-native-paper';
+
+export default function MainNavigator() {
+	const [index, setIndex] = useState<number>(0);
+	const [routes] = useState([
+		//{key: 'home', title: 'Home', icon: 'home'} // -1-
+	]);
+
+	const renderScene = BottomNavigation.SceneMap({
+		//home: Home, // -2-
+	});
+	return (
+		<BottomNavigation
+			navigationState={{ index, routes }}
+			onIndexChange={setIndex}
+			renderScene={renderScene}
+		/>
+	);
+}
+```
+
+1. routes에 `key, title, icon` 정보를 가진 객체 추가
+2. routes에 `key` 값에 해당하는 컴포넌트를 설정
+
+> MaterialCommunityIcons 아이콘 세트
+
+    react-native-paper는 react-native-vector-icons 패키지의
+    MaterialCommunityIcons 아이콘 세트를 사용한다.
+    이 세트가 제공하는 아이콘의 이름은
+    ('materialdesignicons.com') 에서 확인 가능
