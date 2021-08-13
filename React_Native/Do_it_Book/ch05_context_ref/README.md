@@ -502,10 +502,10 @@ const defaultToggleThemeContext = {
 };
 ```
 
-- 이럴 때 useToggleTheme 커스텀 훅의 구현 내용에 따르면 toggleTheme 함수는 다음 코드 형태로 얻을 수 있음
+- 이럴 때 `useToggleTheme` 커스텀 훅의 구현 내용에 따르면 `toggleTheme` 함수는 다음 코드 형태로 얻을 수 있음
 
 ```tsx
-const toggleTheme = useToggleTheme();
+const { toggleTheme } = useToggleTheme();
 ```
 
 > 위의 내용을 바탕으로 구현
@@ -547,4 +547,84 @@ export const useToggleTheme = () => {
 
 #### Switch 컴포넌트
 
-- R/N은 다음처럼 Switch
+- R/N은 다음처럼 Switch 컴포넌트를 제공
+
+```tsx
+import { Switch } from 'react-native';
+```
+
+- Switch 컴포넌트는 `value` 속성과 `onValueChange` 이벤트 속성을 제공
+
+  - → `value` : true, false
+  - → `onValueChange : (boolean) => void` 타입 이벤트 처리기 설정
+
+- value 값 달라지면 이벤트 처리기를 호출
+
+#### react-native-paper 패키지가 제공하는 useTheme 커스텀 훅
+
+- react-native-paper 패키지는 Provider 컴포넌트의 theme 속성에
+  - → 설정한 값을 얻을 수 있는 useTheme 커스텀 훅을 제공
+
+```tsx
+import { useTheme } from 'react-native-paper';
+```
+
+> useTheme 훅을 사용해 theme 객체를 얻어오기
+
+```tsx
+const theme = useTheme();
+```
+
+> 속성값 얻기
+
+```tsx
+const { dark, colors, fonts } = useTheme();
+```
+
+> dark 값을 Switch 코어 컴포넌트의 value 속성에 적용
+
+```tsx
+<Switch value={dark} />
+```
+
+#### Home 컴포넌트에 toggleTheme 함수와 Switch 컴포넌트 사요하기
+
+- 앞서 useToggleTheme 커스텀 훅을 만들었음
+- Switch 컴포넌트 관련 코드에 useToggleTheme 훅을 호출해 얻은
+  - → toggleTheme 함수를 onValueChange 이벤트 속성에 설정
+  - → → 스위치를 옮길 때 마다 즉시 화면의 바탕색과 글자 색을 바꿀 수 있음
+
+```tsx
+import { useToggleTheme } from '../contexts';
+
+export default function Home() {
+	const { dark, colors, fonts } = useTheme();
+	const toggleTheme = useToggleTheme();
+	return <Switch value={dark} onValueChange={toggleTheme} />;
+}
+```
+
+> 실제로 적용
+
+```tsx
+import React from 'react';
+import {StyleSheet, View, Text, Switch} from 'react-native';
+import {useTheme} from 'react-native-paper';
+import {useToggleTheme} from '../contexts';
+export default function Home() {
+  const theme = useTheme();
+  const {fonts, colors, dark} = theme; // -1-
+  const toggleTheme = useToggleTheme(); // -2-
+  return (
+    <View style={[styles.view, {backgroundColor: colors.background}]}>
+      <View style={[styles.bar, {backgroundColor: colors.primary}]}>
+        <Text style={[styles.text, {color: colors.text}, fonts.medium]}>
+          TopBar
+        </Text>
+        <View style={[{flex: 1}]} />
+        <Switch value={dark} onValueChange={toggleTheme} />
+      </View>
+```
+
+1. dark 속성 추가해서 비구조화 이용해서 가져오기
+2. useToggleTheme 함수 빼온것을 함수화 시켜서 변수에 할당
