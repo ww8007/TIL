@@ -3,13 +3,17 @@ import {StyleSheet, View, Text, FlatList} from 'react-native';
 import {Colors} from 'react-native-paper';
 import Country from './Country';
 import * as D from '../data';
+import {useAsync} from '../hooks';
 
 export default function Fetch() {
   const [countries, setCountries] = useState<D.ICountry[]>([]);
-  const [error, setError] = useState<Error | null>(null);
-  useEffect(() => {
-    D.getCountries().then(setCountries).catch(setError);
-  }, []);
+  const [error, resetError] = useAsync(async () => {
+    setCountries([]);
+    resetError();
+    // await Promise.reject(new Error('error'));
+    const countries = await D.getCountries();
+    setCountries(countries);
+  });
   return (
     <View style={styles.view}>
       <Text style={styles.title}>Fetch</Text>
