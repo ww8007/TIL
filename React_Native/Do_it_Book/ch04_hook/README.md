@@ -1,5 +1,67 @@
 # 함수 컴포넌트와 리액트 훅
 
+## 목차
+
+- [함수 컴포넌트와 리액트 훅](#%ED%95%A8%EC%88%98-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%99%80-%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%9B%85)
+  - [리액트 훅 맛보기](#%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%9B%85-%EB%A7%9B%EB%B3%B4%EA%B8%B0)
+    - [리액트 훅이란?](#%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%9B%85%EC%9D%B4%EB%9E%80)
+    - [리액트 훅의 탄생 배경이 된 클래스 컴포넌트의 문제점](#%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%9B%85%EC%9D%98-%ED%83%84%EC%83%9D-%EB%B0%B0%EA%B2%BD%EC%9D%B4-%EB%90%9C-%ED%81%B4%EB%9E%98%EC%8A%A4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-%EB%AC%B8%EC%A0%9C%EC%A0%90)
+    - [커스텀 훅이란?](#%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85%EC%9D%B4%EB%9E%80)
+    - [리액트 훅 사용 시 주의점](#%EB%A6%AC%EC%95%A1%ED%8A%B8-%ED%9B%85-%EC%82%AC%EC%9A%A9-%EC%8B%9C-%EC%A3%BC%EC%9D%98%EC%A0%90)
+    - [프로젝트 만들기](#%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+      - [오늘 날짜와 현재 시간 출력하기](#%EC%98%A4%EB%8A%98-%EB%82%A0%EC%A7%9C%EC%99%80-%ED%98%84%EC%9E%AC-%EC%8B%9C%EA%B0%84-%EC%B6%9C%EB%A0%A5%ED%95%98%EA%B8%B0)
+      - [setInterval 함수로 시계 만들기](#setinterval-%ED%95%A8%EC%88%98%EB%A1%9C-%EC%8B%9C%EA%B3%84-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+      - [useEffect 훅 사용하기](#useeffect-%ED%9B%85-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+      - [useState 훅 사용하기](#usestate-%ED%9B%85-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+      - [useClock 커스텀 훅 제작](#useclock-%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EC%A0%9C%EC%9E%91)
+  - [useMemo와 useCallback 훅 이해하기](#usememo%EC%99%80-usecallback-%ED%9B%85-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B8%B0)
+    - [수평 방향으로 ScrollView 스크롤](#%EC%88%98%ED%8F%89-%EB%B0%A9%ED%96%A5%EC%9C%BC%EB%A1%9C-scrollview-%EC%8A%A4%ED%81%AC%EB%A1%A4)
+    - [전역 변수와 캐시](#%EC%A0%84%EC%97%AD-%EB%B3%80%EC%88%98%EC%99%80-%EC%BA%90%EC%8B%9C)
+      - [FlatList 코어 컴포넌트의 특징](#flatlist-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-%ED%8A%B9%EC%A7%95)
+    - [의존성이란?](#%EC%9D%98%EC%A1%B4%EC%84%B1%EC%9D%B4%EB%9E%80)
+    - [useMemo 훅](#usememo-%ED%9B%85)
+      - [useMemo의 메모이제이션 기능](#usememo%EC%9D%98-%EB%A9%94%EB%AA%A8%EC%9D%B4%EC%A0%9C%EC%9D%B4%EC%85%98-%EA%B8%B0%EB%8A%A5)
+    - [useCallback 훅](#usecallback-%ED%9B%85)
+    - [고차 함수란?](#%EA%B3%A0%EC%B0%A8-%ED%95%A8%EC%88%98%EB%9E%80)
+  - [useState 훅 이해하기](#usestate-%ED%9B%85-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B8%B0)
+    - [상태란](#%EC%83%81%ED%83%9C%EB%9E%80)
+    - [useState 훅](#usestate-%ED%9B%85)
+      - [상태를 사용하는 컴포넌트 구현](#%EC%83%81%ED%83%9C%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%98%EB%8A%94-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EA%B5%AC%ED%98%84)
+      - [값을 상태로 했을 때 구현 방법](#%EA%B0%92%EC%9D%84-%EC%83%81%ED%83%9C%EB%A1%9C-%ED%96%88%EC%9D%84-%EB%95%8C-%EA%B5%AC%ED%98%84-%EB%B0%A9%EB%B2%95)
+      - [겍체를 상태로 했을 때의 구현 방법](#%EA%B2%8D%EC%B2%B4%EB%A5%BC-%EC%83%81%ED%83%9C%EB%A1%9C-%ED%96%88%EC%9D%84-%EB%95%8C%EC%9D%98-%EA%B5%AC%ED%98%84-%EB%B0%A9%EB%B2%95)
+        - [얕은 복사, 깊은 복사](#%EC%96%95%EC%9D%80-%EB%B3%B5%EC%82%AC-%EA%B9%8A%EC%9D%80-%EB%B3%B5%EC%82%AC)
+      - [자식 컴포넌트에서 부모 컴포넌트의 상태 변경하기](#%EC%9E%90%EC%8B%9D-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%97%90%EC%84%9C-%EB%B6%80%EB%AA%A8-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-%EC%83%81%ED%83%9C-%EB%B3%80%EA%B2%BD%ED%95%98%EA%B8%B0)
+      - [배열을 상태로 했을 때의 구현 방법](#%EB%B0%B0%EC%97%B4%EC%9D%84-%EC%83%81%ED%83%9C%EB%A1%9C-%ED%96%88%EC%9D%84-%EB%95%8C%EC%9D%98-%EA%B5%AC%ED%98%84-%EB%B0%A9%EB%B2%95)
+        - [배열 데이터를 컴포넌트의 상태로 만들 때 주의할 점](#%EB%B0%B0%EC%97%B4-%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%A5%BC-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-%EC%83%81%ED%83%9C%EB%A1%9C-%EB%A7%8C%EB%93%A4-%EB%95%8C-%EC%A3%BC%EC%9D%98%ED%95%A0-%EC%A0%90)
+  - [useEffect와 useLayoutEffect 훅 이해하기](#useeffect%EC%99%80-uselayouteffect-%ED%9B%85-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B8%B0)
+    - [컴포넌트의 생명주기란?](#%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-%EC%83%9D%EB%AA%85%EC%A3%BC%EA%B8%B0%EB%9E%80)
+    - [리액트 네이티브 컴포넌트의 onLayout 이벤트 속성](#%EB%A6%AC%EC%95%A1%ED%8A%B8-%EB%84%A4%EC%9D%B4%ED%8B%B0%EB%B8%8C-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EC%9D%98-onlayout-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EC%86%8D%EC%84%B1)
+      - [useLayoutEffect와 useEffect 훅의 호출 순서](#uselayouteffect%EC%99%80-useeffect-%ED%9B%85%EC%9D%98-%ED%98%B8%EC%B6%9C-%EC%88%9C%EC%84%9C)
+      - [useLayoutEffect와 useEffect 훅의 차이점](#uselayouteffect%EC%99%80-useeffect-%ED%9B%85%EC%9D%98-%EC%B0%A8%EC%9D%B4%EC%A0%90)
+    - [ActivityIndicator 코어 컴포넌트](#activityindicator-%EC%BD%94%EC%96%B4-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8)
+      - [setTimeout API 호출하기](#settimeout-api-%ED%98%B8%EC%B6%9C%ED%95%98%EA%B8%B0)
+    - [타입스크립트 제공 Pick 타입](#%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8-%EC%A0%9C%EA%B3%B5-pick-%ED%83%80%EC%9E%85)
+    - [setInterval API 호출하기](#setinterval-api-%ED%98%B8%EC%B6%9C%ED%95%98%EA%B8%B0)
+    - [fetch API 사용하기](#fetch-api-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+      - [Promise 객체의 then-체인](#promise-%EA%B0%9D%EC%B2%B4%EC%9D%98-then-%EC%B2%B4%EC%9D%B8)
+      - [any 타입 데이터에서 원하는 정보만 추출하기](#any-%ED%83%80%EC%9E%85-%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%97%90%EC%84%9C-%EC%9B%90%ED%95%98%EB%8A%94-%EC%A0%95%EB%B3%B4%EB%A7%8C-%EC%B6%94%EC%B6%9C%ED%95%98%EA%B8%B0)
+        - [타입 단언이란?](#%ED%83%80%EC%9E%85-%EB%8B%A8%EC%96%B8%EC%9D%B4%EB%9E%80)
+  - [커스텀 훅 이해하기](#%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B8%B0)
+    - [react-native-paper 패키지 제공 BottomNavigation 컴포넌트 사용하기](#react-native-paper-%ED%8C%A8%ED%82%A4%EC%A7%80-%EC%A0%9C%EA%B3%B5-bottomnavigation-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+    - [커스텀 훅 이란?](#%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EC%9D%B4%EB%9E%80)
+      - [useToggle 커스텀 훅 제작](#usetoggle-%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EC%A0%9C%EC%9E%91)
+      - [useTimeout 커스텀 훅 제작](#usetimeout-%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EC%A0%9C%EC%9E%91)
+      - [useInterval 커스텀 훅 제작](#useinterval-%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EC%A0%9C%EC%9E%91)
+    - [useLayout 커스텀 훅 제작](#uselayout-%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EC%A0%9C%EC%9E%91)
+    - [커스텀 훅 버전으로 다시 구현하기](#%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EB%B2%84%EC%A0%84%EC%9C%BC%EB%A1%9C-%EB%8B%A4%EC%8B%9C-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0)
+      - [LifeCycle 컴포넌트를 커스텀 훅 버전으로 다시 구현하기](#lifecycle-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EB%A5%BC-%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EB%B2%84%EC%A0%84%EC%9C%BC%EB%A1%9C-%EB%8B%A4%EC%8B%9C-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0)
+      - [Timer 컴포넌트를 커스텀 훅 버전으로 다시 구현](#timer-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EB%A5%BC-%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EB%B2%84%EC%A0%84%EC%9C%BC%EB%A1%9C-%EB%8B%A4%EC%8B%9C-%EA%B5%AC%ED%98%84)
+      - [Interval 컴포넌트를 커스텀 훅 버전으로 다시 구현](#interval-%EC%BB%B4%ED%8F%AC%EB%84%8C%ED%8A%B8%EB%A5%BC-%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EB%B2%84%EC%A0%84%EC%9C%BC%EB%A1%9C-%EB%8B%A4%EC%8B%9C-%EA%B5%AC%ED%98%84)
+    - [짚고 가는 setTimeout setInterval 차이](#%EC%A7%9A%EA%B3%A0-%EA%B0%80%EB%8A%94-settimeout-setinterval-%EC%B0%A8%EC%9D%B4)
+  - [Promise 객체와 async/await 구문의 이해](#promise-%EA%B0%9D%EC%B2%B4%EC%99%80-asyncawait-%EA%B5%AC%EB%AC%B8%EC%9D%98-%EC%9D%B4%ED%95%B4)
+    - [useAsync 커스텀 훅 제작](#useasync-%EC%BB%A4%EC%8A%A4%ED%85%80-%ED%9B%85-%EC%A0%9C%EC%9E%91)
+      - [정리](#%EC%A0%95%EB%A6%AC)
+
 ## 리액트 훅 맛보기
 
 > React Hook, Custom Hook 에 대해서 학습
@@ -107,8 +169,7 @@ export default function App() {
   2. if 문 블록 안 → 로컬 변수
   3. for 문 안 → 로컬 변수
   4. 훅 몸통 안에서 훅을 호출
-
-5. `비동기 함수(async 키워드 붙은 함수)`는 콜백 함수로 사용 불가
+  5. `비동기 함수(async 키워드 붙은 함수)`는 콜백 함수로 사용 불가
 
 ```tsx
 export default function App() {
@@ -1755,3 +1816,205 @@ export default function Interval() {
 ## Promise 객체와 async/await 구문의 이해
 
 - Promise 타입은 ES5 Js가 기본으로 제공하는 타입
+
+  - 타입의 이름이 `약속` : 이 타입 객체가 항상 어떤 값의 발생을 약속하기 때문
+
+- 약속된 값(resolve)은 `then` 메서드의 콜백 함수로 수신 가능
+- 오류 발생 시 : ES5 기본타입인 Error 타입 객체(reject)가 발생
+
+  - Error 타입 객체는 `catch` 메서드의 콜백 함수로 수신 가능
+
+- Promise 타입 객체는
+
+  1.  `resolve` 된 값
+  2.  `reject` 된 오류 둘 중 하나를 반드시 발생시킨다고
+
+  - `약속`을 하게 됨
+
+- Ts에서 `Promise 타입`은 `resolve` 된 `값의 타입`을
+  - → `타입 변수 T`로 하는 `제네릭 타입`
+
+> `Promise<T>` → `T 타입`을 `resolve` 해줌
+
+     단 오류는 항상 타입이 Error
+     특별히 명시하지 않음!!!
+
+- 앞서 작성한 Fetch 컴포넌트는 다음과 같은 코드로 구현
+  - → 이런 구현이 가능한 이유는
+  - → `D.getCountries()` 함수가 `Promise<D.ICountry[]>` `타입 객체`를 `resolve` 하기 때문
+
+```tsx
+export default function Fetch() {
+	const [countries, setCountries] = useState<D.ICountry[]>([]);
+	const [error, setError] = useState<Error | null>(null);
+	useEffect(() => {
+		D.getCountries().then(setCountries).catch(setError);
+	}, []);
+}
+```
+
+> 그러나 ESNext 자바스크립트가 등장하면서
+
+    1. `async 함수 수정자(function modifier)`
+    2. `await 연산자(operator)` 구문이 생겼음
+
+- await 연산자는 Promise 객체의 `복잡한 then-체인 코드`를 간결하게 할 목적으로 도입
+
+> await 연산자 사용법
+
+```tsx
+const resolve된_값 = await Promise_객체;
+```
+
+- await 연산자는 다음 코드에서 보듯
+  - → `피연산자(operand)`가 `Promise 객체`라면
+  - → → `then` 메서드를 자동으로 호출
+  - → → → `resolve 된 값`을 반환
+  - 피연산자가 보통의 값 : 단순히 그 값을 반환
+
+```tsx
+const val1 = await Promise.resolve(1); // -1-
+const val2 = await 1; // -1-
+```
+
+1. 둘 다 모두 1을 반환하게 된다.
+
+> await 연산자 사용을 위해서는 호출하는 함수 앞에 반드시 `async 함수 수정자`가 있어야함!!!
+
+- 이런 함수를 async 함수라고 부름
+
+```tsx
+const asyncFn = async () => {
+	const val1 = await Promise.resolve(1); // -1-
+};
+```
+
+1. `async` 함수는 일반 함수와 달리 항상 Promise 타입 객체를 반환
+   - → 오류가 `reject` 되면 catch 메서드를 통해
+   - → → `reject`된 Error 타입 오류를 수신 가능
+
+### useAsync 커스텀 훅 제작
+
+- React 훅 함수의 `콜백 함수` 에서는 `async 함수를 사용하지 못함`
+
+- 코드 트릭의 방법 : `asyncFn` 같은 `중첩함수`를 만들 수 있음
+  - → `asyncFn` 함수에서 `reject가` 발생할 때 대책이 없음
+
+```tsx
+useEffect(() => {
+	const asyncFn = async () => {
+		const countries = await D.getCountries(); // -1-
+		setCountries(countries);
+	};
+	asyncFn(); // -2-
+}, []);
+```
+
+1. code trick 방법으로 useEffect 내부에서 async 함수를 만들어서 실행
+2. 그러나 오류에 대한 catch 문이 없음
+
+> catch 문을 이용한 문제 해결
+
+```tsx
+const [error, setError] = useState<Error | null>(null); // -1-
+useEffect(() => {
+	const asyncFn = async () => {
+		const countries = await D.getCountries();
+		setCountries(countries);
+	};
+	asyncFn().catch(setError); // -2-
+}, []);
+```
+
+1. `error 문`에 대해서
+   - → `error` : `initialState`
+   - → `setError` : `setter`
+   - 를 가진 `useState` 생성
+2. `.catch` 문을 이용해서 `setter 함수`를 통해서 오류 설정
+
+> 매번 이렇게 작성하는 것은 번거롭기 때문에 custom Hook을 만드는게 낫겠다고 판단
+
+     여기서 드는 의문점은 asyncCallback 함수 타입이 구체적으로 무엇인지
+
+```tsx
+export const useAsync = (asyncCallback: ???, deps: any[] = []) => {};
+```
+
+- 앞서 `async 함수는 Promise 객체 반환` 한다고 말한바가 있음
+  - → Ts가 반환하는 Promise 타입이 `Promise<T>` 라고 한다면
+  - `useAsync` 함수는 다음과 같은 시그니처를 갖는 함수로 구현 가능
+
+```tsx
+export const useAsync = <T>(
+	asyncCallback: () => Promise<T>,
+	deps: any[] = []
+) => {};
+```
+
+- 또한 Error 객체가 reject 될 수 있는데 이 때
+
+  - → Error 타입 객체가 반환되어야 호출하는 컴포넌트에서 이 오류를 사용자에게 표시가능
+
+- 정상적인 값이 resolve 되면 Error 타입 객체는 발생하지 않음
+  - Error 타입은 발생할 수도 있고 아닐 수도 있음
+  - → Ts `Error | null`
+
+> useAsync custom Hook 구현
+
+    ./src/hooks/useAsync.ts
+
+```ts
+import { useState, useEffect, useCallback } from 'react';
+
+export const useAsync = <T>(
+	asyncCallback: () => Promise<T>,
+	deps: any[] = []
+): [Error | null, () => void] => {
+	const [error, setError] = useState<Error | null>(null);
+	useEffect(() => {
+		asyncCallback().catch(setError);
+	}, deps);
+	const resetError = useCallback(() => setError((notUsed) => null), []);
+
+	return [error, resetError];
+};
+```
+
+> useAsync custom hook을 실제로 사용
+
+```tsx
+export default function Fetch() {
+  const [countries, setCountries] = useState<D.ICountry[]>([]); // -1-
+
+  const [error, resetError] = useAsync(async () => {
+    setCountries([]); // -2-
+    resetError(); // -3-
+    // await Promise.reject(new Error('error'));
+    const countries = await D.getCountries(); // -4-
+    setCountries(countries);
+  });
+```
+
+1. 이전에 만들었던 fetch에서 받아오는 데이터 any → 타입 지정으로 변환된 데이터 타입
+2. 일단 initialState 초기화
+3. error 또한 초기화
+   - → useCallback을 통해서 만들어서 optimize 된 함수
+4. 비동기 처리로 데이터 받아오기
+
+#### 정리
+
+1. Ts에서 `Promise 타입`은 `resolve 된 값의 타입`을 `타입 변수 T`로 하는 `제네릭 타입`
+
+   ```tsx
+   Promise<T> 는 T 타입을 resolve 해줌
+   ```
+
+2. 오류의 경우 항상 타입이 Error 이므로 명시 X
+
+3. `async 함수`는 일반 함수와 달리 `항상 Promise 타입 객체를 반환`
+
+   ```tsx
+   const asyncFn = async () => {
+   	const val1 = await Promise.resolve(1);
+   };
+   ```
