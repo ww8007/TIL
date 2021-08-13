@@ -1453,7 +1453,10 @@ export default function Interval() {
 ```tsx
 import { useState, useCallback } from 'react';
 // -1-
-export default function Timer(initialValue: boolean = false, deps: any[] = []) {
+export default function Timer(
+	initialValue: boolean = false,
+	deps: any[] = []
+): [boolean, () => void] {
 	// -1-
 	const [value, setValue] = useState(initialValue); // -2-
 	const toggleValue = useCallback(() => setValue((value) => !value), deps); // -2-
@@ -1518,4 +1521,237 @@ export const useTime = (
 };
 ```
 
-1.
+1. duration이 0 일 경우 setTimeout을 호출하지 않겠다는 뜻
+
+#### useInterval 커스텀 훅 제작
+
+- useEffect 부분은 Timer 컴포넌트의 useEffect 코드와 호출하는 API만 다를 뿐 같은 패턴
+  - → useInterval 커스텀 훅은 useTimeout 훅과 똑같은 패턴으로 구현 가능
+
+```tsx
+import { useEffect } from 'react';
+
+export const useInterval = (
+	callback: () => void,
+	duration: number,
+	deps: any[] = []
+): void => {
+	useEffect(() => {
+		if (duration === 0) return;
+		const id = setInterval(callback, duration);
+		return () => clearInterval(id);
+	}, [duration, ...deps]);
+};
+```
+
+### useLayout 커스텀 훅 제작
+
+- onLayout 이벤트 속성에 설정하는 콜백 함수 다음처럼 구현한 적이 있음
+  - → 코드를 좀 더 개발 친화적인 `커스텀 훅`으로 다시 구현
+
+```tsx
+const onLayout = useCallback((e: LayoutChangeEvent) => {
+	const { layout } = e.nativeEvent;
+	console.log(Platform.OS, 'onLayout called', layout);
+}, []);
+```
+
+> LayoutChangeEvent 타입 추가
+
+```tsx
+import { useCallback } from 'react';
+import type { LayoutChangeEvent, LayoutRectangle } from 'react-native';
+
+export const useLayout = () => {
+	const onLayout = useCallback((e: LayoutChangeEvent) => {
+		const { layout } = e.nativeEvent;
+	}, []);
+};
+```
+
+> layout 객체를 상태로 하여 다음처럼 useLayout.ts 구현
+
+```tsx
+import { useCallback, useState } from 'react';
+import type { LayoutChangeEvent, LayoutRectangle } from 'react-native';
+// -1-
+export const useLayout = (): [
+	LayoutRectangle,
+	(e: LayoutChangeEvent) => void
+	// -1-
+] => {
+	// -2-
+	const [layout, setLayout] = useState<LayoutRectangle>({
+		x: 0,
+		y: 0,
+		width: 0,
+		height: 0,
+	});
+	// -2-
+	// -3-
+	const onLayout = useCallback((e: LayoutChangeEvent) => {
+		const { layout } = e.nativeEvent;
+		setLayout(layout);
+	}, []);
+	// -3-
+	return [layout, onLayout];
+};
+```
+
+1. return 함수를 배열로 설정
+   - → 첫번째 : `useState`의 `initialState로` 설정된 `layout`
+   - → 두번째 : `LayoutChangeEvent` 를 event 인자로 가지는 `함수`
+2. `useState`를 통해서 `initialState` → `layout`에 값 저장
+   - → `setter` 함수 : `setLayout`
+3. `onLayout`을 `useCallback`을 사용해서 설정
+   - → `e: LayoutChangeEvent`를 설정하는 것을 유념
+   - → `e.nativeEvent`에서 `layout`을 비구조화 할당
+
+### 커스텀 훅 버전으로 다시 구현하기
+
+- 앞서 작성한 커스텀 훅을 테스트하는 코드 작성
+
+#### LifeCycle 컴포넌트를 커스텀 훅 버전으로 다시 구현하기
+
+```tsx
+import React, { useEffect, useLayoutEffect, useCallback } from 'react';
+import { Platform, StyleSheet, View, Text } from 'react-native';
+import { Colors } from 'react-native-paper';
+import type { LayoutChangeEvent } from 'react-native';
+import { useLayout } from '../hooks';
+export default function LifeCycle() {
+	const [layout, setLayout] = useLayout(); // -1-
+
+	return (
+		<View onLayout={setLayout} style={styles.view}>
+			<Text style={styles.title}>LifeCycle</Text>
+			<Text style={styles.title}>
+				layout : {JSON.stringify(layout, null, 2)}
+			</Text>
+		</View>
+	);
+}
+// prettier-ignore
+const styles = StyleSheet.create({
+  view: {flex: 1, alignItems: 'center', backgroundColor: Colors.blue100},
+  title: {fontSize: 30, fontWeight: '600'},
+  });
+```
+
+1. layout, setLayout → 을 return으로 배열로 받아오게 됨
+   - → View 에서 onLayout을 통해서 setLayout callback 함수 실행
+
+#### Timer 컴포넌트를 커스텀 훅 버전으로 다시 구현
+
+- 다음 코드는 앞서 구현한 useToggle과 useTimeout 커스텀 훅을 가장 간단하게 적용
+- 이 코드는 useTimeout 호출에 loading에 대한 의존성이 없어서
+  - → 처음 렌더링 할 때 useTimeout의 콜백 함수를 단 한번만 호출
+
+```tsx
+import { useToggle, useTimeout } from '../hooks';
+
+export default function Timer() {
+	const [loading, toggleLoading] = useToggle(true);
+	useTimeout(() => toggleLoading, 3000); // loading에 대한 의존성 필요
+}
+```
+
+> 그러나 useTimeout에 loading을 의존성 목록에 넣어주면 콜백 함수를 3초에 한 번씩 무한히 반복 호출
+
+> 그렇기 때문에 loading → true 일 경우만 toggleLoading이 수행되도록 설정 한 모습이다.
+
+```tsx
+export default function Timer() {
+  const [loading, toggleLoading] = useToggle(true);
+
+  useTimeout(() => loading && toggleLoading(), 3000, [loading]); // -1-
+	return (
+		...
+	)
+```
+
+1. loading이 true 인 경우만 toggleLoading이 동작하도록 `&&` 연산자 사용
+
+#### Interval 컴포넌트를 커스텀 훅 버전으로 다시 구현
+
+- 다음 코드는 useEffect 훅 대신
+  - → useInterval 커스텀 훅을 사용하여 구현의미 더 정확하게 전달
+
+```tsx
+export default function Interval() {
+	useInterval(
+		() => {
+			if (start) {
+				setAvatars((avatars) => [
+					...avatars,
+					{ id: D.randomId(), avatar: D.randomAvatarUrl() },
+				]);
+			}
+		},
+		1000,
+		[start]
+	);
+}
+```
+
+> 더 간결하게 구현도 가능함
+
+```tsx
+export default function Interval() {
+	useInterval(
+		() => [...avatars, { id: D.randomId(), avatar: D.randomAvatarUrl() }],
+		1000,
+		[start]
+	);
+}
+```
+
+> 실제로 사용해보기
+
+     src/screens/Interval.tsx
+
+```tsx
+export default function Interval() {
+  const [avatars, setAvatars] = useState<IdAndAvatar[]>([]);
+  const [start, setStart] = useState(true);
+  const toggleStart = useCallback(() => setStart(start => !start), []);
+  const clearAvatars = useCallback(() => setAvatars(() => []), []);
+  useInterval(
+    () => {
+      if (start) {
+        setAvatars(avatars => [
+          ...avatars,
+          {id: D.randomId(), avatar: D.randomAvatarUrl()},
+        ]);
+      }
+    },
+    1000,
+    [start],
+  );
+```
+
+### 짚고 가는 setTimeout setInterval 차이
+
+> setInterval
+
+- 앞서 진행 중인 코드의 완료 유무와 관계없이
+  - → 정해진 시간 간격에 무조건 지정된 코드를 호출
+  - 그러나 지정된 시간 간격에 도달하더라도 지정된 코드를 실행할 수 없는 경우
+  - → setInterval은 이벤트를 큐에 저장
+  - 이벤트가 중첩되거나 처리할 수 없는 상황인 경우 코드가 무시 될 수 있음
+
+> setTimeout
+
+- 처음 지정한 간격만큼 기다린 후 지정된 코드를 실행
+  - 지정된 코드가 끝난 시점에 다시 setTimeout 함수 호출
+  - 실행 중 코드가 지연 되더라도
+  - → 모든 처리가 끝난 다음에 이벤트가 중첩되지 않음
+
+> 결론
+
+     일회성 타이밍 아니고 일정 시간별로 반복실행 하고 싶다면
+     `setTimeout()`, setInterval()을 사용하여 반복가능
+
+## Promise 객체와 async/await 구문의 이해
+
+- Promise 타입은 ES5 Js가 기본으로 제공하는 타입
