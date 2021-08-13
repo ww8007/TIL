@@ -1,16 +1,19 @@
 import React from 'react';
-import {StyleSheet, View, Text} from 'react-native';
+import {StyleSheet, View, Text, Switch} from 'react-native';
 import {useTheme} from 'react-native-paper';
-
+import {useToggleTheme} from '../contexts';
 export default function Home() {
   const theme = useTheme();
-  const {fonts, colors} = theme;
+  const {fonts, colors, dark} = theme;
+  const toggleTheme = useToggleTheme();
   return (
     <View style={[styles.view, {backgroundColor: colors.background}]}>
       <View style={[styles.bar, {backgroundColor: colors.primary}]}>
         <Text style={[styles.text, {color: colors.text}, fonts.medium]}>
           TopBar
         </Text>
+        <View style={[{flex: 1}]} />
+        <Switch value={dark} onValueChange={toggleTheme} />
       </View>
       <View style={styles.content}>
         <Text style={[styles.text, {color: colors.text}, fonts.regular]}>
