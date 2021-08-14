@@ -51,8 +51,8 @@ export default function MainNavigator() {
 
 ## 콘텍스트란?
 
-- 컴포넌트의 속성은 부모 → 자식 컴포넌트로 어떤 정보를 전달
-  - → 그러나 부모가 직계 자식이 아닌 손자, 증손자 컴포넌트에게 전달
+- `컴포넌트의 속성`은 `부모 → 자식` 컴포넌트로 어떤 `정보를 전달`
+  - → 그러나 부모가 직계 자식이 아닌 `손자, 증손자` 컴포넌트에게 전달
   - → → 번거로운 `지속적인 속성 전달`
 
 ```tsx
@@ -63,11 +63,11 @@ export default function MainNavigator() {
 ({ shared_props }) => <증손자_컴포넌트 shared_props={shared_props} />;
 ```
 
-> React는 이런 속성 전달의 번거로움을 덜고자 콘텍스트(context) 메커니즘을 구현
+> React는 이런 속성 전달의 번거로움을 덜고자 `콘텍스트(context) 메커니즘`을 구현
 
 - React, R/N에서 콘텍스트
-  1. createContext
-  2. useContext
+  1. `createContext`
+  2. `useContext`
   - 위 둘을 통해서 이루어짐
 
 ```tsx
@@ -89,7 +89,7 @@ useContext → 공유 정보 취득
 - 콘텍스트 기능을 사용하는 React, R/N 코드는 항상 이름에
 
   - → `Provider` 자가 들어간 컴포넌트
-  - → `use콘텍스트_이름()` 형태의 커스텀 훅을 사용
+  - → `use콘텍스트_이름()` 형태의 `커스텀 훅`을 사용
 
 - 콘텍스트 기능을 구현한 `react-native-paper` 같은 패키지 또한
   - → `Provider` 자가 들어간 컴포넌트
@@ -628,3 +628,64 @@ export default function Home() {
 
 1. dark 속성 추가해서 비구조화 이용해서 가져오기
 2. useToggleTheme 함수 빼온것을 함수화 시켜서 변수에 할당
+
+## useRef 훅 이해하기
+
+- **`useRef`**, **`useImperactiveHandle`** 흑은 ref 라는 속성에 적용하는 값을 만드는 훅
+
+  - **↳** 사실 React, R/N가 제공하는 컴포넌트에는 모두 reference의 앞 3글자만 딴
+  - **↳** → ref 라는 속성이 존재
+
+- App 같은 사용자 컴포넌트도 ref 속성을 가질 수 있음
+
+  - **↳** ref 속성이 있는 사용자 컴포넌트는 **`forwardRef`** 함수로 생성해야 한다는 조건이 있음
+
+> 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6
+     yarn add @types/react-native-vector-icons @types/color @types/faker
+     yarn add react-native-appearance react-native-localize
+     yarn add react-native-keyboard-aware-scroll-view
+
+> 전 파일 복사
+
+    cp -r ../ch05_Context/src .
+    cp ../ch05_Context/App.tsx .
+    rm src/screens/*.*
+
+> MainNavigator 설정
+
+```tsx
+import React, { useState } from 'react';
+import { BottomNavigation } from 'react-native-paper';
+import Home from './Home';
+import Input from './Input';
+import KeyboardAvoid from './KeyboardAvoid';
+import KeyboardAware from './KeyboardAware';
+import AutoFocus from './AutoFocus';
+export default function MainNavigator() {
+	const [index, setIndex] = useState<number>(0);
+	const [routes] = useState([
+		{ key: 'home', title: 'Home', icon: 'home' },
+		{ key: 'input', title: 'Input', icon: 'apple-keyboard-caps' },
+		{ key: 'avoid', title: 'KeyboardAvoid', icon: 'keyboard-variant' },
+		{ key: 'aware', title: 'KeyboardAware', icon: 'keyboard-settings-outline' },
+		{ key: 'auto', title: 'AutoFocus', icon: 'home-automation' },
+	]);
+
+	const renderScene = BottomNavigation.SceneMap({
+		home: Home,
+		input: Input,
+		avoid: KeyboardAvoid,
+		aware: KeyboardAware,
+		auto: AutoFocus,
+	});
+	return (
+		<BottomNavigation
+			navigationState={{ index, routes }}
+			onIndexChange={setIndex}
+			renderScene={renderScene}
+		/>
+	);
+}
+```
