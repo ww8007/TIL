@@ -1220,3 +1220,17 @@ export const useAutoFocus = () => {
 	return autoFocus;
 };
 ```
+
+## useImperactiveHandle 훅 이해하기
+
+- AutoFocus.tsx 파일 내용을 forwardRef API, useImperactive Handle 훅을 사용하여 다시 구현
+- react-native-paper 테마 색생 관련 내용을 별도 테마 컴포넌트로 구현
+  - ┗ 코드 구현의 간결
+
+> 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6
+     yarn add @types/react-native-vector-icons @types/color @types/faker
+     yarn add react-native-appearance react-native-localize react-native-keyboard-aware-scroll-view
+
+> App.tsx 복사
