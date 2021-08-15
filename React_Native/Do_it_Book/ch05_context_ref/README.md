@@ -689,3 +689,534 @@ export default function MainNavigator() {
 	);
 }
 ```
+
+### ref 속성이란?
+
+- React, R/N 제공하는 코어 컴포넌트 중
+
+  - ↳ `TextInput`, `ScrollView`, `FlatList` 컴포넌트처럼 `메서드`를 제공하는 것이 있음
+
+- TextInput : focus, blur 같은 메서드를 제공
+- ScrollView, FlatList : scrollToTop, scrollEnd 와 같은 메서드를 제공
+
+- 그런데 컴포넌트의 메서드를 호출 하기 위해서는
+
+  - ↳ ` 컴포넌트의 리액트 요소``(react element, 객체 지향 언어에서 클래스의 인스턴스) ` 를 얻을 수 있어야
+  - ↳ → `컴포넌트_객체.메서드()` 형태로 호출이 가능하다.
+
+- React, R/N 은 네이티브 컴포넌트가 제공하는 메서드를 호출할 수 있도록 ref 속성을 제공
+  - ↳ ref 속성으로 `컴포넌트의 인스턴스(instance)`를 얻을 수 있으며 이를 이용하여
+  - ↳ → `ref.메소드()` 형태로 호출 가능
+
+#### ref 속성의 타입
+
+- ref 속성의 타입에 대해서 학습
+- 앞서 구현 하였던 FlatList를 찾아서 ref 를 입력 후 → [정의로 이동] 클릭
+
+> VSCode 편집기에서는 ClassAttributes 라는 타입의 속성을 안내
+>
+> > 지금은 함수 컴포넌트 관점에서 ref를 다루기 때문에
+> > 그 위 RefAttributes의 ref 속성 타입 `Ref<T>`에 주목
+
+> RefAttributes의 ref 속성
+
+```ts
+interface RefAttributes<T> extends Attributes {
+	ref?: Ref<T> | undefined;
+}
+```
+
+- 비슷한 방법으로 계속 정의를 찾다보면 ref 속성의 타입은
+  - ↳ `current` 속성이 있는 RefObject 제네릭 타입임을 확인 가능
+  - ↳ → `타입 변수 T` : FlatList, ScrollView, TextInput 처럼 `컴포넌트 이름`을 의미
+
+> ref 속성의 타입
+
+```ts
+interface RefObject<T> {
+	readonly current: T | null;
+}
+```
+
+- 그런데 앞의 `RefObject<T>` 에서 `current` 속성의 타입은
+  - ┣ `T | null` 임
+  - ┣ 즉 `current = null 일 수 있음`
+  - ┗ FlatList 등의 `React 요소의 값`이 설정되어 `컴포넌트의 메서드 호출` 가능
+
+### useRef 훅
+
+> React 패키지는 useRef 훅을 제공
+
+```tsx
+import React, { useRef } from 'react';
+```
+
+- [정의로 이동] 방식으로 useRef 함수 타입을 확인 하면
+- ┣ `MutableRefObject`
+- ┗ `RefObject`
+
+- 여기서는 `RefObject<T>` 이므로 두 번재 버전의 useRef 훅을 사용
+
+```tsx
+function useRef<T>(initialValue: T): MutableObject<T>;
+function useRef<T>(initialValue: T | null): RefObject<T>;
+```
+
+> 위에서 두번 째 버전의 useRef 사용 → 다음 형태로 코드 작성
+>
+> > 코드 형태
+
+```tsx
+const flatList = useRef<FlatList | null>(null);
+<FlatList ref={flatList} />;
+```
+
+- 이렇게 코드를 작성하여 flatList의 값을 얻으면 다음 코드 형태로 scrollEnd 메서드를 호출 가능하다.
+
+> 옵션 체이닝 연산자 사용
+
+```tsx
+flatList.current?.scrollToEnd();
+```
+
+- 여기서 `scrollToEnd` 메서드 호출 시
+  - ┣ `옵션 체이닝 연산자(option chaining operator) : ?.`
+  - ┗ 사용한 `이유` → flatListRef의 `Type` : `RefObject<FlatList | null>`
+  - ┗ current 속성이 null 일 수 있기 때문
+
+> 다음에서 add 버튼을 눌러서 아이템을 추가하는 경우
+
+     추가 한 아이템을 보기 위해서 계속 스크롤을 해야함
+     추가할 때 마다 자동으로 스크롤 되는 기능을 구현
+
+#### 여기서 짚고 가는 옵션 체이닝 연산자
+
+> 객체 깊숙한 곳에 사용하고 싶은 속성이 존재 할 경우
+
+- 보통의 경우 우리는 . (체이닝 연산자)를 사용해서 배열이나 객체에 있는 값을 사용
+- 만약 참조가 `nullish (null 또는 undefined)`이라면
+  - ┗ 에러가 발생하는 것 대신에 표현식의 `리턴 값`은 `undefined`로 통일 됨
+
+> 일반 적인 경우의 객체 값 얻기
+
+```js
+let nestedProp = obj.first && obj.first.second;
+```
+
+> 옵션 체이닝 사용 시
+
+```js
+let nestedProp = obj.first?.second;
+```
+
+- 이는 함수에서도 사용이 가능!!!
+- 함수 호출과 optional chaining을 사용함으로써 메서드를 찾을 수 없는 경우에 예외를 발생시키는 것 대신에 그 표현식은 자동으로 undefined를 반환한다.
+
+> 만약 속성 이름은 존재하지만 이게 함수가 아니라면 오류가 생기게 된다.
+
+> null 병합 연산자와 같이 사용하기
+
+- 옵션 체이닝을 사용한 후 아무 값도 찾을 수 없을 때 기본 값 주기 위해 사용 가능
+
+```js
+let customer = {
+	name: 'Carl',
+	details: { age: 82 },
+};
+const customerCity = customer?.city ?? 'Unknown city';
+console.log(customerCity); // Unknown city
+```
+
+> 배열 항목에 접근
+
+```js
+let arrayItem = arr?.[42];
+```
+
+#### onContextSizeChange 이벤트 속성
+
+- `ScrollView`, `FlatList는` `onContentSizeChange` 이벤트 속성을 제공
+  - ┗ 속성의 이름대로 콘텐츠의 넓이나 높이가 변하면 설정된 콜백 함수를 호출
+
+> onContentSizeChange 이벤트 속성
+
+```ts
+onContentSizeChange?: (w:number, h: number) => void;
+```
+
+- `FlatList` : `아이템을 추가`하면 아이템의 높이 크기가 증가
+  - ┗ `onContentSizeChange` `이벤트 발생`
+
+> onContentSizeChange `콜백 함수`에서 `scrollToEnd 메서드를 호출`하면 아이템 추가에 따른 자동 스크롤 기능 구현 가능
+
+```tsx
+const onContextSizeChange = useCallback(() =>
+	flatListRef.current?.scrollToEnd(),
+	, [flatListRef.current]
+);
+<FlatListRef onContentSizeChange={onContentSizeChange}/>
+```
+
+> 실제 구현
+
+```tsx
+const flatListRef = useRef<FlatList | null>(null); // -1-
+// -2-
+const onContentSizeChange = useCallback(
+	() => flatListRef.current?.scrollToEnd(),
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	[flatListRef.current]
+);
+// -2-
+return (
+	<View style={[styles.view, { backgroundColor: theme.colors.surface }]}>
+		<View style={[styles.topBar, { backgroundColor: theme.colors.accent }]}>
+			<Text onPress={add} style={styles.text}>
+				add
+			</Text>
+			<Text onPress={removeAll} style={styles.text}>
+				remove all
+			</Text>
+			<View style={{ flex: 1 }} />
+			<Switch value={theme.dark} onValueChange={toggleTheme} />
+		</View>
+		<FlatList
+			ref={flatListRef} // -3-
+			data={people}
+			renderItem={({ item }) => <Person person={item} />}
+			keyExtractor={(item) => item.id}
+			onContentSizeChange={onContentSizeChange} // -3-
+		/>
+	</View>
+);
+```
+
+1. `ref` 설정
+2. `flatList.current` 를 의존성 배열에 설정하여서
+   - ┗ 변경시 마다 `스크롤이 자동으로 이동`하도록 설정
+3. FlatList ref에 설정한 `flatListRef` 설정
+   - ┗ `onContentSizeChange` 에 직접 만든 함수 설정
+
+#### Input.tsx 파일 구현
+
+```tsx
+export default function CopyMe() {
+	const [person, setPerson] = useState<D.IPerson>(D.createRandomPerson());
+	const { dark, colors } = useTheme();
+	const toggleTheme = useToggleTheme();
+
+	return (
+		<View style={[styles.view, { backgroundColor: colors.surface }]}>
+			<View style={[styles.topBar, { backgroundColor: colors.accent }]}>
+				<Text style={[styles.textButton]}>focus</Text>
+				<Text style={[styles.textButton]}>dismiss keyboard</Text>
+				<View style={{ flex: 1 }} />
+				<Switch value={dark} onValueChange={toggleTheme} />
+			</View>
+			<View style={[styles.textView]}>
+				<Text style={[styles.textInput, { color: colors.text }]}>email</Text>
+				<TextInput
+					style={[
+						styles.textInput,
+						{ color: colors.text, borderColor: colors.placeholder },
+					]}
+					value={person.email}
+					placeholder="enter your email"
+					onChangeText={(email) =>
+						setPerson((person) => ({ ...person, email }))
+					}
+				/>
+			</View>
+		</View>
+	);
+}
+```
+
+> 만약 IOS 에서 키보드 올라오지 않으면 `command` + `k`
+
+##### TextInput 컴포넌트에서의 useRef 훅 활용 방법
+
+- TextInput 컴포넌트는 focus 메서드를 제공
+  - ┗ 메서드를 호출하면 키보드가 올라 오도록 설정 가능
+
+```tsx
+export default function Input() {
+	const textInputRef = useRef<TextInput | null>(null);
+	<TextInput ref={textInputRef}>
+}
+```
+
+- 이제 textInputRef 값을 얻었으므로
+  - ┗ focus 버튼을 터치 시 TextInput에 포커스를 줄 수 있음
+
+```tsx
+const setFocus = () => {
+	textInputRef.current?.focus();
+};
+<Text onPress={setFocus}>focus</Text>;
+```
+
+##### Keyboard.dismiss()로 키보드 강제로 내리기
+
+- R/N는 키보드 관련 프로그래밍이 가능하도록 Keyboard API 제공
+
+```tsx
+import { Keyboard } from 'react-native';
+```
+
+- 화면에 나타난 키보드는 다음 코드를 실행 시 사라짐
+
+> 키보드 내리기
+
+```tsx
+Keyboard.dismiss();
+```
+
+> 위를 통한 키보드 내리기 프로그래밍
+
+```tsx
+const dismissKeyboard = () => {
+	keyBoard.dismiss();
+};
+<Text onPress={dismissKeyboard}>dismiss keyboard</Text>;
+```
+
+> 더 간단하게 작성
+
+```tsx
+<Text onPress={Keyboard.dismiss}>dismiss keyboard</Text>
+```
+
+- IOS `TextInput`이 다음 화면 왼쪽처럼 화면 아래에 있다면
+  - ┣ 키보드가 올라왔을 때 `TextInput을 기릴 수 있음`
+  - ┗ 그래서 R/N이 이런 경우를 예방하고 `KeyboardAvoidingView` 제공
+
+##### KeyboardAvoidingView 코어 컴포넌트
+
+```tsx
+import { KeyboardAvoidingView } from 'react-native';
+```
+
+- `KeyboardingAvoidingView` 다음처럼 `TextInput` 컴포넌트를 자식 요소로 하여
+  - ┣ `TextInput` 가리지 않도록 하는 기능을 수행
+  - ┗ `KeyboardingAvoidingView` → View 이기 때문에 `flex : 1` 같이 스타일링 가능
+
+```tsx
+<KeyboardAvoidingView>
+	<View style={{ flex: 1 }} />
+	<View>
+		<Text>email</Text>
+		<TextInput placeholder="enter your email" />
+	</View>
+</KeyboardAvoidingView>
+```
+
+- React 공식문서는 `KeyboardAvoidingView`의 `behavior` 속성에 플렛폼에 따라
+  - ┗ `padding`, `height` 값을 줄 것을 권유
+
+```tsx
+<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+	<View style={{ flex: 1 }} />
+	<View>
+		<Text>email</Text>
+		<TextInput placeholder="enter your email" />
+	</View>
+</KeyboardAvoidingView>
+```
+
+- 이제 src/screens/Input.tsx KeyboardAvoid.tsx 파일로 복사 생성
+  - ┗ KeyboardAvoid.tsx 파일을 다시 복사
+
+> 하지만 아쉽게도 버그가 존재함
+> react-native-keyboard-aware-scroll-view 패키지가 제공하는
+
+     KeyboardAwareScrollView 사용하면 해결 가능
+
+##### react-native-keyboard-aware-scroll-view 패키지 설치와 활용
+
+> 복사
+
+     cp keyboardAvoid.tsx KeyboardAware.tsx && cd ../..
+
+- 이 패키지는 다음처럼 `KeyboardAwareScrollView` 제공
+
+```tsx
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+```
+
+- 이제 KeyboardAwareScrollView 를 통해서 두 개의 TextInput 감싸면 됨
+
+```tsx
+<KeyboardAwareScrollView>
+	<View style={{ flex: 1 }} />
+	<View style={[styles.textView]}>
+		<TextInput />
+	</View>
+	<View>
+		<Text>name</Text>
+		<TextInput />
+	</View>
+</KeyboardAwareScrollView>
+```
+
+> 하지만 여전히 ios 버그 존재
+
+##### KeyboardAwareScrollView의 scrollToFocusedInput 메서드
+
+- `KeyboardAwareScrollView`는 `scrollToFocusedInput` 메서드 제공
+  - ┣ 이 메서드는 이름처럼 `포커스를 가진`
+  - ┗ `TextInput`을 `수직 방향 스크롤을 통해` `항상 화면에 나타냄`
+
+> ref 속성값 얻기
+
+```tsx
+const scrollViewRef = useRef<KeyboardScrollView | null>(null);
+<KeyboardScrollView ref={scrollViewRef} />;
+```
+
+- `scrollViewRef` 값을 사용하면
+- ┗ `scrollToFocusedInput` 메서드 호출 하는 `함수 작성가능`
+
+> scrollToFocusedInput 메서드 호출
+
+```tsx
+const scrollToInput = (reactNode: any) => {
+	scrollViewRef.current?.scrollToFocusedInput(reactNode);
+};
+```
+
+> autofocus 함수 구현
+
+```tsx
+import { findNodeHandle } from 'react-native';
+import type {
+	NativeSyntheticEvent,
+	TextInputFocusEventData,
+} from 'react-native';
+
+const autoFocus = (event: NativeSyntheticEvent<TextInputFocusEventData>) =>
+	scrollToInput(findNodeHandle(event.target));
+```
+
+- 이제 `TextInput`의 `onFocus 이벤트 속성`에 앞서 구현한 `autoFocus` 함수를 설정하면 이 TextInput은 `항상 화면에 나타남`
+
+> 이렇게 하면 버그는 안생기지만 항상 이렇게 KeyboardAwareScrollView를 사용 할 때마다
+>
+> > 이런식 으로 코드를 짜는 것은 비 효율적
+> > 그렇기에 커스텀 훅을 이용
+
+##### AutoFocusProvider 컴포넌트와 useAutoFocus 커스텀 훅
+
+```tsx
+import { AutoFocusProvider, useAutoFocus } from '../contexts';
+
+export default function AutoFocus() {
+	const autoFocus = useAutoFocus();
+	return <TextInput onFocus={autoFocus} />;
+}
+```
+
+> Provider 생성
+
+```tsx
+import React, { createContext, useContext } from 'react';
+import { View, Text } from 'react-native';
+import { findNodeHandle } from 'react-native';
+import type { FC, ComponentProps } from 'react';
+import type {
+	NativeSyntheticEvent,
+	TextInputFocusEventData,
+} from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
+export type FocusContextType = {};
+
+const defaultFocusContext = {};
+const AutoFocusContext = createContext<FocusContextType>(defaultFocusContext);
+export type AutoFocusProviderProps = ComponentProps<
+	typeof KeyboardAwareScrollView
+>;
+
+export const AutoFocusProvider: FC<AutoFocusProviderProps> = ({
+	children,
+	...props
+}) => {
+	const value = {};
+	return (
+		<AutoFocusContext.Provider value={value}>
+			{children}
+		</AutoFocusContext.Provider>
+	);
+};
+
+export const useAutoFocus = () => {
+	const value = useContext(AutoFocusContext);
+	return value;
+};
+```
+
+> autoFocus 함수 구현
+
+```tsx
+export type FocusEvent =
+
+```
+
+> 완성본
+
+```tsx
+import React, { createContext, useCallback, useContext, useRef } from 'react';
+import { findNodeHandle } from 'react-native';
+import type { FC, ComponentProps } from 'react';
+import type {
+	NativeSyntheticEvent,
+	TextInputFocusEventData,
+} from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
+export type FocusEvent = NativeSyntheticEvent<TextInputFocusEventData>;
+
+export type FocusContextType = { autoFocus: (e: FocusEvent) => void };
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const defaultFocusContext = { autoFocus: (e: FocusEvent) => {} };
+const AutoFocusContext = createContext<FocusContextType>(defaultFocusContext);
+export type AutoFocusProviderProps = ComponentProps<
+	typeof KeyboardAwareScrollView
+>;
+
+export type AutoFocusContextType = {
+	autoFocus: (e: FocusEvent) => void;
+};
+
+export const AutoFocusProvider: FC<AutoFocusProviderProps> = ({
+	children,
+	...props
+}) => {
+	const scrollRef = useRef<KeyboardAwareScrollView | null>(null);
+	const scrollInput = useCallback((reactNode: any) => {
+		scrollRef.current?.scrollToFocusedInput(reactNode);
+	}, []);
+	const autoFocus = useCallback((e: FocusEvent) => {
+		scrollInput(findNodeHandle(e.target));
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+	const value = { autoFocus };
+	return (
+		<AutoFocusContext.Provider value={value}>
+			<KeyboardAwareScrollView
+				{...props}
+				style={{ flex: 1, width: '100%' }}
+				ref={scrollRef}
+			>
+				{children}
+			</KeyboardAwareScrollView>
+		</AutoFocusContext.Provider>
+	);
+};
+
+export const useAutoFocus = () => {
+	const { autoFocus } = useContext(AutoFocusContext);
+	return autoFocus;
+};
+```
