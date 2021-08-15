@@ -31,6 +31,7 @@ export default function People() {
         data={people}
         renderItem={({item}) => <Person person={item} />}
         keyExtractor={item => item.id}
+        ref={}
       />
     </View>
   );

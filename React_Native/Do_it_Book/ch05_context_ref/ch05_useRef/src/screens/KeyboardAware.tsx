@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState, ReactNode} from 'react';
 import {
   StyleSheet,
   View,
@@ -8,9 +8,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import {findNodeHandle} from 'react-native';
+import type {NativeSyntheticEvent, TextInputFocusEventData} from 'react-native';
 import {Switch, useTheme} from 'react-native-paper';
 import {useToggleTheme} from '../contexts';
 import * as D from '../data';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 export default function KeyboardAvoid() {
   const [person, setPerson] = useState<D.IPerson>(D.createRandomPerson());
@@ -29,6 +32,16 @@ export default function KeyboardAvoid() {
     ],
     [colors.text, colors.placeholder],
   );
+  const scrollViewRef = useRef<KeyboardAwareScrollView | null>(null);
+  const scrollToInput = (reactNode: any) => {
+    scrollViewRef.current?.scrollToFocusedInput(reactNode);
+  };
+  const autoFocus = useCallback(
+    () => (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      scrollToInput(findNodeHandle(e.target));
+    },
+    [],
+  );
   return (
     <View style={[styles.view, {backgroundColor: colors.surface}]}>
       <View style={[styles.topBar, {backgroundColor: colors.accent}]}>
@@ -41,15 +54,16 @@ export default function KeyboardAvoid() {
         <View style={{flex: 1}} />
         <Switch value={dark} onValueChange={toggleTheme} />
       </View>
-      <KeyboardAvoidingView
-        style={[styles.flex]}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAwareScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={[styles.flex]}>
         <View style={[styles.flex]} />
         <View style={[styles.textView]}>
           <Text style={[styles.text, {color: colors.text}]}>email</Text>
           <TextInput
             style={textInputStyle}
             value={person.email}
+            onFocus={autoFocus}
             placeholder="enter your email"
             onChangeText={email => setPerson(person => ({...person, email}))}
           />
@@ -60,11 +74,12 @@ export default function KeyboardAvoid() {
             ref={textInputRef}
             style={textInputStyle}
             value={person.name}
+            onFocus={autoFocus}
             placeholder="enter your name"
             onChangeText={name => setPerson(person => ({...person, name}))}
           />
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }

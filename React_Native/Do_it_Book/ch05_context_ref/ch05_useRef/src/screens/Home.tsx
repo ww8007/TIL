@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {View, Text, StyleSheet, Switch, FlatList} from 'react-native';
 import {useTheme} from 'react-native-paper';
 import {useToggleTheme} from '../contexts';
@@ -13,8 +13,15 @@ export default function People() {
     setPeople(people => [...people, D.createRandomPerson()]);
   }, []);
   const removeAll = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setPeople(notUsed => []);
   }, []);
+  const flatListRef = useRef<FlatList | null>(null);
+  const onContentSizeChange = useCallback(
+    () => flatListRef.current?.scrollToEnd(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [flatListRef.current],
+  );
   return (
     <View style={[styles.view, {backgroundColor: theme.colors.surface}]}>
       <View style={[styles.topBar, {backgroundColor: theme.colors.accent}]}>
@@ -28,9 +35,11 @@ export default function People() {
         <Switch value={theme.dark} onValueChange={toggleTheme} />
       </View>
       <FlatList
+        ref={flatListRef}
         data={people}
         renderItem={({item}) => <Person person={item} />}
         keyExtractor={item => item.id}
+        onContentSizeChange={onContentSizeChange}
       />
     </View>
   );

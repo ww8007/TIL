@@ -45,8 +45,7 @@ export default function KeyboardAvoid() {
       </View>
       <KeyboardAwareScrollView
         contentContainerStyle={[{flex: 1}]}
-        style={[styles.flex]}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        style={[styles.flex]}>
         <View style={[styles.flex]} />
         <View style={[styles.textView]}>
           <Text style={[styles.text, {color: colors.text}]}>email</Text>
