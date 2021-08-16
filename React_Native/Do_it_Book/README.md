@@ -20,3 +20,7 @@
 4. 콘텍스트와 ref 속성
 
 > [설명으로 이동](./ch05_context_ref/README.md)
+
+5. 리액트 네이티브 애니메이션
+
+> [설명으로 이동](./ch06_animation/README.md)
