@@ -1234,3 +1234,296 @@ export const useAutoFocus = () => {
      yarn add react-native-appearance react-native-localize react-native-keyboard-aware-scroll-view
 
 > App.tsx 복사
+
+### 테마 컴포넌트 구현
+
+- 여기는 앞에 내용의 useRef 뿐만 아닌
+
+  - ┣ forwardRef API
+  - ┣ useImperativeHandle
+  - ┗ 훅을 사용해서 만듬
+
+- 앱의 모습은 똑같지만 구현 코드는 많이 다름
+  - ┗ 그렇기에 AutoFocus.tsx 파일 사용
+
+> 몇 가지 테마 컴포넌트를 만들어서 코드를 더 간결하게 구성
+
+> 생성
+
+     mkdir -p src/theme/paper
+
+- 7장 에서는 src/theme dir에 navigation이란 이름의 서브 디렉터리 생성
+
+  - ┗ react-navigation 패키지의 테마 컴포넌트를 구현 할 예정
+
+- paper 디렉터리의 컴포넌트는
+
+  - ┣ AutoFocus 파일의 react-native-paper 관련 테마 코드를
+  - ┣ paper 쪽 컴포넌트로 옮겨서 결과적으로
+  - ┗ 파일의 테마 관련 코드를 좀 더 관결하게 구현할 목적으로 만든는 컴포넌트
+
+- 테마 컴포넌트를 구현할 때 보통 네이티브 컴포넌트와 같은 이름으로
+  - ┣ 컴포넌트 이름을 지음
+  - ┗ 똑같은 이름으로 컴포넌트 이름을 짓는다.
+
+```tsx
+import { View, Text, TextInput } from 'react-native';
+import { View, Text, TextInput } from '../theme/paper';
+```
+
+- react-native 코어 컴포넌트 TextInput 이름으로 가져온 이유
+
+  - ┗ 이번에 제작할 컴포넌트 이름도 TextInput 이기 때문
+
+- 오류가 많이 생기는 이유
+  - ┣ onFocus
+  - ┣ value
+  - ┗ 이들은 TextInput 컴포넌트가 제공하는 속성
+
+> 이 속성은 RNTextInput의 속성이므로 다음 코드로 간단히 오류를 없앨 수 있음
+
+```tsx
+export type TextInputProps = ComponentPops<typeof RNTextInput & {}>
+
+export const TextInput: FC<TextInputProps> = (props) => {
+	return <RNTextInput ref={textInputRef} style={textInputStyle {...props}}>
+}
+```
+
+- useMemo로 구현한 부분 없애기
+
+```tsx
+export const TextInput: FC<TextInputProps> = (props) => {
+	const { colors } = useTheme();
+	return (
+		<RNTextInput
+			ref={textInputRef}
+			style={[{ color: colors.text, borderColor: colors.placeholder }, style]}
+			{...props}
+		/>
+	);
+};
+```
+
+> style 속성 또한 FC 타입이 제공하는 속성
+>
+> > 즉 굳이 TextInputProps에 style 속성을 선언하지 않아도 동작함
+
+```tsx
+// -1-
+export type TextInputProps = ComponentProps<typeof RNTextInput> & {
+	// style?: StyleProp<TextStyle>
+};
+// -1-
+// -2-
+export const TextInput: FC<TextInputProps> = ({ style, ...props }) => {};
+// -2-
+```
+
+1. style 속성을 굳이 지정하지 않아도 됨
+2. FC 속성을 지정하면 style 속성을 props에 지정이 가능함
+
+> ref 속성은 좀 더 특별함
+>
+> > 원칙적으로 ref 속성은 R/N 코어 컴포넌트에만 적용할 수 잇는 속성
+> > ref 속성은 {...props} 형태로 구현할 수 없음
+
+#### forwardRef API
+
+- react 패키지는 다음처럼 `forwardRef API`
+
+```tsx
+import React, { forwardRef } from 'react';
+```
+
+- 앞에서 ref 속성은 React, R/N가 제공하는 컴포넌트에만 사용할 수 있다고 설명
+- forwardRef API로 생성한 사용자 정의 컴포넌트에서는 ref 속성을 설명한 바 있음
+
+> forwardRef API로 생성한 사용자 정의 `ref 속성`을 사용할 수 있음
+>
+> > ┣ `forwardRef API` 는 이름대로 `부모 컴포넌트에서 생성한`
+> > ┗ `ref를 자식 컴포넌트로 전달`
+
+> 부모 컴포넌트
+
+```tsx
+const textInputRef = useRef();
+<TextInputView ref={textInputRef} />;
+```
+
+> 자식 컴포넌트 - forwardRef 사용
+
+```tsx
+const TextInputView = ({ textInputRef }) => {
+	return <TextInput ref={textInputRef} />;
+};
+```
+
+> forwardRef API 코어 컴포넌트가 아닌 사용자 컴포넌트에서 다음처럼 ref 속성을 할 수 있게 도와줌
+
+```tsx
+import { TextInput as RNTextInput } from 'react-native';
+import { TextInput } from '../theme/paper';
+
+export default function Themed() {
+	const textInputRef = useRef<RNTextInput | null>(null);
+	return <TextInput ref={textInputRef} />;
+}
+```
+
+> 하지만 Ts로 forwardRef API 사용하기 위해서는 조금 복잡한 타입 선언이 필요
+
+#### forwardRef API의 타입
+
+- forwardRef의 타입
+  - ┣ 여기서 `타입 변수 T` : `ref의 대상 컴포넌트`
+  - ┣ `P 컴포넌트의 속성 타입`
+
+> forwardRef 타입
+
+```tsx
+function forwardRef<T, P = {}>(
+	render: ForwardRefRenderFunction<T, P>
+): 반환_타입;
+```
+
+- 앞의 forwardRef 타입을 보면 `ForwardRefRenderFunction` 타입 매개변수를 입력받는 함수인 것을 알 수 잇음
+
+> ForwardRefRenderFunction 타입
+
+```tsx
+interface ForwardRefRenderFunction<T, P={}> {
+	(props: PropsWithChildren<P>, ref: ((instance: T|null) | MutableRefObject<T| null> | null): ReactElement | null)
+}
+```
+
+#### src/theme/paper/TextInput 컴포넌트 구현
+
+- `ForwardRefRenderFunction`에서 매개변수 부분의 복잡한 타입 부분을 생략하고
+  - ┗ 단순하게 만든 것
+
+```tsx
+interface ForwardRefRenderFunction {
+	(props, ref): ReactElement | null;
+}
+```
+
+- 이 타입 선언을 보면 다음 코드 형태로 ref 속성을 얻을 수 잇음
+
+> ref 속성 얻기
+
+```tsx
+const TextInput = (속성, re) => {...}
+```
+
+> ref 속성에 설정된 값을 얻어야 하는 컴포넌트가 가져야 할 코드 패턴
+>
+> > 1.  컴포넌트 타입은 `ForwardRefRenderFunction<속성_타입>` 이어야 함
+> > 2.  컴포넌트 속성과 ref 속성은 `({속성, ref})` 형태로 수신
+> > 3.  `forwardRef(컴포넌트_타입)`을 내보낸다.(export)
+
+> src/theme/paper/TextInput.tsx
+
+```tsx
+import React, { forwardRef, ForwardRefRenderFunction } from 'react';
+import type { ComponentProps } from 'react';
+import { TextInput as RNTextInput } from 'react-native';
+import { useTheme } from 'react-native-paper';
+
+export type TextInputProps = ComponentProps<typeof RNTextInput>;
+
+const _TextInput: ForwardRefRenderFunction<RNTextInput, TextInputProps> = (
+	{ style, ...props },
+	ref // -1-
+) => {
+	const { colors } = useTheme();
+
+	return (
+		<RNTextInput
+			ref={ref}
+			style={[{ color: colors.text, borderColor: colors.placeholder }, style]}
+			{...props}
+		/>
+	);
+};
+
+export const TextInput = forwardRef(_TextInput);
+```
+
+- 지금 만드는 TextInput 컴포넌트는 forwardRef 대상 컴포넌트
+  - ┣ FC가 아닌 `ForwardRenderFunction` 타입을 import
+  - ┣ 이렇게 타입이 바뀌어서 `1번`과 같이 ref 속성 값을
+  - ┣ 두 번째 매개변수로 얻을 수 있게됨
+
+> 여기서 index.ts로 해서 내보내야 하기 때문에
+>
+> > `forwardRef(_TextInput)`가 반환 한 값을 TextInput으로 설정
+
+#### src/theme/paper/Text 컴포넌트 구현
+
+- Text 테마 컴포넌트는 TextInput과 달리 ref의 대상이 아님
+  - ┗ 단순히 `FC` 타입으로 구현해도 무방
+
+> Text.tsx 구현
+
+```tsx
+import React from 'react';
+import type { FC, ComponentProps } from 'react';
+import { Text as RNText } from 'react-native';
+import { useTheme } from 'react-native-paper';
+
+export type TextProps = ComponentProps<typeof RNText>;
+
+export const Text: FC<TextProps> = ({ style, ...props }) => {
+	const { colors } = useTheme();
+	return <RNText style={[{ color: colors.text }, style]} {...props} />;
+};
+```
+
+#### scr/theme/paper/View.tsx
+
+- react-native-paper 패키지의 테마 색상 중 View 컴포넌트에 적용할 수 잇는 것에는
+- ┗ background, surface, accent 등 몇 가지가 존재
+
+```tsx
+import React from 'react';
+import type { FC, ComponentProps } from 'react';
+import { View as RNView } from 'react-native';
+import { useTheme } from 'react-native-paper';
+
+export type ViewProps = ComponentProps<typeof RNView> & {
+	accent?: boolean;
+	notification?: boolean;
+	primary?: boolean;
+	surface?: boolean;
+	background?: boolean;
+};
+
+export const View: FC<ViewProps> = ({
+	style,
+	accent,
+	notification,
+	primary,
+	surface,
+	background,
+	...props
+}) => {
+	const { colors } = useTheme();
+	const backgroundColor = accent
+		? colors.accent
+		: notification
+		? colors.notification
+		: primary
+		? colors.primary
+		: surface
+		? colors.surface
+		: background
+		? colors.background
+		: 'transparent';
+	return <RNView style={[{ backgroundColor }, style]} {...props} />;
+};
+```
+
+> 만든 3개의 theme을 index.tsx 파일에 적용
+
+> 그 뒤 src/screens/Themed.tsx 파일에 구현 내용을 반영
