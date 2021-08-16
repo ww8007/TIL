@@ -1527,3 +1527,225 @@ export const View: FC<ViewProps> = ({
 > 만든 3개의 theme을 index.tsx 파일에 적용
 
 > 그 뒤 src/screens/Themed.tsx 파일에 구현 내용을 반영
+
+### useImperativeHandle 훅이란?
+
+> react 패키지는 다음처럼 useImperativeHandle 훅을 제공
+
+```tsx
+import React, { useImperativeHandle } from 'react';
+```
+
+- 프로그래밍 언어 분야에서는
+
+  - ┣ `명령형 프로그래밍(imperative programming)`
+  - ┣ `선언형 프로그래밍(declarative programming`
+  - ┗ 용어가 등장
+
+- `Ts` 부분이 `명령형 프로그래밍`에 해당
+
+  - ┗ `Js` `선언형 프로그래밍`에 해당
+
+- `핸들(handle)` 이란 단어를 프로그래밍 용어로 사용할 때
+  - ┣ `불투명한 식별자(opaque identifier)` 의미가 존재
+  - ┣ 식별자 : 무엇인가를 구분하는 용도로 사용하는 숫자나 문자열
+
+> `useImperativeHandle` 훅은 JSX가 아닌 TSX 에서 컴포넌트 기능을 사용할 때 필요한 훅
+
+#### useImperativeHandle 훅의 동작 원리
+
+- 다음 코드가 성립할 수 있는 이유는 TextInput 코어 컴포넌트가
+  - ┗ `focus` 라는 `메서드를 제공` 한다는 것을 `미리 알고` 있기 때문
+
+```tsx
+const textInputRef = useRef<TextInput | null>(null);
+const setFocus = () => textInputRef.current?.focus();
+```
+
+> 하지만 만약 다음과 같은 타입의 객체가 있다고 가정
+
+```tsx
+export type TextInputMethods = {
+	focus: () => void;
+	dismiss: () => void;
+};
+```
+
+- 앞의 `useRef<TextInput | null>(null)` 부분 코드에 다음처럼
+  - ┣ `TextInput` 대신 `TextInputMethods` 를 사용하면 어떨까?
+  - ┗ useImperativeHandle 훅의 탄생 배경
+
+> TextInputMethods를 대신 사용
+
+```tsx
+const methods = useRef<TextInputMethods | null>(null);
+const setFocus = () => methodsRef.current?.focus();
+const dismissKeyboard = () => methodsRef.current?.dismiss();
+```
+
+#### useImperativeHandle 훅의 타입
+
+```tsx
+function useImperactiveHandle<T, R extends T>(
+	ref: Ref<T> | undefined,
+	init: () => R,
+	deps?: DependencyList
+): void;
+```
+
+- 이 타입의 정의에서
+  - ┣ ref : forwardRef API 호출로 얻는 값을 입력하는 용도
+  - ┗ init : useMemo 훅 때와 비슷하게 `() => 메서드_객체` 형태의 함수를 입력하는 용도
+
+> 다음 코드는 useMemo 훅과 useImperativeHandle 훅의 코드 사용법ㅂ이 비슷하다는 것을 말해줌
+>
+> > useMemo 훅과 useImperactiveHandle 훅의 사용법
+
+```tsx
+const object = useMemo(() => ({}), []);
+const handle = useImperactiveHandle(ref, () => ({}), []);
+```
+
+- useImperactiveHandle 훅은 사용법이 조금 복잡하기 때문에
+  - ┗ forwardRef API를 이용한 컴포넌트를 먼저 제작
+
+##### ImperativeTextInput 사용자 컴포넌트 구현
+
+> src/screens 디렉터리에 ImperativeTextInput.tsx 파일을 생성
+
+- ImperativeTextInput 컴포넌트는 ref 속성으로 동작
+  - ┗ 다음과 같은 초기 구현이 필요
+
+```tsx
+import React, { forwardRef, useImperativeHandle } from 'react';
+import type { ForwardRefRenderFunction, ComponentProps } from 'react';
+import { TextInput as RNTextInput } from 'react-native';
+
+export type TextInputMethods = {
+	focus: () => void;
+	dismiss: () => void;
+};
+
+export type ImperativeTextInputProps = ComponentProps<typeof RNTextInput>;
+
+const ImperativeTextInput: ForwardRefRenderFunction<
+	TextInputMethods, // -2-
+	ImperativeTextInputProps
+> = (props, ref) => {
+	useImperativeHandle(
+		ref, // -1-
+		() => ({
+			focus: () => {},
+			dismiss: () => {},
+		}),
+		[]
+	);
+	return <RNTextInput {...props} />;
+};
+export default forwardRef(ImperativeTextInput);
+```
+
+1. forwardRef 로 전달받은 ref 값을 `useImperativeHandle`의 첫 번째 매개변수로 입력
+   - ┣ 그런데 이 ref의 타입은 `2`의 TextInputMethods 임
+
+- 이 때문에 TextInputMethods의 두 개의 메서드를 가진 객체를 반환하는 함수
+
+  - 두 번째 매개변수에 입력
+
+- 다음 코드는 focus, dismiss 메서드를 구현한것
+  - ┗ useRef 훅의 사용 예와 동일
+
+```tsx
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import type { ForwardRefRenderFunction, ComponentProps } from 'react';
+import { TextInput as RNTextInput, Keyboard } from 'react-native';
+
+export type TextInputMethods = {
+	focus: () => void;
+	dismiss: () => void;
+};
+
+export type ImperativeTextInputProps = ComponentProps<typeof RNTextInput>;
+
+const ImperativeTextInput: ForwardRefRenderFunction<
+	TextInputMethods,
+	ImperativeTextInputProps
+> = (props, ref) => {
+	const textInputRef = useRef<RNTextInput | null>(null);
+	useImperativeHandle(
+		ref,
+		() => ({
+			focus: () => {
+				textInputRef.current?.focus();
+			},
+			dismiss: () => {
+				Keyboard.dismiss;
+			},
+		}),
+		[]
+	);
+	return <RNTextInput ref={textInputRef} {...props} />;
+};
+export default forwardRef(ImperativeTextInput);
+```
+
+- Ts는 `focus: () => {}` 형태의 코드를
+  - ┣ 간결하게 `focus() {}` 형태로 사용하게 하는 구문을 제공
+  - ┣ 이 코드는 `TextInputMethods` 타입이 요구하는 두 메서드를 구현
+  - ┗ 앞서 `src/theme/paper` 디렉터리에 구현한 `TextInput` 컴포넌트를 사용하지는 않음
+
+> 그러므로 구현하였던 TextInput 컴포넌트를 사용하여 `RNTextInput` 부분을 다시 구현
+
+```tsx
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import type { ForwardRefRenderFunction } from 'react';
+import { TextInput as RNTextInput, Keyboard } from 'react-native';
+import { TextInput } from '../theme/paper/';
+import type { TextInputProps } from '../theme/paper';
+
+export type TextInputMethods = {
+	focus: () => void;
+	dismiss: () => void;
+};
+
+export type ImperativeTextInputProps = TextInputProps;
+
+const ImperativeTextInput: ForwardRefRenderFunction<
+	TextInputMethods,
+	ImperativeTextInputProps
+> = (props, ref) => {
+	const textInputRef = useRef<RNTextInput | null>(null);
+	useImperativeHandle(
+		ref,
+		() => ({
+			focus: () => {
+				textInputRef.current?.focus();
+			},
+			dismiss: () => {
+				Keyboard.dismiss;
+			},
+		}),
+		[]
+	);
+	return <TextInput ref={textInputRef} {...props} />;
+};
+export default forwardRef(ImperativeTextInput);
+```
+
+- 위 코드에서는
+  - ┣ `RNTextInput` 대신 `테마 기능을 구현한` `TextInput`을 사용
+  - ┣ `RNTextInput` 타입 대신 `TextInput`의 타입을 사용
+  - ┗ 이것으로 `ImperativeTextInput`은 테마 기능을 가짐
+
+> 이제 src/screens 디렉터리의 Imperative.tsx 파일에
+>
+> > ImperativeTextInput 컴포넌트를 적용
+
+#### Imperative 컴포넌트 구현
+
+> 만들었던 ImperativeTextInput 가져와서 사용
+
+```tsx
+import ImperativeTextInput from './ImperativeTextInput';
+import type { TextInputMethods } from './ImperativeTextInput';
+```
