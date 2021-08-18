@@ -1,20 +1,16 @@
-# 리액트 네이티브 애니메이션
-
-- 이 장에서는 리액트 네이티브 프레임워크가 제공하는 애니메이션 기능을 알아봅니다.
-
-## 처음 만나는 네이티브 애니메이션
+# 처음 만나는 네이티브 애니메이션
 
 - 애니메이션은 움직임을 사용하여 앱에 생명을 불어넣음
   - ┣ 모바일 앱에서 화면 UI에 애니메이션을 적용하면 앱의 UI 요소가 작용할 때 명확한
   - ┣ 피드백을 사용자에게 제공하게 됨
   - ┗ 애니메이션에 관련하여 리액트 네이티브가 제공하는 기능을 4가지로 요약 가능
 
-1. Animated
-2. Easing
-3. PanResponder
-4. LayoutAnimation
+1. `Animated`
+2. `Easing`
+3. `PanResponder`
+4. `LayoutAnimation`
 
-> 이 절에서는 Animated, Easing 기능 학습
+> 이 절에서는 `Animated`, `Easing` 기능 학습
 
 > 설치
 
@@ -22,3 +18,733 @@
      yarn add @types/react-native-vector-icons @types/color @types/faker
 
 > 복사 - 앞절의 src, App.tsx / 삭제 src/screens
+
+> src/copy/Person.tsx 수정
+
+> useCallback 다른 사용법
+
+```tsx
+// -1-
+const deletePerson = useCallback(
+	(id: string) => () => {
+		setPeople((people) => people.filter((person) => person.id !== id));
+	},
+	[]
+);
+// -1-
+// -2-
+<FlatList
+	data={people}
+	renderItem={({ item }) => (
+		<Person person={item} deletePressed={deletePerson(item.id)} />
+	)}
+	keyExtractor={(item) => item.id}
+/>;
+// -2-
+```
+
+1. `useCallback` 함수를 `화살표 함수 두개`로 이어서 사용이 가능하다.
+   - ┗ 인자를 바로 호출해서 사용할 수 있다는 개념
+2. `item.id`를 `deletePerson` 인자에 넣어서 호출할 수 있다는 것이 장점
+
+## 리액트 네이티브 애니메이션의 특징
+
+- R/N 프레임워크의 애니메이션 기능은 다음처럼 Animated 이름 공간(name space)
+  - ┗ 속해 있는 다양한 클래스, 함수, 컴포넌트로 이루어짐
+
+```tsx
+import { Animated } from 'react-native';
+```
+
+- R/N 애니메이션은 두 가지 모드로 동작
+
+1. JS 엔진 애니메이션
+   - ┗ JS 엔진이 기본으로 제공하는 requestAnimationFrame 함수를 사용한 애니메이션
+2. Native 모듈 애니메이션
+   - ┗ 자바나 Objective-C로 구현한 애니메이션
+
+- R/N `초기 버전`은 JS 엔진이 기본으로 제공하는 r`equestAnimationFrame API`를 이용한
+
+  - ┣ `JS 엔진 애니메이션`을 이용
+  - ┣ 그러나 `requestAnimationFrame` `반복 실행` 시
+  - ┣ 상대적으로 다른 UI 컴포넌트의 동작이 `일시로 정지하는 버그`
+  - ┗ `네이티브 모듈` 애니메이션 `사용 권고`
+
+- R/N 애니메이션 기능을 구현하다 보면 useNativeDriver 라는 이름의 속성을 자주 보게됨
+  - ┣ 다음으로 보는 것 처럼 속성값에 따라
+  - ┣ `useNativeDriver = false` → `Js 애니메이션` 엔진
+  - ┗ `useNativeDriver = true` → `Java`, `Objective-C`로 작성한 `Native 애니메이션` 엔진
+
+### 애니메이션 구현 요령
+
+- 현재의 R/N는 JS 엔진 애니메이션, Native 엔진 애니메이션 100% 호환이 되지 않음
+  - ┣ 그렇기에 `처음 구동` 시
+  - ┣ ━ useNativeDriver : `true` 로 구동 했다가
+  - ┗ ━ `오류` 생기면 `false`로 변경하는 개발 방법 필요
+
+### Animated가 제공하는 애니메이션 기능 정리
+
+- R/N 애니메이션의 핵심 기능을 모아 놓은 Animated 이름 공간
+  - ┣ `Animated.Value` 라는 `클래스`
+  - ┣ `Animated.timing` 라는 `함수`
+  - ┗ `Animated.View` 라는 `컴포넌트`
+
+> 위 3가지 요소는 애니메이션 기능을 구현할 때 반드시 알아야 하는 기본 기능
+
+- 3가지 기능에 익숙해지면 표에 나오는 Animated 다양한 기능의 사용법 또한 이해가 쉬움
+
+| <center>역할</center>   | <center>클래스 또는 함수</center>                            |
+| ----------------------- | ------------------------------------------------------------ |
+| Ani 보간값 저장         | Animated.Value                                               |
+|                         | Animated.ValueXY                                             |
+| 단일 Ani 제어           | Animated.timing()                                            |
+|                         | Animated.spring()                                            |
+|                         | Animated.delay()                                             |
+|                         | Animated.loop()                                              |
+| 여러 개의 Ani 통합 제어 | Animated.sequence()                                          |
+|                         | Animated.parallel()                                          |
+|                         | Animated.stagger()                                           |
+| Ani 연산                | Animated.add(), Animated.subtract(), Animated.multiply(),    |
+|                         | Animated.dived(), Animated.modulo(), Animated.diffClamp      |
+| Ani 이벤트              | Animated.event()                                             |
+| Ani 대상 컴포넌트       | Animated.createAnimatedComponent()                           |
+|                         | Animated.View, Animated.Image, Animated.Text,                |
+|                         | Animated.ScrollView, Animated.FlatList, Animated.SectionList |
+
+### R/N 애니메이션 동작 원리
+
+- R/N Ani는 웹 브라우저의 CSS 애니메이션과 같은 개념
+
+  - ┣ `CSS 애니메이션` : `transition`, `animate` 스타일 속성에
+  - ┣ ━ `적용하고 싶은 다른 스타일` `속성값을 조정`하는 방식으로 동작
+  - ┣ R/N 애니메이션 : CSS와 비슷하게 style 속성에 설정하는 `opacity`, `transform` 등의 스타일 속성에
+  - ┗ ━ `Animated.Value` 클래스 객체(인스턴스)를 설정하는 방식으로 동작
+
+- 그런데 R/N 애니메이션을 구현하는 코드 패턴이 조금 생소할 수 있음
+  - ┗ 그렇기에 무작정 따라 하기 식으로 애니메이션 코드를 작성
+
+> cd src/screens
+> cp Person.tsx PersonBasic.tsx
+
+#### 애니메이션과 보간법
+
+- 잘 알려진대로 애니메이션의 역사는 디즈니에서 시작
+- 만화 영화의 애니메이션 동작 원리는 1초에 조금씩 내용이 다른 최소 24개의 정지 영상을
+- 차례대로 보여주는 것
+
+  - ┣ 이 24장의 `정지 영상 화면`을 `프레임(frame)`이라고 하고
+  - ┗ `차례대로 보여주는 것`을 `보간법`, `보간(interpolation)`
+
+- `컴퓨터 그래픽`에서 `보간법`은 시작값과 끝값 사이에
+  - ┣ 여러 개의 `중간값을 삽입`하는 `컴퓨터 계산`을 의미
+  - ┣ ━ 예를 들어 0 부터 1 까지 변하는 숫자를 `단순히 0 → 1로 만드는 것이 아닌`
+  - ┗ ━ ━ `0.1 → 0.2 → ... → 1` 방식으로 시작값과 끝 사이에 `여러개의 중간값`을 만든다.
+
+### R/N 애니메이션 맛보기
+
+- R/N 에서의 애니메이션은 항상 다음코드 처럼 Animated.Value 클래스의 인스턴스 생성으로 시작
+
+```tsx
+const Person: FC<PersonProps> = ({person, deletePressed}) => {
+  const animValue = new Animated.Value(0);
+```
+
+> 그러나 R/N 팀은 위의 코드 보다 useRef 훅을 사용하여
+>
+> > Animated.Value 클래스의 인스턴스를 캐시하는 방법을 권장
+
+```tsx
+const PersonBasic: FC<PersonProps> = ({ person }) => {
+	const animValue = useRef(new Animated.Value(0)).current;
+};
+```
+
+- R/N 에니메이션에서 Animated.Value 클래스의 인스턴스
+  - ┗ 항상 컴포넌트의 스타일 속성에 적용되어야 함
+
+> 렌더링된 컴포넌트의 투명도를 결정하는 opacity 스타일 속성에 animValue를 적용한 모습
+
+```tsx
+const PersonBasic: FC<PersonProps> = ({ person }) => {
+	const animValue = useRef(new Animated.Value(0)).current;
+	const rightViewStyle = { opacity: animValue };
+};
+```
+
+- 그런데 `opacity 스타일 속성`의 타입이 number가 아닌 `Animated.Value 타입`
+  - ┣ `View` 와 같은 컴포넌트를 이를 `전혀 해석하지 못함`
+  - ┣━ 이 때문에 `R/N 애니메이션`은 `Animated.View`와 같은 컴포넌트를 제공
+  - ┣━ `스타일 속성 설정값`이 `Animated.Value` 타입 객체인 스타일 속성 처리 `가능하게 함`
+
+> Animated.View 컴포넌트를 사용
+
+```tsx
+const PersonBasic: FC<PersonProps> = ({ person }) => {
+	const animValue = useRef(new Animated.Value(0)).current;
+	const rightViewAnimStyle = { opacity: animValue };
+  <Animated.View style={[styles.rightView, rightViewAnimStyle]}>
+};
+```
+
+- 지금까지는 애니메이션을 준비하는 코드일 뿐 실제로 `애니메이션은 발생하지 않음`
+  - ┣ 실제로 애니메이션을 진행 하려면
+  - ┣ 다음 코드의 `onPress 부분`에서 보는 코드를 실행해야 함
+  - ┣━ 현재 onPress `몸통 부분`은 `toValue 속성값이 1`로 설정
+  - ┣━ 이에 따라 초기값 부터 `toValue값 1까지 값을 0.1, 0.2 보간` 하면서
+  - ┗━ `duration 1초(1000ms)` 동안 애니메이션을 진행
+
+```tsx
+const PersonBasic: FC<PersonProps> = ({ person }) => {
+	const animValue = useRef(new Animated.Value(0)).current;
+	const rightViewAnimStyle = { opacity: animValue };
+  const onPress = () => {
+    Animated.timing(animValue, {toValue:1, useNativeDriver: true, duration: 1000}).start();
+  }
+  <Avatar uri={person.avatar} size={50} onPress={onPress}/>
+  <Animated.View style={[styles.rightView, rightViewAnimStyle]}/>
+};
+```
+
+> 정리
+>
+> > onPress 부분에서 보간을 이용해서 0.1 ~ 1 까지 올라가면서 1초 안에 보여지게 설정
+> > 최초 실행 시 0으로 useRef가 잡혀 있기 때문에 보이지 않게 됨
+
+### Animated.Value 클래스
+
+> Animated는 다음과 같은 Value 클래스를 제공
+
+```ts
+export class Value {
+	constructor(value: number);
+	setValue(value: number): void;
+}
+```
+
+- Value 클래스는 애니메이션이 실행되면 값을 보간하는
+  - ┣ number 타입 값을 value라는 속성에 저장하는 클래스
+  - ┣ Value 클래스의 value 속성값은 setValue 메서드를 사용하여
+  - ┗━ 다른 값으로 변경이 가능!
+
+> new 연산자를 사용하여 Animated.Value 클래스의 인스턴스(객체) 만드는 것과
+>
+> > 이렇게 만들어진 인스턴스의 value 속성값 100으로 변경
+
+```ts
+const animValue = new Animated.Value(0);
+animValue.setValue(100);
+```
+
+> 그런데 앞에서 봤던 것 처럼 R/N useRef 훅을 사용 권고
+
+```tsx
+const animValue = useRef(new Animated.Value(0)).current;
+animValue.setValue(100);
+```
+
+- `useRef` 사용 권고의 이유
+  - ┣ 다음 코드에서 보듯
+  - ┣ `animValue1` : 컴포넌트를 `reRender`시 마다 `끊임없이 생성`
+  - ┣ `animValue2` : `처음 render` `단 한번 생성`
+  - ┗━ 이후 `reRender`시 `과거 생성 객체` 그대로 `재사용`
+
+```tsx
+export default function SomeComponent() {
+	// 컴포넌트 reRender 마다 생성
+	const animValue1 = new Animated.Value(0);
+	// 컴포넌트를 처음 렌더링할 때 단 한 번 생성
+	const animValue2 = useRef(new Animated.Value(0)).current;
+}
+```
+
+#### useRef 훅과 MutableRefObject 타입
+
+- useRef 훅
+  - ┣ `RefObject<T>` 타입 객체를 반환하는 버전 1
+  - ┗ `MutableRefObject<T>` 타입 객체를 반환하는 버전 2
+
+> `MutableRefObject<T>` 타입 객체를 반환하는 useRef 훅
+
+```tsx
+function useRef<T>(initialValue: T): MutableRefObject<T>;
+```
+
+- 여기서 MutableRefObject 제네릭 타입에는
+  - ┣ 다음 RefObject 타입처럼 current 속성이 존재
+  - ┣ `current 타입`은 `T | null` 이 `아니라` `T` 임
+  - ┗ 즉 : `current !== null` 을 의미함
+
+```tsx
+interface MutableRefObject<T> {
+	current: T;
+}
+```
+
+- 그러므로 다음 코드의 animValue는
+  - ┣ null이 될 수 없으면서
+  - ┣ 변하지도 않음
+  - ┗ 따라서 굳이 animValue를 useMemo, useCallback 의존성에 넣을 필요 없음
+
+* 보간에 의해 값이 0부터 1까지 바뀌는 것은
+  - ┣ animValue가 아닌
+  - ┗ animValue 내부의 value 속성
+
+```tsx
+const animValue = useRef(new Animated.Value(0)).current;
+```
+
+#### Animated.View와 Animated.createAnimatedComponent 함수
+
+- `Animated.createAnimatedComponent` 함수는
+  - ┣ 다른 컴포넌트를 매개변수로 입력받아서
+  - ┗━ Animated.Value 타입 객체를 처리할 수 있는 기능을 가진 새로운 컴포넌트 생성
+
+```ts
+type AnimatedComponent = Animated.createAnimatedComponent;
+export function createAnimatedComponent<T>(component: T): AnimatedComponent<T>;
+```
+
+- 그런데 Animated는 View, Text, Image 등 애니메이션 대상인 컴포넌트를
+  - ┣ 일일이 createAnimatedComponent 호출 방식으로 생성하지 않아도
+  - ┗ 다음처럼 Animated.View, .Text, .Image 등과 같은 컴포넌트 제공
+
+```tsx
+Animated.View = Animated.createAnimatedComponent(View);
+Animated.Text = Animated.createAnimatedComponent(Text);
+Animated.Image = Animated.createAnimatedComponent(Image);
+```
+
+#### Animated.timing 함수
+
+- `Animated.timing` 함수는 다음 코드에서 보듯
+  - ┣ `value`
+  - ┣ `config`
+  - ┣ `두 개의 매개변수` 입력 받아서
+  - ┗━ `Animated.CompositeAnimation` 타입 객체를 반환하는 함수
+
+> Animated.timing 함수
+
+```ts
+export const Animated.timing: (
+  value: Animated.Value | Animated.ValueXY,
+  config: Animated.TimingAnimationConfig // -1-
+)=> Animated.CompositeAnimation;
+```
+
+1. `config` 타입
+   - ┣ `useNativeDriver`, `toValue는` 반드시 있어야 하는 `필수 속성`
+   - ┣ 나머지 3개 속성은 없어도 되는 `선택 속성`
+   - ┣━ `duration` : 애니메이션 지속 시간을 설정
+   - ┣━ `delay` : 애니메이션 시작 시간(0: 즉시, 1000: 1초 후)
+   - ┗━ `easing` : 보간함수 모음집 의미 → 밑에서 자세히 설명
+
+> 매개변수 config의 타입
+
+```tsx
+interface AnimationConfig {
+	// 자바스크립트 엔진(false | true)
+	useNativeDriver: boolean;
+}
+interface TimingAnimationConfig extends AnimationConfig {
+	toValue: number | Animated.Value; // -1-
+	duration?: number; // -2-
+	delay?: number; // -3-
+	easing?: (value: number) => number; // -4-
+}
+```
+
+1. new Animated.Value의 끝값 설정
+2. 애니메이션 진행 시간
+3. 애니메이션 진행 전 대기 시간
+4. Easing이 제공하는 보간 함수 설정
+
+#### Easing 타입 객체
+
+- R/N은 Easing 타입 객체를 다음처럼 제공
+
+```tsx
+import { Easing } from 'react-native';
+```
+
+- Easing 타입 객체는
+  - ┣ `linear`
+  - ┣ `ease`
+  - ┗ `bounce`와 같은 `보간 함수`를 제공
+
+> Easing 타입 객체가 제공하는 `보간 함수`
+
+```ts
+export type EasingFunction = (value: number) => number;
+export interface Easing {
+	linear: EasingFunction;
+	ease: EasingFunction;
+	quad: EasingFunction;
+	sin: EasingFunction;
+	exp: EasingFunction;
+	bounce: EasingFunction;
+}
+```
+
+- Easing.linear는 이름처럼
+
+  - ┗ 시작값 `1 에서 2,3,4,...` 형태의 `선형`으로 끝값까지 보간
+
+- ease, quad
+  - ┗ `1, 1.3, 3.1` 형태로 값을 `비선형(nonlinear)`로 증가
+
+> Animated.Value 타입 객체 animValue에 Animated.timing 적용하여 애니메이션 시작
+
+```tsx
+const animValue = new Animated.Value(0);
+Animated.timing(animValue, {
+	useNativeDriver: true, // -1-
+	toValue: show ? 0 : 1, // -2-
+	duration: 1000, // -3-
+	easing: Easing.bounce, // -4-
+}).start();
+```
+
+1. `네이티브 애니메이션` 기능 사용
+2. `show 변수값`에 따라 `끝 값을 0 또는 1`로 설정
+3. 애니메이션이 `진행되는 시간` : 1초
+4. Easing.bounce `보간 함수` 사용
+
+#### AnimatedCompositeAnimation 타입 객체
+
+- `Animated.timing`은 `Animated.CompositeAnimation` 타입 객체를 `반환`
+  - ┣ 이 타입은 다음처럼 `start` 라는 `메서드`가 있는 타입
+  - ┗ 이 타입 객체의 `start 메서드를 호출`해야 `실제 애니메이션이 실행`
+
+```tsx
+export interface CompositeAnimation {
+	start: (callback?: EndCallback) => void;
+}
+type EndResult = { finished: boolean };
+type EndCallback = (result: EndResult) => void;
+```
+
+- start 메서드에는 이를 호출한 코드에서 애니메이션이
+  - ┗ 종료되었는지 알 수 있는 콜백 함수를 매개변수로 줄 수 있음
+
+> start 메서드를 호출하면서 애니메이션이 종료될 때 콘솔에 로그를 남기는 콜백 함수
+
+```tsx
+Animated.timing(animValue, {
+	toValue: 1,
+	duration: 1000,
+	useNativeDriver: true,
+}).start((result: { finished: boolean }) => console.log(result));
+```
+
+- 참고로 result 매개변수 값은 항상 `{finished: true}` 입니다.
+  - 다음처럼 간단하게 구현해도 괜찮음
+
+```tsx
+Animated.timing(animValue, {
+	toValue: 1,
+	duration: 1000,
+	useNativeDriver: true,
+}).start(() => console.log('animated end'));
+```
+
+#### addListener 메서드
+
+- `Animated.Value 클래스`는 다음 코드에서 보는 `addListener` 메서드를 제공
+  - 이 메서드의 `콜백 함수`를 통해 `현재 보간 중인 값`을 얻을 수 있음
+
+```tsx
+export class Value {
+	addListener(callback: ValueListenerCallback): string;
+	removeListener(id: string): void;
+	removeAllListener(): void;
+}
+type ValueListenerCallback = (state: { value: number }) => void;
+```
+
+> addListener 메서드를 사용하여 Animated.value 타입 객체 안에 저장된
+>
+> > 실제 보간값을 화면 출력 예
+
+```tsx
+export default function PersonMonitor() {
+	const animValue = useRef(new Animated.Value(0)).current;
+	const [realAnimValue, setRealAnimValue] = useState<number>(0);
+
+	useEffect(() => {
+		const id = animValue.addListener((state: { value: number }) => {
+			setRealAnimValue(state.value);
+		});
+		return () => animValue.removeListener(id);
+	}, []);
+	return <Text>animValue: {realAnimValue}</Text>;
+}
+```
+
+> PersonMonitor에 addListener를 통한 실제 보간 값 출력 해보기
+
+```tsx
+const PersonMonitor: FC<PersonProps> = ({person, deletePressed}) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+  const [realAnimValue, setRealAnimValue] = useState<number>(0);
+  const [animationEnd, setAnimationEnd] = useState<boolean>(false);
+  useEffect(() => {
+    const id = animValue.addListener((state: {value: number}) => {
+      setRealAnimValue(state.value);
+    });
+    return () => animValue.removeListener(id);
+  }, []);
+  const rightViewAnimStyle = {opacity: animValue};
+  const avatarPressed = useCallback(
+    () =>
+      Animated.timing(animValue, {
+        toValue: 1,
+        useNativeDriver: true,
+        duration: 3000,
+        easing: Easing.bounce,
+      }).start(() => setAnimationEnd(() => true)),
+    [],
+  );
+```
+
+> 코드가 점점 복잡해 지기 때문에 3개의 커스텀 훅 함수를 구현하여
+>
+> > PersonMonitor.tsx의 코드를 간견하게 다시 작성
+
+#### useAnimatedValue 커스텀 훅 만들기
+
+- 앞의 PersonMonitor 컴포넌트에서는 animValue 코드를 다음 코드로 얻었음
+
+> useRef 훅 사용
+
+```tsx
+const animValue = useRef(new Animated.Value(0)).current;
+```
+
+> useAnimatedValue 등의 커스텀 훅으로 간결하게 작성
+
+```tsx
+const animValue = useAnimatedValue(0);
+```
+
+> custom hook 3개 생성
+
+    touch useAnimatedValue.ts useMonitorAnimatedValue.ts useStyle.ts
+
+```tsx
+import { useRef } from 'react';
+import { Animated } from 'react-native';
+
+export const useAnimatedValue = (initValue: number = 0): Animated.Value => {
+	return useRef(new Animated.Value(initValue)).current;
+};
+```
+
+> 이번에는 animValue의 실제 보간값을 얻는 코드를 간결하게 작성할 수 있는 커스텀 훅을 만들 예정
+
+#### useMonitorAnimatedValue 커스텀 훅 만들기
+
+- 앞의 PersonMonitor 컴포넌트에서는 realAnimaValue를 다음 코드로 얻었음
+
+> realAnimValue 얻기
+
+```tsx
+const [realAnimValue, setRealAnimValue] = useState<number>(0);
+useEffect(() => {
+	const id = animValue.addListener((state: { value: number }) => {
+		setRealAnimValue(state.value);
+	});
+	return () => animValue.removeListener(id);
+}, []);
+```
+
+> 간결하게 구현한 코드
+
+```tsx
+const realAnimValue = useMonitorAnimatedValue(animValue);
+```
+
+> custom hook 생성 → useAnimatedValue
+
+```tsx
+import { useState, useEffect } from 'react';
+import { Animated } from 'react-native';
+
+export function useMonitorAnimatedValue(animValue: Animated.Value) {
+	const [realAnimValue, setRealAnimValue] = useState<number>(0);
+
+	useEffect(() => {
+		const id = animValue.addListener((state: { value: number }) => {
+			setRealAnimValue(state.value);
+		});
+		return () => animValue.removeListener(id);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+	return realAnimValue;
+}
+```
+
+#### useStyle 커스텀 훅 만들기
+
+- 앞의 PersonMonitor 컴포넌트에서 애니메이션 관련 스타일 객체를 다음 코드로 구현
+
+> 애니메이션 관련 스타일 객체
+
+```tsx
+const animStyle = useMemo(() => ({ opacity: animValue }), []);
+```
+
+> 다음 처럼 구현 할 수 있다면 코드 가속성이 up 되는 효과를 얻을 수 있음
+
+```tsx
+const animStyle = useStyle({ opacity: animValue });
+```
+
+> touch 명령어를 이용해서 src/hooks 디렉터리에 useStyle 커스텀 훅 구현
+
+```tsx
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useMemo } from 'react';
+
+export const useStyle = (style: object, deps: any[] = []) => {
+	return useMemo(() => style, deps);
+};
+```
+
+> 다음으로 index.ts에 새로 작성한 훅 반영
+
+```ts
+export * from './useStyle';
+export * from './useAnimatedValue';
+export * from './useMonitorAnimatedValue';
+```
+
+- 커스텀 훅이 정상적으로 동작하는지 테스트 코드를 작성할 차례
+  - ┗ 그전에 토글 애니메이션을 알아보도록 설정
+
+### 토글 애니메이션 구현
+
+- 화면 UI에 적용되는 애니메이션은 `초기 상태에서 애니메이션을 진행`
+  - ┣ `컴포넌트 구현 로직`에 따라 `원래의 상태로 돌아가는 방식`으로 구현하는게 흔함
+  - ┗━ 이처럼 순환 방식의 애니메이션 → 토글 애니메이션(toggle animation)
+
+> 아까 작성한 3개의 커스텀 훅과 useToggle 커스텀 훅을 이용해서 토글 애니메이션 구현
+
+> 다음 코드는 useToggle 커스텀 훅을 이용하여 started 변수를 생성
+>
+> > useToggle 커스텀 훅으로 started 변수 만들기
+
+```tsx
+const PersonToggle: FC<PersonProps> = ({ person }) => {
+	const [started, toggleStarted] = useToggle(false);
+};
+```
+
+- started 변수의 의미
+  - ┣ started : false 인 경우
+  - ┠━ `Animated.timing(animValue, {toValue: 1})` 애니메이션을 진행
+  - ┠ 끝나면 started : true
+  - ┗━ `Animated.timing(animValue, {toValue: 0})` 애니메이션을 진행
+
+> 토글 애니메이션 구현한 코드
+
+```tsx
+import { useAnimated, useToggle } from '../hooks';
+
+const animValue = useAnimatedValue(0);
+
+const onPress = useCallback(() => {
+	Animated.timing(animValue, {
+		toValue: started ? 0 : 1,
+		useNativeDriver: true,
+		duration: 1000,
+	}).star(toggleStarted);
+}, [started);
+```
+
+- started : false
+
+  - ┣ toValue : 1
+  - ┗ 진행이 끝나면 toggleStarted를 호출
+
+- started : true
+  - ┣ onPress 호출 시 → started : true
+  - ┣ toValue : 0 을 향해 애니메이션을 진행
+  - ┗ started: false 로 바뀜
+
+> 실제 구현 코드
+
+```tsx
+const PersonMonitor: FC<PersonProps> = ({person, deletePressed}) => {
+  const animValue = useAnimatedValue(0);
+  const realAnimValue = useMonitorAnimatedValue(animValue);
+  const [started, toggleStarted] = useToggle(false);
+  const avatarPressed = useCallback(() => {
+    Animated.timing(animValue, {
+      toValue: started ? 0 : 1,
+      useNativeDriver: true,
+      duration: 1000,
+      easing: Easing.bounce,
+    }).start(toggleStarted);
+  }, [started]);
+  const rightViewAnimStyle = useStyle({opacity: animValue});
+```
+
+#### Animated.Value 클래스의 interpolate 메서드
+
+- 애니메이션 코드를 작성하다 보면
+
+  - ┣ Animated.Value 객체의 `보간값을 다른 값으로 바꾸고 싶은 경우`가 있음
+  - ┣━ 예를 들어 `입력 범위`는 `0 ~ 1 까지 보간`
+  - ┗━ 출력 범위는 `0 ~ 100 까지 출력`하고 싶을 때
+
+- 또 비슷하게 `색상으로 출력 범위를 표현 가능`
+
+  - ┠ 입력값 0 : 출력 색상 red
+  - ┣ 입력값 0.5 : 출력 색상 red, blue 중간 색상
+  - ┗ 입력값 1 : blue 색상으로 만들고 싶은
+
+- 또한 회전 각도로 바꾼 경우
+
+> Animated.Value 클래스는 다음처럼 `interpolate` 메서드를 제공하여 입력 보간값을
+>
+> > `새로운 보간값`으로 바꿀 수 있게 함
+
+```tsx
+export class Value {
+	interpolate(config: InterpolationConfigType): AnimatedInterpolation;
+}
+class AnimatedInterpolation {
+	interpolate(config: InterpolationConfigType): AnimatedInterpolation;
+}
+```
+
+- interpolate 메서드는 InterpolationConfigType 객체를 입력 매개변수로 받아
+  - ┗ `interpolate`란 메서드가 있는 새로운 객체를 반환
+
+```tsx
+type ExtrapolateType = 'extend' | 'identify' | 'clamp';
+
+type InterpolationConfigType = {
+	inputRage: number[];
+	outputRage: number[] | string[];
+	easing?: (input: number) => number;
+};
+```
+
+> 앞에 설명했던 input에 따른 output 설정 하는 것이 여기 이용
+
+```tsx
+animValue.interpolate({ inputRage: [0, 1], outputRange: [0, 100] });
+animValue.interpolate({ inputRage: [0, 1], outputRange: ['red', 'blue'] });
+animValue.interpolate({ inputRage: [0, 1], outputRange: ['0deg', '360deg'] });
+```
+
+- InterpolationConfigType의 easing은 Animated.timing의 easing과 의미가 같음
+
+- extrapolate의 사전적 의미 : ...을 기반으로 추론하다.
+
+  - extrapolate는 -1, 2 처럼 `inputRange`를 벗어난 값일 경우
+  - 어떤 값으로 outputRange를 만들지 결정하는 속성
+
+- Animated.timing의 easing에 Easing.bounce 같은 값을 설정하거나
+  - Animated.spring 함수를 사용할 때 발생
