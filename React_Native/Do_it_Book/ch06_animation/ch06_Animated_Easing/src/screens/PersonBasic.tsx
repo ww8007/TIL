@@ -22,6 +22,7 @@ const Person: FC<PersonProps> = ({person, deletePressed}) => {
   const avatarPressed = useCallback(
     () =>
       Animated.timing(animValue, {useNativeDriver: true, toValue: 1}).start(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
   return (

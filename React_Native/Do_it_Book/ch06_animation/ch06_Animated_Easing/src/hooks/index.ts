@@ -4,3 +4,7 @@ export * from './useToggle';
 export * from './useTimeout';
 export * from './useInterval';
 export * from './useAsync';
+// animation
+export * from './useStyle';
+export * from './useAnimatedValue';
+export * from './useMonitorAnimatedValue';

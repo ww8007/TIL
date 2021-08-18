@@ -3,7 +3,7 @@ import {View, Text, StyleSheet, Switch, FlatList} from 'react-native';
 import {useTheme} from 'react-native-paper';
 import {useToggleTheme} from '../contexts';
 import * as D from '../data';
-import Person from './Person';
+import Person from './PersonToggle';
 
 export default function People() {
   const [people, setPeople] = useState<D.IPerson[]>([]);
@@ -13,7 +13,6 @@ export default function People() {
     setPeople(people => [D.createRandomPerson(), ...people]);
   }, []);
   const removeAll = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setPeople(notUsed => []);
   }, []);
 

@@ -13,7 +13,6 @@ export default function People() {
     setPeople(people => [D.createRandomPerson(), ...people]);
   }, []);
   const removeAll = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setPeople(notUsed => []);
   }, []);
 
