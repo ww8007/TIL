@@ -875,7 +875,3 @@ export const interpolate = (
 
      yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6 react-native-appearance
      yarn add @types/react-native-vector-icons @types/color @types/faker
-
-> 복사
-
-cp
