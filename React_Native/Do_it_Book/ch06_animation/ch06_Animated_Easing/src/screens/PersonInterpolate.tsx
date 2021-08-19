@@ -32,8 +32,8 @@ const PersonMonitor: FC<PersonProps> = ({person, deletePressed}) => {
     Animated.timing(animValue, {
       toValue: started ? 0 : 1,
       useNativeDriver: false,
-      duration: 1000,
-      easing: Easing.bounce,
+      duration: 500,
+      easing: Easing.ease,
     }).start(toggleStarted);
   }, [started]);
   const rightViewAnimStyle = useStyle({opacity: animValue});
