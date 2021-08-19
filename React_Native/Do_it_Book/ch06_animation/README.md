@@ -866,3 +866,16 @@ export const interpolate = (
 ```
 
 1. 매개변수로 자주 사용하는 `[0, 1]` 배열을 기본값으로 하므로 타이핑 수고를 덜어줌
+
+## transform 스타일 속성에 적용하는 애니메이션
+
+- 모든 React 컴포넌트는 `transform`이란 스타일 속성 가질 수 잇음
+
+> 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6 react-native-appearance
+     yarn add @types/react-native-vector-icons @types/color @types/faker
+
+> 복사
+
+cp
