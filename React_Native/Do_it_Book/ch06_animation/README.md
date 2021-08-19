@@ -739,12 +739,130 @@ animValue.interpolate({ inputRage: [0, 1], outputRange: ['red', 'blue'] });
 animValue.interpolate({ inputRage: [0, 1], outputRange: ['0deg', '360deg'] });
 ```
 
-- InterpolationConfigType의 easing은 Animated.timing의 easing과 의미가 같음
+- `InterpolationConfigType`의 `easing`은 `Animated.timing`의 `easing`과 의미가 같음
 
-- extrapolate의 사전적 의미 : ...을 기반으로 추론하다.
+- `extrapolate`의 사전적 의미 : ...을 기반으로 추론하다.
 
-  - extrapolate는 -1, 2 처럼 `inputRange`를 벗어난 값일 경우
+  - `extrapolate`는 -1, 2 처럼 `inputRange`를 벗어난 값일 경우
   - 어떤 값으로 outputRange를 만들지 결정하는 속성
 
-- Animated.timing의 easing에 Easing.bounce 같은 값을 설정하거나
+- `Animated.timing`의 `easing`에 Easing.bounce 같은 값을 설정하거나
+
   - Animated.spring 함수를 사용할 때 발생
+
+- extrapolate 범위를 벗어난 값이 발생했을 때 이 값을 무시할지 그냥 사용할지
+  - ┣ 그냥 사용할지를 결정할 목적으로 사용
+  - ┣ clamp : 이 값은 무시 → 가장 자주 사용하는 값
+  - ┣ extend : 기본 값 → 범위 내 값을 계산한 공식을 범위 외 값에도 똑같이 적용
+  - ┗ identity : 어떤 공식도 적용하지 않고 입력값 그대로를 출력값으로 적용
+
+> easing, extrapolate 사용의 예
+
+```tsx
+animValue.interpolate({
+	inputRange: [0, 1],
+	outputRange: [0, 100],
+	easing: Easing.bounce,
+	extrapolate: 'clamp',
+});
+```
+
+> 이제 interpolate를 이용해서 person.name 부분의 폰트 크기와 색상에 애니메이션 적용
+>
+> > cp PersonToggle.tsx PersonInterpolate.tsx
+
+> 첫 번째 할 일은 다음과 같은 textAnimStyle 만들기
+
+```tsx
+import { useStyle } from '../hooks';
+
+const textAnimStyle = useStyle({});
+```
+
+- 여기서 fontSize 스타일 속성에 `interpolate` 메서드를 이용
+  - ┣ 출력 범위에
+  - ┣━ 초깃값 : 0 → 10
+  - ┗━ 끝값 : 1 → 30
+
+> 입력 범위와 출력 범위 설정
+
+```tsx
+const textAnimStyle = useStyle({
+	fontSize: animValue.interpolate({
+		inputRange: [0, 1],
+		outputRange: [10, 30],
+	}),
+});
+```
+
+- 마찬가지 방법으로 `color 스타일 속성`은
+  - ┠ 초기값 : 0 → Colors.lightBlue900
+  - ┣ 기본값 : 0.7 → Colors.lime500
+  - ┗ 끝값 : 1 → Colors.pink500
+
+```tsx
+const textAnimStyle = useStyle({
+	color: animValue.interpolate({
+		inputRange: [0, 0.7, 1],
+		outputRange: [Colors.lightBlue900, Color.lime500, Colors.pink500],
+	}),
+});
+```
+
+- 한 가지 알아야 할 점은 fontSize 와 같은 몇몇 스타일 속성에는 네이티브 애니메이션 적용 불가
+  - useNativeDriver : false 로 설정을 하도록 한다.
+
+```tsx
+useNativeDriver: false;
+```
+
+> 실제 구현 코드
+
+```tsx
+const PersonMonitor: FC<PersonProps> = ({person, deletePressed}) => {
+  const animValue = useAnimatedValue(0);
+  const realAnimValue = useMonitorAnimatedValue(animValue);
+  const [started, toggleStarted] = useToggle(false);
+  const avatarPressed = useCallback(() => {
+    Animated.timing(animValue, {
+      toValue: started ? 0 : 1,
+      useNativeDriver: false, // fontSize를 사용하기 때문에 false로 설정
+      duration: 1000,
+      easing: Easing.bounce,
+    }).start(toggleStarted);
+  }, [started]);
+  const rightViewAnimStyle = useStyle({opacity: animValue});
+
+  const textAnimStyle = useStyle({
+    fontSize: animValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: [10, 30],
+    }),
+    color: animValue.interpolate({
+      inputRange: [0, 0.7, 1],
+      outputRange: [Colors.lightBlue900, Colors.lime500, Colors.blue900],
+    }),
+  });
+```
+
+#### interpolate 유틸 함수 만들기
+
+> Animated.Value의 interpolate 메서드는
+>
+> > 코드 양이 많아 조금 번거로움
+
+- utils 서브 디렉터리를 만들고 이곳에 필요한 함수를 생성
+
+```ts
+import { Animated } from 'react-native';
+
+export const interpolate = (
+	animValue: Animated.Value,
+	outputRange: number[] | string[],
+	inputRange: number[] = [0, 1] // -1-
+): Animated.AnimatedInterpolation => {
+	return animValue.interpolate({ inputRange, outputRange });
+};
+```
+
+1. 매개변수로 자주 사용하는 `[0, 1]` 배열을 기본값으로 하므로 타이핑 수고를 덜어줌
