@@ -1534,3 +1534,136 @@ const selectImage = useCallback(
 
 cp copy/People.tsx screens/EnterExit.tsx
 cp copy/Main\* screens
+
+## Animated.CompositeAnimation[] 타입 객체를 매개변수로 하는 함수
+
+- 다음 `parallel`, `sequence`, `stagger` 함수의 공통점은 모두
+- ┣ `Animated.CompositeAnimation[]` 타입 배열을
+- ┗ `animations`라는 이름의 `입력 매개변수`로 사용한다는 것
+
+> Animated.CompositeAnimation[] 타입 배열을 매개변수로 사용
+
+```tsx
+type CompositeAnimation = Animated.CompositeAnimation;
+
+export function sequence(animation: CompositeAnimation[]): CompositeAnimation;
+
+export function parallel(
+	animations: CompositeAnimation[],
+	config?: { stopTogether?: boolean }
+): CompositeAnimation;
+
+export function stagger(
+	time: number,
+	animations: CompositeAnimation[]
+): CompositeAnimation;
+```
+
+- 위 3개의 함수를 이용하면 여러개의 애니메이션을 결합할 수 있음
+
+### Animated.sequence 함수
+
+- 다음은 앞서 본 `Animated.sequence` 함수의 타입의 정의
+- ┣ 여기서 `CompositeAnimation` 타입은 앞의
+- ┣ `Animated.timing` 함수의 `반환값 타입`
+- ┣ 흥미롭게도 `Animated.sequence` 반환 값 타입 또한
+- ┗ `CompositeAnimation` 임
+
+> Animated.sequence
+
+```tsx
+type CompositeAnimation = Animated.CompositeAnimation;
+export function sequence(animations: CompositeAnimation[]): CompositeAnimation;
+```
+
+- 지금까지는 이 장에서 다음과 같은 Animated.Value 타입 객체가 있을 때
+
+```tsx
+const animValue = new Animated.Value(0);
+```
+
+- 다음과 같이 CompositeAnimation 타입 객체를 얻었음
+
+```tsx
+const animation: CompositeAnimation = Animated.timing(animValue, {
+	useNativeDriver: true,
+	toValue: 1,
+});
+```
+
+> 하지만 다음처럼 3개의 Animated.Value 타입 객체 배열이 존재 한다면
+
+```tsx
+const animValues = [1, 2, 3].map((notUsed) => new Animated.Value(0));
+```
+
+> 다음과 같이 3개의 CompositeAnimation 타입 객체 배열을 얻을 수 있음
+
+```tsx
+const animations: CompositeAnimation[] = animValues.amp((animValue) =>
+	Animated.timing(animValue, { useNativeDriver: true, toValue: 1 })
+);
+```
+
+> 그런데 CompositeAnimation 타입은 start 메서드가 반드시 있어야 하는 타입
+>
+> > 그러므로 다음과 같은 코드로 3개의 애니메이션을 실행 가능
+
+```tsx
+const animation: CompositeAnimation = Animated.sequence(animations);
+animation.start();
+```
+
+- 여기서 `Animated.sequence` 이름이 의미하듯
+- ┣ 매개변수 `animations`에 담긴 애니메이션 차례로 실행
+- ┣ 즉 `animation[0]` 애니메이션이 끝나면
+- ┣ `animation[1]` → `animation[2]` 이렇게 실행
+
+- `Animated.sequence` 사용할 때 `주의 할 사항`은
+- ┣ `1개`의 `Animated.Value` `타입 객체`를 만드는 것이 아닌
+- ┣━ `Animated.sequence`의 입력 매개변수가 되는 `배열의 아이템 개수 만큼`
+- ┣━ `Animated.Value` 타입 객체를 만들어야함
+- ┗ 이처럼 `Animated.Value` 타입 객체 독립적 생성 → 애니메이션 `독립으로 진행`
+
+> 3개의 독립적인 Animated.Value 타입 객체로 만든 배열
+
+```tsx
+const animValues = useMemo(()=> [1,2,3].map(notUsed) => new Animated.Value(0), [])
+```
+
+- 그리고 이렇게 만든 animValues의 각 아이템은
+- ┗ 각각 다른 애니메이션 스타일 객체를 만드는데 사용됨
+
+> 각각 다른 애니메이션 스타일 객체 만들기
+
+```tsx
+const inputRange = useMemo(() => [0, 1], []);
+const leftIconStyle = useTransformStyle({
+	translateX: animValues[0].interpolate({
+		// 첫 번째 Animated.Value 타입 객체 허용
+		inputRange,
+		outputRange: !started ? [-1200, 0] : [0, -1200],
+	}),
+});
+const leftIconStyle = useTransformStyle({
+	translateX: animValues[1].interpolate({
+		// 두 번째 Animated.Value 타입 객체 허용
+		inputRange,
+		outputRange: !started ? [-1200, 0] : [0, -1200],
+	}),
+});
+const centerIconStyle = useTransformStyle({
+	translateX: animValues[2].interpolate({
+		// 세 번째 Animated.Value 타입 객체 허용
+		inputRange,
+		outputRange: !started ? [-1200, 0] : [0, -1200],
+	}),
+});
+```
+
+- 이렇게 독립적으로 만들어진 애니메이션 스타일 객체를
+- ┣ 각기 다른 아이콘 컴포넌트에 적용
+- ┣ 마지막으로 이렇게 설정된 애니메이션을
+- ┗ Animated.sequence에 따라 차례대로 실행
+
+<img src="2021-08-21-04-27-26.png" width="200px" >
