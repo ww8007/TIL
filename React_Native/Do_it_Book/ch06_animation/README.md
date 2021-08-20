@@ -875,3 +875,646 @@ export const interpolate = (
 
      yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6 react-native-appearance
      yarn add @types/react-native-vector-icons @types/color @types/faker
+     yarn add react-native-keyboard-aware-scroll-view
+
+### transform 스타일 속성 탐구
+
+- R/N transform 스타일 속성은 transform과 같은 개념
+  - ┗ 제한적이나마 3D transform을 지원
+
+```tsx
+// prettier-ignore
+transform: [
+  // number 타입의 속성만 사용
+  {translateX: 속성값}, {translateY: 속상값},
+  // 0deg 등 타입 속성값 사용
+  {rotateX: 속상값}, {rotateY: 속성값}, {rotateZ: 속성값},
+  {rotate: 속성값}, //rotateX와 rotateY 같을 시
+  {scaleX: 속성값}, {scaleY: 속성값}, //number 타입 속성값 사용
+  {scale: 속성값} // scaleX 와 scaleY 같을 시
+]
+```
+
+- `transform` `스타일 속성`에 대해 알아야 할 것은 속성을 적용한 컴포넌트는
+
+  - ┗ `레이아웃 위치`와 `디스플레이 위치`가 `다르다는 점`
+
+- 즉 R/N은 스타일 속성이 없을 때의 `위치에 컴포넌트가 있다고 생각`
+  - `transform` 속성을 `적용한 위치에 컴포넌트가 디스플레이` 될 뿐
+
+> transform
+
+- `스타일 속성`에
+
+  - ┣ `translateX`
+  - ┣ `translateY`
+  - ┗━ 설정하면 다음 방향으로 이동
+
+- `rotate` 설정
+
+  - ┣ 컴포넌트는 `시계 방향(clockwise)`으로 회전
+  - ┣ `rotateX` : `아래에서 위쪽`으로 회전하는 것 처럼
+  - ┣ `rotateY` : `왼쪽에서 오른쪽`으로 회전하는 것 처럼
+  - ┗ `rotateZ` : `시계 방향으로 회전`하는 것 처럼
+
+- transform 속성에 `scale`을 적용하면 `값이 1일 때 기준`
+
+  - ┣ `1 보다 크면` : `확대`
+  - ┗ `1 보다 작으면` : `축소`
+
+- `transform` 속성에 `scaleX`를 적용
+
+  - ┗ 수평 방향 확대/축소
+
+- `transform` 속성에 `scaleY`를 적용
+  - ┗ 수직 방향 확대/축소
+
+#### transform 스타일 속성에 애니메이션 적용하기
+
+> import 구문 수정
+
+```tsx
+import Person from './PersonTransform';
+```
+
+> useStyle 커스텀 훅을 이용한 transform 스타일 속성이 있는
+>
+> > nameAnimStyle 스타일 객체 만들기
+
+```tsx
+const nameAnimStyle = useStyle({
+	transform: [],
+});
+```
+
+> 애니메이션이 진행되면 수평방향(translateX)으로 500px 이동하는
+>
+> > nameAnimStyle 객체 생성
+
+```tsx
+const nameAnimStyle = useStyle({
+	transform: [
+		{
+			translateX: animValue.interpolate({
+				inputRange: [0, 1],
+				outputRange: [0, 500],
+			}),
+		},
+	],
+});
+```
+
+> 180도 회전하는 emailAnimStyle 객체도 생성
+
+```tsx
+const emailAnimStyle = useStyle({
+	transform: [
+		{
+			rotate: animValue.interpolate({
+				inputRange: [0, 1],
+				outputRange: ['0deg', '180deg'],
+			}),
+		},
+	],
+});
+```
+
+> 아래로 200px 동시에 45도 회전하면서 크기는 두 배 commentAnimStyle
+
+```tsx
+const commentAnimStyle = useStyle({
+	transform: [
+		{
+			translateY: animValue.interpolate({
+				inputRange: [0, 1],
+				outputRange: [0, 200],
+			}),
+		},
+		{
+			rotate: animValue.interpolate({
+				inputRange: [0, 1],
+				outputRange: ['0deg', '45deg'],
+			}),
+		},
+		{
+			scale: animValue.interpolate({
+				inputRange: [0, 1],
+				outputRange: [1, 2],
+			}),
+		},
+	],
+});
+```
+
+- 앞서 컴포넌트에 `transform` 스타일 속성을 적용하면 `레이아웃 위치`와
+
+  - ┣ `디스플레이(렌더링) 위치`가 달라진다고 했음
+  - ┗ 이게 어떤 의미인지 설명
+
+- R/N는 `transform 스타일 속성을 적용한 컴포넌트`가 배치된 위치
+  - ┣ `onLayout` 이벤트 속성으로 `알려준 위치에 있다고 생각`
+  - ┣ 따라서 `화면에 보이지 않더라도` `위치했던 부분이 없어지지 않음`
+  - ┣ 다른 `컴포넌트 레이아웃 위치를 침범`하기도 함
+  - ┗ 단 애니메이션이 적용된 컴포넌트 : `부모 컴포넌트 레이아웃 바깥으로 못나감`
+
+> 조금 다른 이야기로 transform 속성에 여러 개의 아이템이 있는 배열 적용 시
+>
+> > 구현이 조금 번거로움
+
+```tsx
+const style = useStyle({
+  transform: [{translateX: 0}, {rotate: '0deg', {scale: 1}}]
+})
+```
+
+#### useTransformStyle 커스텀 훅 제작
+
+- `{translateX, rotate, scale}` 형태의 객체를
+  - ┣ `[{translateX}, {rotate}, {scale}]` 형태의 배열로 바꾸기 위해서는
+  - ┗ `Object.keys`로 `translateX`와 같은 *`키값 배열`*을 먼저 만들어야함
+
+> 키값 배열 만들기
+
+```tsx
+const transform = { translateX, rotate, scale };
+Object.keys(transform); // ['translateX', 'rotate', 'scale']
+```
+
+> map 메서드를 사용해 객체의 배열로 만들기
+
+```ts
+Object.keys(transform).map((key) => ({ [key]: transform[key] }));
+// 이를 이용해서 적용
+```
+
+> 실제 customHook
+
+```tsx
+import { useStyle } from './useStyle';
+
+export const useTransformStyle = (
+	transform: Record<string, any>,
+	deps: any[] = []
+) => {
+	return useStyle(
+		{
+			transform: Object.keys(transform).map((key) => ({
+				[key]: transform[key],
+			})),
+		},
+		deps
+	);
+};
+```
+
+> Object.keys 를 통해서 키값 배열로 객체 새로 만들기
+>
+> > ┣ 1. 키 값만 가진 배열 생성
+> > ┗ 2. Object.keys를 이용해서 `{key : 값}` 객체 생성
+
+#### useTransformStyle 테스트 코드 작성
+
+> 앞서 만든 커스텀 훅을 이용하여 축구공 아이콘이 왼쪽에서 오른쪽
+>
+> > 끝으로 진행하는 애니메이션을 구현
+
+> 축구공 아이콘을 생성
+
+```tsx
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+
+const AnimatedIcon = Animated.createAnimatedComponent(FontAwesomeIcon);
+const iconSize = 50;
+```
+
+- 축구공 아이콘을 컴포넌트의 오른쪽 끝으로 이동하려면 `부모 컴포넌트`가
+  - ┣ `화면에서 차지하는 크기`를 알아야함
+  - ┗ 앞에서 만들었던 `useLayout` 커스텀 훅을 이용
+
+```tsx
+import { useLayout } from '../hooks';
+
+const [layout, setLayout] = useLayout();
+<View onLayout={setLayout}>
+	<Animated style={[iconAnimStyle]} name="soccer-ball-o" />
+</View>;
+```
+
+- 이처럼 `layout` 속성을 알면 부모 컴포넌트의 오른쪽 끝 지점은
+  - ┣ `layout.width - iconSize` 가 됨
+  - ┣ 코드에서 `중요한 부분`
+  - ┣━━ `layout.width`는 초기값 0으로 최초 설정
+  - ┣━━ `onLayout` 이벤트 발생 시 그 때 부모 컴포넌트 크기를 알게됨
+  - ┣━━ 이는 `layout.width`가 `useTransformStyle` 커스텀 훅의 의존성 목록
+  - ┗━━ `포함되어야 한다는 것`을 의미!!!!
+
+```tsx
+const iconSize = 50;
+const iconAnimStyle = useTransformStyle(
+	{
+		translateX: animValue.interpolate({
+			inputRange: [0, 1],
+			outputRange: [0, layout.width - iconSize],
+		}),
+	},
+	[layout.width]
+);
+```
+
+> 이렇게 만들어진 iconAnimStyle 이용해서 AnimatedIcon 컴포넌트에 적용시
+>
+> > 화면 왼쪽에서 오른쪽으로 이동하는 애니메이션을 만들 수 있음
+
+```tsx
+<View onLayout={setLayout}>
+	<Animated style={[iconAnimStyle]} name="soccer-ball-o" />
+</View>
+```
+
+### 애니메이션 연산 관련 함수
+
+- Animated는 `+, -, *, /, %` 등 연산에 대응하는 함수를 제공
+
+> 연산 관련 함수
+
+```tsx
+type Value = Animated.Value;
+export function add(a: Value, b: Value): Animated.AnimatedInterpolation;
+export function subtract(a: Value, b: Value): Animated.AnimatedInterpolation;
+export function multiply(a: Value, b: Value): Animated.AnimatedInterpolation;
+export function divide(a: Value, b: Value): Animated.AnimatedInterpolation;
+export function modulo(a: Value, b: Value): Animated.AnimatedInterpolation;
+```
+
+- 그런데 여기서 주의할 점은 두 매개변수의 타입은 `number가 아닌`
+  - ┗ `Animated.Value`임을 유의!!!
+
+> number가 아닌 Animated.Value의 형식으로 치환하여 사용
+
+```tsx
+const [_10, set_10] = useState(new Animated.Value(10));
+const [_20, set_20] = useState(new Animated.Value(20));
+const textStyle = useStyle({
+	fontSize: Animated.add(_10, Animated.multiply(animValue, _20)),
+});
+```
+
+> Animated.Value 타입 변수 만들기
+
+```tsx
+const PersonArithmetic: FC<PersonProps> = ({ person }) => {
+	const [fontSize, setFontSize] = useState<number>(0);
+	const _fontSize = new Animated.Value(fontSize);
+};
+```
+
+> 위 코드에 또 다른 Animated.Value 타입 객체 animValue를 만들면
+>
+> > animStyle 객체와 fontSize 스타일 속성에 Animated.add와 같은 사칙 연산 코드 사용
+
+```tsx
+const PersonArithmetic: FC<PersonProps> = ({ person }) => {
+	const [fontSize, setFontSize] = useState<number>(0);
+	const _fontSize = new Animated.Value(fontSize);
+	const animValue = useAnimatedValue(10);
+	const animStyle = useStyle(
+		{
+			fontSize: Animated.add(_fontSize, animValue),
+		},
+		[fontSize]
+	);
+};
+```
+
+- useState 훅 호출로 얻은 `setFontSize` `setter 함수`를 이용
+- ┣ `fontSize` 변경 시 `_fontSize<Animated.Value>`는
+- ┣ `new Animated.Value(10)`의 효과를 가지게 됨
+- ┣ `Animated.add(_fontSize, animValue)` 코드는 10부터 20까지의 보간이 발생
+- ┗ 결과적으로 10부터 20까지 변하는 애니메이션 발생
+
+```tsx
+const increaseFontSize = useCallback(
+	(fontSize: number) => () => {
+		setFontSize((notUsed) => fontSize);
+	},
+	[]
+);
+<Text onPress={increaseFontSize(10)}>add fontSize +10</Text>;
+```
+
+> 위와 같은 방법을 이용하면 Animated.timing 함수 없이도
+>
+> > Animated.Value 타입 객체의 내부 값을 변경할 수 있음
+
+### 다시 사용할 수 있는 ImageSlider 컴포넌트 제작
+
+- 인스타그램과 같은 모바일 앱은 여러장의
+
+  - ┣ 이미지 파일을 좌우 스크롤을 통해 볼 수 있는 화면 UI를 제공
+  - ┗ 이를 구현하는 ImageSlider 컴포넌트를 제공
+
+- `FlatList`의 `horizontal 속성에 true 지정`
+  - ┣ 수평 방향으로 스크롤하면서 여러개의 이미지를 볼 수 있도록 구현한 것
+  - ┣ 화면 UI에서 이런 방식으로 여러 개의 이미지를 볼 수 있게 하는 것
+  - ┗ `이미지 슬라이더(Image Slider)` 또는 `캐러셀(Carousel)`
+
+#### ImageSlider 컴포넌트 초기 구현 모습
+
+> 화면 UI를 위해 ImageSlider에는 다음 3개의 속성이 있어야 함
+
+```tsx
+export type ImageSliderProps = {
+	imageUrls: string[]; // 이미지 URL이 있는 배열
+	imageWidth: number; // 이미지 크기
+	showThumbnails?: Boolean; // 화면 아래에 썸네일 표시 여부
+};
+```
+
+#### FlatList 코어 컴포넌트의 수평 스크롤 관련 기능 탐구
+
+- FlatList : horizontal 속성을 제공
+
+  - ┗ `true`를 설정하면 아이템이 수평 방향으로 배치
+
+- 실제로 FlatList의 아이템을 화면처럼 보이게 하기위해서는
+
+  - ┣ `contentContainerStyle`의 `width 스타일 속성`에
+  - ┣ `이미지 개수 x 이미지 크기` 만큼의 픽셀 길이를 설정
+  - ┗ imageWidth란 이름의 속성을 선언하여 width 스타일 스타일 속성 적용
+
+- 또한 FlatList `좌우 스크롤로 현재 보는 이미지를 바꾸`려면
+
+  - ┣ `scrollEnabled` 속성을 `true`로 설정해야함
+  - ┣━━ `scrollEnabled`는 `기본값이 true`
+  - ┣ 하지만 `단순히 scrollEnabled 속성만 true`로 설정하면
+  - ┣━━ `두 개의 이미지가 한꺼번에 보이는` 상황이 발생
+  - ┣ `버그`를 해결하기 위해서는 (항상 이미지 왼쪽 끝이 FlatList 왼쪽 끝 일치)
+  - ┗━ `pagingEnabled` 속성을 `true`로 설정 `(기본값 false)`
+
+- FlatList는 기본적으로 스크롤하면 스크롤 바를 화면에 표시
+  - ┣ showsHorizontalScrollIndicator 속성에 false
+  - ┗ 스크롤바를 숨길 수 있음
+
+> FlatList 하단에 썸네일 이미지 나열
+>
+> > 특정 썸네일 이미지를 누르면 이미지가 FlatList에 보이는 기능 구현
+
+- FlatList 스크롤하면 스크롤바를 화면에 표시
+
+- FlatList : scrollToIndex 메서드를 제공
+  - ┣ index 속성이 있는 객체를 매개변수로 호출시 index 번째
+  - ┣ index 번째 아이템 컴포넌트를 화면에 보이도록 함
+  - ┗ scrollEnabled 속성값의 true/false 상관없이 동작
+
+```tsx
+scrollToIndex: (params: {
+  index: number;
+}) => void;
+```
+
+- FlatList 또한 다음처럼 구현된 scrollToTop과 scrollToEnd 메서드도 제공
+
+```tsx
+const scrollToTop = () => scrollToIndex({ index: 0 });
+const scrollToEnd = () => scrollToIndex({ index: data.length - 1 });
+```
+
+- 앞서 `useRef` 훅을 사용하여 `FlatList`의 `scrollToEnd` 메서드 호출한 적 있음
+  - ┣ FlatList의 scrollToIndex 메서드를 호출하려면 `scrollToEnd` 호출 때와 마찬가지로
+  - ┗ `useRef` 훅을 사용하여 `생성한 객체를 ref 속성`에 설정
+
+> FlatList의 scrollToIndex 메서드를 호출하는 코드
+
+```tsx
+export const ImageSlider: FC<ImageSliderProps> = ({
+	imageUrls,
+	imageWidth,
+	showThumbNails,
+}) => {
+	const flatListRef = useRef<FlatList | null>(null);
+	const selectImage = (index: number) => () => {
+		flatListRef.current?.scrollToIndex({ index });
+	};
+	return <FlaList ref={flatListRef} />;
+};
+```
+
+- 앞서 만든 selectImage 함수를 다음 코드처럼 TouchableView
+  - ┣ onPress 설정하면 index 번째 썸네일 이미지를 누를 때 마다
+  - ┗ 해당 이미지가 화면에 나타남
+
+```tsx
+{
+	showThumbNail && (
+		<View>
+			{images.map((uri, index) => (
+				<TouchableViw onPress={selectImage(index)} />
+			))}
+		</View>
+	);
+}
+```
+
+> 실제 코드에 추가
+
+```tsx
+export const ImageSlider: FC<ImageSliderProps> = ({
+  imageUrls,
+  imageWidth,
+  showThumbnails,
+}) => {
+  const flatListRef = useRef<FlatList | null>(null);
+  const selectImage = useCallback(
+    (index: number) => () => {
+      flatListRef.current?.scrollToIndex({index});
+    },
+    [],
+  );
+  const circles = useMemo(
+    () =>
+      imageUrls.map((uri, index) => <View key={index} style={styles.circle} />),
+    [],
+  );
+  const thumbnails = useMemo(
+    () =>
+      imageUrls.map((uri, index) => (
+        <TouchableView
+          key={index}
+          onPress={selectImage(index)}
+          style={[styles.thumbnail]}>
+          <Image source={{uri}} style={{width: 30, height: 30}} />
+        </TouchableView>
+      )),
+    [],
+  );
+```
+
+> 이제 어떤 ImageSlider 아래 어떤 이미지를 선택했는지를 나타내는 애니메이션 구현
+
+### 슬라이드 애니메이션 구현
+
+- Animated가 제공하는 사칙 연산 함수를 사용하여 이미지 개수만큼 나열한
+
+  - ┗ 원들 중에서 index 번째만 다른 색상으로 표현하는 애니메이션 구현
+
+- 애니메이션의 원리는 이미지 개수보다 1개 더 많은 원을 수평으로 배치
+  - ┗ 선택을 뜻하는 짙은 색 원이 특정 index 위에 출력되게 하는 것
+
+> 수평 방향으로 원 나열
+
+```tsx
+export const ImageSlider: FC<ImageSliderProps> = ({
+	images,
+	imageWidth,
+	showThumbnails,
+}) => {
+	const circles = useMemo(
+		() =>
+			images.map((uri, index) => <View kye={index} style={styles.circle} />),
+		[]
+	);
+	<View style={{ flexDirection: 'row' }}>{circles}</View>;
+};
+
+const styles = StyleSheet.create({
+	circle: {
+		width: circleWidth,
+		height: circleWidth,
+		borderRadius: circleWidth / 2,
+		marginRight: circleMarginRight,
+		backgroundColor: Colors.pink100,
+	},
+});
+```
+
+> position 스타일 속성값이 'absolute'인 Animated.View를 View의 자식요소로 추가
+>
+> > 이 Animated.View는 현재 index를 반영함 → backgroundColor 색상이
+> > circles 보다 좀 더 진함
+
+- Animated.View에 `position: 'absolute'` 추가 이유
+  - ┗ Animated.View가 다른 circles 위에 겹쳐져야 하기 때문
+
+> Animated.View 컴포넌트 추가
+
+```tsx
+<View style={{ flexDirections: 'row' }}>
+	{circles}
+	<Animated.View style={[styles.circle, styles.selectedCircle]} />
+</View>;
+const styles = StyleSheet.create({
+	selectedCircle: { position: 'absolute', backgroundColor: Colors.pink700 },
+});
+```
+
+- 이제 Animated.View 가 다른 원 위에 겹치도록 설정
+  - ┣ `position : 'absolute'` 이기 때문에 처음 렌더링 시
+  - ┣ 다른 `형제 컴포넌트의 배치와 무관`하게 `부모 컴포넌트의 왼쪽 위`에 나타남
+  - ┣ 이제 `Animated.View`를 다음처럼
+  - ┣━━ `(원 크기 + 원 오른쪽 마진) x 이미지 인덱스` 만큼 `오른쪽으로 이동`
+  - ┗━━ index 위치의 원과 겹치게 됨
+
+> 이 공식을 Animated.add, Animated.multiply 사칙 연산 함수를 사용하여 구현
+
+```tsx
+const circleWidth = 10,
+	circleMarginRight = 5;
+
+const selectIndexAnimValue = useAnimatedValue();
+
+const circleWidthAnimValue = useAnimatedValue(circleWidth);
+const circleMarginRightAnimValue = useAnimatedValue(circleMarginRight);
+```
+
+> 이 뒤에 Animated.View transform 스타일 속성의 translateX에 앞에
+>
+> > 공식을 적용시 Animated.View가 특정 index 번째의 원과 겹치게 됨
+
+```tsx
+const translateX = useTransformStyle({
+  translateX: Animated.multiply(
+    selectedIndexAnimValue,
+    Animated.add(circleWidthAnimValue, circleMarginRightAnimValue)
+  );
+})
+<View style={{flexDirection: 'row'}}>
+  {circles}
+  <Animated.View style={{styles.circle, styles.selectedCircle, translateX}}/>
+</View>
+```
+
+- 앞의 코드는 `selectedIndexAnimValue`를 단지 `현재 초깃값 0`으로 설정
+
+  - ┣ 이 `변수를 바꾸는 코드`를 구현하지 않았음
+  - ┣ `translateX`는 정상 동작하지 않음
+  - ┗ `selectedIndexAnimValue` 의 `값을 변경하는 코드` 구성
+
+- 이를 위해서는 `FlatList`의 `onScroll 이벤트 속성`을 이해해야 함
+
+  - ┣ FlatList는 `스크롤이 일어나면`
+  - ┣ `다음 onScroll 이벤트 속성`에 설정된
+  - ┗ `이벤트 처리기 함수`를 호출
+
+- `onScroll에 설정한 이벤트 처리기`는 다음
+- ┣ `NativeScrollEvent` 타입 속성
+- ┣━━ `contentOffset` 을 통해 얻을 수 있음
+- ┣ 현재 `horizontal 속성이 true` 이기 때문에
+- ┗━━ `contentOffset.x` 값을 통해 `스크롤 위치`를 알 수 있음
+
+> 스크롤 위치 확인
+
+```tsx
+export interface NativeScrollEvent {
+	contentOffset: NativeScrollPoint;
+}
+export interface NativeScrollPoint {
+	x: number;
+	y: number;
+}
+```
+
+- 다음 코드처럼 `contentOffset.x`를 `이미지 크기로 나누면`
+- ┣ `화면에 있는 이미지의 index`를 얻을 수 있음
+- ┣━━ 이 값을 `selectedIndexAnimValue` 의 `값으로 변경`시
+- ┗━━ `translate` 관련 코드가 동작
+
+```tsx
+const onScroll = useCallback(
+	(event: NativeSyntheticEvent<NativeScrollEvent>) => {
+		if (imageWidth == 0) return; // imageWidth가 0일 시 아래 index 변수값 무한 방식
+		const { contentOffset } = event.nativeEvent;
+		const index = Math.round(contentOffset.x / imageWidth);
+		selectedIndexAnimValue.setValue(index);
+	},
+	[imageWidth]
+);
+<FlatList onScroll={onScroll} />;
+```
+
+- 코드가 동작하면서 `Animated.timing` 이나 `Animated.spring`을 전혀 호출 X
+- ┣ Animated.View가 `미끄러지듯 부드럽게 이동`하는 모습을 볼 수 있음
+- ┣ 이는 `selectedIndexAnimValue` 가
+- ┣━ `Animated.Value` `타입 객체`이므로
+- ┣━ `보간을 진행`하면서
+- ┗━ `setValue`로 저장한 `value 속상값을 새로운 값으로 바꾸기 때문`
+
+> 이제 썸네일 이미지를 눌렀을 때도 Animated.View가 움직이는 코드를 추가로 구현
+>
+> > 썸네일 이미지를 누를 때는 항상 다음 selectImage 2차 고차 함수를 호출
+> > 여기에 selectIndexAnimValue를 변경하는 다음 코드를 추가하면 간단히 구현 가능
+
+```tsx
+const selectImage = useCallback(
+	(index: number) => () => {
+		selectedIndexAnimValue.setValue(index); // 추가
+		flatListRef.current?.scrollToIndex({ index }); // 이 코드 없이도 동작
+	},
+	[]
+);
+```
+
+<img src="https://user-images.githubusercontent.com/54137044/130202512-92981bfa-d04f-4902-a147-435131f4b1e3.png" width="200px" >
+
+> 실제 구현 코드
+
+<img src='https://user-images.githubusercontent.com/54137044/130204035-4d9a6be3-a83f-42b0-b366-d7f40db39a1f.png'>
