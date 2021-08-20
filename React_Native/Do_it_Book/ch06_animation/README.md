@@ -1518,3 +1518,19 @@ const selectImage = useCallback(
 > 실제 구현 코드
 
 <img src='https://user-images.githubusercontent.com/54137044/130204035-4d9a6be3-a83f-42b0-b366-d7f40db39a1f.png'>
+
+# 여러 개의 애니메이션 한꺼번에 실행하기
+
+- Animated.sequence
+- ┣ Animated.parallel
+- ┣ Animated.stagger
+- ┗ 등 여러 개의 애니메이션을 실행하는 함수 알아보기
+
+> 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6 react-native-appearance
+     yarn add @types/react-native-vector-icons @types/color @types/faker
+     yarn add react-native-keyboard-aware-scroll-view
+
+cp copy/People.tsx screens/EnterExit.tsx
+cp copy/Main\* screens
