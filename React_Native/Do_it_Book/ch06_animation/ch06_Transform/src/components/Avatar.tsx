@@ -1,15 +1,15 @@
-import React from 'react'
-import type {FC} from 'react'
-import {Image} from 'react-native'
-import type {StyleProp, ImageStyle} from 'react-native'
-import {TouchableView} from './TouchableView'
-import type {TouchableViewProps} from './TouchableView'
+import React from 'react';
+import type {FC} from 'react';
+import {Image} from 'react-native';
+import type {StyleProp, ImageStyle} from 'react-native';
+import {TouchableView} from './TouchableView';
+import type {TouchableViewProps} from './TouchableView';
 
 export type AvatarProps = TouchableViewProps & {
-  uri: string
-  size: number
-  imageStyle?: StyleProp<ImageStyle>
-}
+  uri: string;
+  size: number;
+  imageStyle?: StyleProp<ImageStyle>;
+};
 
 export const Avatar: FC<AvatarProps> = ({
   uri,
@@ -27,5 +27,5 @@ export const Avatar: FC<AvatarProps> = ({
         ]}
       />
     </TouchableView>
-  )
-}
+  );
+};
