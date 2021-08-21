@@ -2167,3 +2167,28 @@ const exitAnimation = useCallback(()=> {
 > 구현 코드
 
 [코드로 이동](./ch06_Several_Animation/src/screens/PersonEnterExit.tsx)
+
+## PanResponder API 이해하기
+
+- 이절에는 리액트 네이티브 제공하는 `PanResponder API` 관련 애니메이션
+- ┣ `PanResponder` `'Pan'은 카메라 분야`에서 사용하는 용어로 패닝은 영화나 사진 촬영에서
+- ┣ 고정된 위치에서 `수평으로 카메라를 회전`하는 것을 의미
+- ┣ 이 동작은 `왼쪽에서 오른쪽으로 머리를 돌리는 동작과 비슷`
+- ┣ 그러므로 `PanResponder` 라는 이름은 '패닝 반응기' 정도의 의미
+- ┣ 앞서 `FlatList`에서 `수평 스크롤하는 제스처`를 보면 화면
+- ┗ `좌우로 고개를 돌듯 가볍게 화면을 밀어주는 느낌`인데, 동작이 바로 패닝
+
+> 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6 react-native-appearance
+     yarn add @types/react-native-vector-icons @types/color @types/faker
+     yarn add react-native-keyboard-aware-scroll-view
+
+### ScrollEnabledProvider 컴포넌트와 useScrollEnabled 커스텀 훅 구현
+
+- 요번 절의 샘플코드는 `FlatList` 컴포넌트에
+- ┣ Person 컴포넌트를 적용하는 방식
+- ┣ 그러나 IOS는 `FlatList`의 `scrollEnable` 속성값 : `true(기본값)`
+- ┣ `PanResponder`가 올바르게 동작하지 않음
+- ┣ 그러므로 `PadResponder`가 시작할 때 `FlatList`의 `scrollEnable 속성값 : false`
+- ┗ 끝날 때 다시 true로 설정하는 코드가 필요
