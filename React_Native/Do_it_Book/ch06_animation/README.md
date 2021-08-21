@@ -423,8 +423,8 @@ type EndResult = { finished: boolean };
 type EndCallback = (result: EndResult) => void;
 ```
 
-- start 메서드에는 이를 호출한 코드에서 애니메이션이
-  - ┗ 종료되었는지 알 수 있는 콜백 함수를 매개변수로 줄 수 있음
+- `start 메서드`에는 이를 호출한 코드에서 애니메이션이
+  - ┗ `종료되었는지 알 수 있는` `콜백 함수를 매개변수`로 줄 수 있음
 
 > start 메서드를 호출하면서 애니메이션이 종료될 때 콘솔에 로그를 남기는 콜백 함수
 
@@ -436,7 +436,7 @@ Animated.timing(animValue, {
 }).start((result: { finished: boolean }) => console.log(result));
 ```
 
-- 참고로 result 매개변수 값은 항상 `{finished: true}` 입니다.
+- 참고로 result 매개변수 값은 항상 `{finished: true}` 임
   - 다음처럼 간단하게 구현해도 괜찮음
 
 ```tsx
@@ -1632,7 +1632,7 @@ const animValues = useMemo(()=> [1,2,3].map(notUsed) => new Animated.Value(0), [
 ```
 
 - 그리고 이렇게 만든 animValues의 각 아이템은
-- ┗ 각각 다른 애니메이션 스타일 객체를 만드는데 사용됨
+- ┗ 각각 `다른 애니메이션 스타일 객체`를 만드는데 사용됨
 
 > 각각 다른 애니메이션 스타일 객체 만들기
 
@@ -1662,8 +1662,508 @@ const centerIconStyle = useTransformStyle({
 ```
 
 - 이렇게 독립적으로 만들어진 애니메이션 스타일 객체를
-- ┣ 각기 다른 아이콘 컴포넌트에 적용
+- ┣ `각기 다른 아이콘 컴포넌트`에 적용
 - ┣ 마지막으로 이렇게 설정된 애니메이션을
-- ┗ Animated.sequence에 따라 차례대로 실행
+- ┗ `Animated.sequence`에 따라 `차례대로 실행`
 
 <img src="2021-08-21-04-27-26.png" width="200px" >
+
+#### useAnimatedValues 커스텀 훅 제작
+
+- 이제 `useAnimatedValues` 커스텀 훅을 구현
+- ┣ 다음 코드는 2.3절의 `utils.ts` 파일에서 구현
+- ┣ `makeArray` 함수를 발췌
+- ┗ 이 함수는 map 메서드를 호출 할 수 있는 길이 length 배열 만듬
+
+> makeArray 함수
+
+```tsx
+export const makeArray = (length: number) => new Array(length).fill(null);
+```
+
+- 다음은 앞의 PersonSequence 파일의 makeArray 재 구현
+
+```tsx
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useMemo } from 'react';
+import { Animated } from 'react-native';
+
+const makeArray = (length: number) => new Array(length).fill(null);
+
+export const useAnimatedValues = (length: number, initialValue: number = 0) => {
+	return useMemo(
+		() => makeArray(length).map(() => new Animated.Value(initialValue)),
+		[]
+	);
+};
+```
+
+> 이제 Animated.parallel 함수를 알아보기 전에 Animated.spring 함수부터 학습
+
+[[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+#### Animated.spring 함수
+
+- 기계 장치 등에서 흔히 보는 스프링은 물리적인 충격을 완화하는 장치로도 쓰임
+- ┣ 이를 모방하여 `Animated.timing` 함수의
+- ┣ `easing` 속성에 `Easing.bounce` 를 설정하면
+- ┗ 스프링이 눌렸다 튕겼다 반복하는 듯한 방식의 보간 생성
+
+> Easing.bounce 보간
+
+```tsx
+Animated.timing(animValue, {
+	useNativeDriver: true,
+	toValue: !stated ? 1 : 0,
+	duration: 1000 * 1,
+	easing: Easing.bounce,
+});
+```
+
+- 이와 비슷하게 Animated.spring 함수는 이 애니메이션을 좀 더 자연스럽게 만듬
+- ┣ 아래의 함수는 `Animated.timing` 처럼
+- ┣ `Animated.CompositeAnimation` 타입 객체를 반환하는 또 다른 함수
+- ┗ `Animated.ValueXY` 는 뒤에서 설명
+
+> Animated.spring 함수
+
+```tsx
+export function spring(
+	value: Animated.Value | Animated.ValueXY,
+	config: SpringAnimationConfig
+): Animated.CompositeAnimation;
+```
+
+- Animated.spring 함수의 두 번째 매개변수는 아래와 같은 객체 타입
+- ┣ 이 타입 객체는 Animated.timing의 config와 달리
+- ┗ duration 이 없다는 것이 특징!!!
+
+> 두 번째 매개변수 config 타입
+
+```tsx
+interface SpringAnimationConfig extends AnimationConfig {
+	toValue:
+		| number
+		| Animated.Value
+		| { x: number; y: number }
+		| Animated.ValueXY;
+	delay?: number;
+}
+```
+
+> Animated.spring 사용하여 구현한 코드
+>
+> > 미묘하긴 하지만 좀 더 자연스러운 애니메이션 확인 가능
+
+```tsx
+const fadeInStyle = useCallback(() => {
+	Animated.spring(animValue, { toValue: 1, useNativeDriver: true }).start();
+}, []);
+```
+
+#### Animated.parallel 함수
+
+- `Animated.parallel` 함수는 `Animated.sequence` 처럼
+- ┣ 여러개의 CompositeAnimation 타입 객체 배열을
+- ┣ 입력 매개변수로 받는 함수
+- ┣ 다만 Animated.sequence와 달리
+- ┗ 이름대로 `여러 개의 애니메이션 동시(parallel) 실행`
+
+> Animated.parallel 함수
+
+```tsx
+export function parallel(
+	animations: CompositeAnimation[],
+	config?: { stopTogether?: boolean }
+): CompositeAnimation;
+```
+
+> 실제 사용
+
+```tsx
+// const animValues = useMemo(
+//   () => [1, 2, 3].map(() => new Animated.Value(0)),
+//   [],
+// );
+const animValues = useAnimatedValues(3);
+const avatarPressed = useCallback(() => {
+	Animated.parallel(animations).start(toggleStarted);
+}, [started]);
+```
+
+- 주석 부분을 커스텀 훅을 사용함으로 인해서 쉽게 사용이 가능하다.
+
+#### Animated.delay와 Animated.stagger 함수
+
+- `Animated.timing` 함수는 `config` 매개변수에 `delay`란 속성을 사용가능
+- ┣ `delay`는 이름대로 바로 애니메이션을 시작하는 것이 아닌
+- ┗ 시간이 지나고서 애니메이션을 시작
+
+> delay 속성 사용
+
+```tsx
+export namespace Animated {
+	export const timing: (
+		value: AnimatedValue,
+		config: TimingAnimationConfig
+	) => CompositeAnimation;
+	interface TimingAnimationConfig {
+		delay?: number;
+	}
+}
+```
+
+- 그런데 delay는 Animated.delay 함수의 time 매개변수와 그 의미가 같음
+
+> delay 함수
+
+```tsx
+export function delay(time: number): Animated.CompositeAnimation;
+```
+
+> Animated.timing의 delay 속성 사용
+
+```tsx
+Animated.timing(animValue, { delay: 1000 });
+```
+
+> Animated.delay를 사용한 코드
+
+```tsx
+Animated.sequence([Animated.delay(1000), Animated.timing(animValue, {})]);
+```
+
+- 그런데 다음 Animated.stagger 함수 또한 delay를 입력 매개변수로 받음
+
+> Animated.stagger 함수
+
+```tsx
+export function stagger(
+	delay: number,
+	animation: CompositeAnimation[]
+): CompositeAnimation;
+```
+
+- `Animated.stagger`는 기본적으로 `Animated.sequence`와 동일
+- ┣ 다만
+- ┣ `Animated.sequence`는 애니메이션을 시작하기 전에 기다리는 방식
+- ┗ `Animated.stagger`는 일단 애니메이션을 시작하고 다음 애니메이션 시작 전 기다림
+
+- `sequence`
+- ┗ delay → animation1 → delay → ani2 → delay →ani3
+
+- `stagger`
+- ┗ ani1 → delay → ani2 → delay → ani3 → delay
+
+> delay가 언제 걸리는지가 좀 다름
+
+- 참고로 현재 안드로이드에서 Animated.stagger는 진행 도중 멈추는 버그 발생
+- ┗ 그러므로 안드로이드에서는 Animated.sequence로 구현
+
+- 공 3개를 순서대로 이동시키는 것을 구상
+- ┗ 3개의 공이 겹치지 않도록 공의 이동거리를 계산하는 것이 중요
+
+> 이 때 각 공이 이동할 거리를 계산하기 위해서
+>
+> > 먼저 아이콘의 부모 컴포넌트 layout 정보를 코드 형태로 얻어야함
+
+> 부모 컴포넌트 layout 정보 얻기
+
+```tsx
+const [layout, setLayout] = useLayout();
+<View onLayout={setLayout}>{icons}</View>;
+```
+
+- 그러면 공 아이콘이 이동할 거리는 다음 처럼 항상
+- ┣ `layout.width` - `(현재위치 + 나를 포함한 공 개수)` X `공 넓이`
+- ┗ = `layout.width` - `(총 아이콘 개수)` X `공 넓이`
+
+- 앞서 구현 한 예와는 다르게(커스텀 훅 사용 X)
+- ┗ 일반적으로 구현
+
+> 3개의 아이콘 색상이 든 balls 배열
+
+```tsx
+const balls = useMemo(
+	() => [Colors.pink500, Colors.lime500, Colors.lightBlue500],
+	[]
+);
+```
+
+- `balls.length 개수`만큼 애니메이션 진행하기 위해서는
+- ┗ `balls.length 개수`만큼 `Animated.Value 타입 객체 생성`
+
+```tsx
+const animValues = useMemo(
+	() => balls.map((notUsed) => new Animated.Value(0)),
+	[]
+);
+```
+
+- 그러면 공 아이콘이 오른쪽 끝으로 가는 애니메이션은 다음처럼 구현가능
+- ┣ 오른쪽 끝으로 갈 때는 마지막 공부터 애니메이션을 시작해야 하는
+- ┗ `reserve`를 설정
+
+> 오른쪽으로 이동하는 애니메이션
+
+```tsx
+const startAnimations = useMemo(
+	() =>
+		balls
+			.map((notUsed, index) =>
+				Animated.spring(animValues[index], {
+					useNativeDriver: true,
+					toValue: 1,
+				})
+			)
+			.reverse(),
+	[]
+);
+```
+
+- 또한 오른쪽으로 이동한 아이콘이 다시 왼쪽으로 이동하는 애니메이션은
+- ┗ 다음처럼 구현
+
+```tsx
+const endAnimations = useMemo(
+	() =>
+		balls.map((notUsed, index) =>
+			Animated.spring(animValues[index], {
+				useNativeDriver: true,
+				toValue: 0,
+			})
+		),
+	[]
+);
+```
+
+- 이제 전체 애니메이션은 다음 코드처럼
+- ┣ 오른쪽으로 이동하는 `startAnimations`와
+- ┣ 원래 위치로 이동하는 `endAnimations`를
+- ┗ Ts 배열에 적용하는 전개 연산자 구문으로 결합
+
+> 전개 연산자로 애니메이션 결합
+
+```tsx
+const avatarPressed = useCallback(()=> {
+  Animated.stagger(delay), [...startAnimations, ...endAnimations]).start()
+}, [])
+```
+
+- 이제 `avatarPressed` `콜백 함수`를 호출했을 때
+- ┣ 실제 애니메이션을 실행하는 컴포넌트를 만들 차례
+- ┣ `react-native-vector-icons` 패키지가 제공하는 `Icon 컴포넌트`에 애니메이션을 적용해야함
+- ┣ 다음처럼 `Animated.createAnimationComponent` 함수를 사용하여
+- ┣ style 속성에 `Animated.Value` 타입 객체가 `있어도 동작`하는
+- ┗ `AnimatedIcon` 컴포넌트를 만들어야함
+
+> AnimationIcon 컴포넌트 만들기
+
+```tsx
+import FontawesomeIcon from 'react-native-vector-icons/FontAwesome';
+
+const AnimatedIcon = Animated.createAnimatedComponent(FontawesomeIcon);
+```
+
+- 그리고 이 `AnimatedIcon` 컴포넌트를 `balls.length` 만큼 생성
+- ┣ 여기서 간과 해서 안될 것!!!
+- ┣━ `layout.width` 는 처음 `처음 렌더링할 때 일시적으로 0`
+- ┣━ `setLayout` 이 호출되면 그때야 `비로소 실제 넓이 값`이 됨
+- ┗━ 그러므로 다음 코드는 `useMemo` 훅에 `의존성으로 layout.width` 설정
+
+> 공 개수만큼 생성
+
+```tsx
+const icons = useMemo(() =>
+	balls.map((color, index) => {
+		const numberOfIcons = balls.length;
+		const animValue = animValues[index];
+		const transform: {
+      transform: [
+        {
+          translateX: animValue.interpolate({
+            inputRange: [0,1],
+            outputRange: [0, layout.width - numberOfIcons * iconSize]
+          })
+        },
+        {
+          rotate: animValue.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['0deg', '720deg']
+          })
+        }
+      ]
+    }
+    return (
+      <AnimatedIcon key={color} style={[transform]} name="soccer-ball-o" size={iconSize} color={color}/>
+    )
+	}), [layout.width]
+);
+```
+
+> 실제 구현
+>
+> > [코드로 이동](./ch06_Several_Animation/src/screens/PersonStagger.tsx)
+
+> 캡쳐
+>
+> > <img src="2021-08-21-16-10-07.png" width="200px" >
+
+#### Animated.loop 함수
+
+- Animated.loop 함수는 이름대로 애니메이션을 반복(루프) 실행
+- ┣ 함수 타입의 두 번째 매개변수 config를 명시하지 않으면
+- ┗ 애니메이션은 무한 반복됨
+
+> Animated.loop 함수의 타입 정의
+
+```tsx
+interface LoopAnimationConfig {
+	iterations?: number; // 기본값은 -1
+	resetBeforeIteration?: Boolean; // 기본값은 true
+}
+export function loop(
+	animation: CompositeAnimation,
+	config?: LoopAnimationConfig
+): CompositeAnimation;
+```
+
+> 무한 반복 애니메이션
+
+```tsx
+const avatarPressed = useCallback(() => {
+	if (Platform.OS === 'ios')
+		Animated.loop(
+			Animated.stagger(delay, [...startAnimations, ...endAnimations])
+		).start();
+	else
+		Animated.loop(
+			Animated.sequence([...startAnimations, ...endAnimations])
+		).start();
+}, []);
+```
+
+### Enter/Exit 애니메이션 구현
+
+- 마지막으로 새로운 Person
+- ┣ 컴포넌트가 `생성될 때 실행`하는 → `Enter` 애니메이션
+- ┗ 컴포넌트가 `파괴될 때 실행`하는 → `Exit` 애니메이션 학습
+
+- add 버튼을 눌렀을 때 컴포넌트가 화면 왼쪽에서
+- ┗ 미끄러져서 들어오는 애니메이션
+
+- enterAnimation, exitAnimation 함수를 구현
+
+> enterAnimation, exitAnimation 함수
+
+```tsx
+const PersonEnterExit: FC<PersonProps> = ({ person, onDelete }) => {
+	const [started, toggleStarted] = useToggle();
+
+	const enterAnimation = useCallback(() => {
+		Animated.sequence([]).start(toggleStated);
+	}, []);
+	const exitAnimation = useCallback(() => {
+		Animated.sequence([]).start(onDelete);
+	}, []);
+};
+```
+
+- 그러면 컴포넌트가 생성될 때 다음처럼 enterAnimation을 진행할 수 있음
+
+```tsx
+useEffect(enterAnimation, []);
+```
+
+- 그리고 컴포넌트를 파괴전 exitAnimation을 진행 가능
+
+> 컴포넌트 파괴하기
+
+```tsx
+<Text style={[styles.delete]} onPress={exitAnimation}>{delete}</Text>
+```
+
+- Animated.Value 타입 객체를 하나를 생성한 다음 보간을 이용해
+- ┗ 화면 왼쪽에서 들어오는 애니메이션과 오른쪽으로 나가는 애니메이션 추가로 구현
+
+> 애니메이션 추가 구현
+
+```tsx
+const Person: FC<PersonProps> = ({person, onDelete}) => {
+  const leftRightAnimValue = useAnimatedValue();
+
+  const enterLeaveTransformStyle = useTransformStyle({
+    translateX: leftRightAnimValue.interpolate({
+      inputRange: [0,1],
+      outputRange: started? [400, 0] : [-400: 0]
+    })
+  }, [started]);
+  return (<Animated.View style={[styles.vew, interLeaveTransformStyle]}/>)
+}
+```
+
+- `enterAnimation`과 `exitAnimation` 함수의 `Animated.sequence` 입력배열에
+- ┣ `leftRightAnimValue`가 실제로 `애니에니메이션을 통해 보간한 값`을
+- ┣ `enterLeaveTransformStyle` 객체에 반영할 수 있도록
+- ┗ `Animated.timing`이나 `Animated.spring`을 호출하는 코드를 삽입
+
+> 보간된 값을 반영
+
+```tsx
+const Person: FC<PersonProps> = ({ person, onDelete }) => {
+	const enterAnimation = useCallback(() => {
+		Animated.sequence([
+			Animated.timing(leftToRightAnimValue, {
+				useNativeDriver: true,
+				toValue: 1,
+				duration: 1 * 1000,
+				easing: Easing.bounce,
+			}).start(toggleFinished),
+		]);
+	}, []);
+	const exitAnimation = useCallback(() => {
+		Animated.sequence([
+			Animated.timing(leftRightAnimValue, {
+				useNativeDriver: true,
+				toValue: 0,
+				duration: 0.5 * 1000,
+			}),
+		]).start(onDelete);
+	}, []);
+	return <Animated.View style={[styles.view, enterLeaveTransformStyle]} />;
+};
+```
+
+- 컴포넌트가 완전히 화면 안쪽으로 들어왔을 때
+- ┗ 나머지 필요한 애니메이션을 다음처럼 추가
+
+> 애니메이션 추가
+
+```tsx
+const enterAnimation = useCallback(()=> {
+  Animated.sequence([
+    Animated.timing(leftRightAnimValue, ...),
+    Animated.spring(opacityAnimValue, ...),
+    Animated.timing(topBottomAnimValue, ...)
+  ]).start(toggleFinished)
+}, [])
+```
+
+- 그리고 exitAnimation은 enterAnimation의 역순으로 진행하여
+- ┗ 전체적인 애니메이션이 일관성 있게 보이도록 구현
+
+```tsx
+const exitAnimation = useCallback(()=> {
+  Animated.sequence([
+    Animated.parallel([
+      Animated.spring(topBottomAnimValue, ...)
+      Animated.spring(opacityAnimValue, ...)
+    ]),
+    Animated.timing(leftRightAnimValue, ...)
+  ]).start(onDelete)
+}, [])
+```
+
+> 구현 코드
+
+[코드로 이동](./ch06_Several_Animation/src/screens/PersonEnterExit.tsx)
