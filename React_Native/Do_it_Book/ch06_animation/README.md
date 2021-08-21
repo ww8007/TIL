@@ -2192,3 +2192,202 @@ const exitAnimation = useCallback(()=> {
 - ┣ `PanResponder`가 올바르게 동작하지 않음
 - ┣ 그러므로 `PadResponder`가 시작할 때 `FlatList`의 `scrollEnable 속성값 : false`
 - ┗ 끝날 때 다시 true로 설정하는 코드가 필요
+
+#### 제스처란
+
+- 컴퓨터 용어로서 제스터는 마우스와 같은 포인팅 장치 또는
+- ┣ 멀티 터치 스크린 장치에 커서 이동, 버튼을 누른 책 커서 이동
+- ┣ 손가락 가볍게 터치하기 등 여러가지 제스처가 존재
+- ┗ R/N에서는 스크롤링에 특화된 제스처를 지원하고자 `PanResponder`라는 API 제공
+
+#### PanResponder API
+
+- R/N 패키지는 다음처럼 PanResponder API를 제공
+
+> PanResponder API
+
+```tsx
+import { PanResponder } from 'react-native';
+```
+
+- PanResponder를 사용하려면 다음처럼 PanResponder.create 함수를 호출
+- ┗ PanResponder Instance 타입 객체를 얻어야 함
+
+> PanResponder 사용 준비
+
+```tsx
+import type {PanResponderCallbacks, PanResponderInstance} from 'react-native'
+
+PanResponderObject = PanResponder.create(
+	config: PanResponderCallbacks// 잠시 후 설명
+): PanResponderInstance
+```
+
+- PanResponder.create 함수는 PanResponderInstance 타입 객체를 반환
+- ┗ 이 객체는 다음처럼 panHandlers라는 속성을 제공
+
+> panHandlers 속성
+
+```tsx
+import type { GestureResponderHandlers } from 'react-native';
+
+export interface PanResponderInstance {
+	panHandlers: GestureResponderHandlers;
+}
+```
+
+- PanResponderInstance 타입 객체가 제공하는 pnaHandlers 속성은
+- ┗ 다음과 같은 형태의 코드를 사용할 수 있게 해줌
+
+> panHandlers 속성을 사용한 코드
+
+```tsx
+const panResponder = PanResponder.create(...생략...);
+<View {...panResponder.panHandlers}>
+```
+
+- `PanResponder.create` 함수의 `입력 매개변수` 타입인
+- ┗ `PanResponderCallbacks` 학습
+
+#### PanResponderCallbacks 타입
+
+- 웹 브라우저에서 마우스와 같은 `포인팅 장치`는 버튼을 누르고
+- ┣ 버튼을 누른 채 이동하고, 버튼을 놓았을 때
+- ┣ 각각 `onmousedown`, `onmousemove`, `onmouseup` 과 같은 이벤트가 발생
+- ┣ 이와 달리 모바일 폰은 손가락이 마우스 역할을 하는
+- ┣ `멀티 터치 스크린`에서 동작하며 마우스와 비슷하게
+- ┣ `PanResponder` 라는 `onPanResponderGrant`, `onPanResponderMove`, `onPanResponderRelease` 이벤트 발생
+- ┗ 다음의 표는 마우스와 터치 스크린에서의 유사성
+
+| 마우스와 같은 포인팅 장치의 이벤트 이름 | 멀티 터치 스크린에서의 이벤트 이름 |
+| --------------------------------------- | ---------------------------------- |
+| onmousedown                             | onPanResponderGrant                |
+| onmousemove                             | onPanResponderMove                 |
+| onmouseup                               | onPanResponderRelease              |
+
+- `PanResponderCallbacks` 타입은 다음 코드에서 보듯
+- ┣ `onPanResponderGrant`, `onPanResponderMove`, `onPanResponderRelease`
+- ┗ `onPanResponderRelease` `이벤트 처리기 콜백 함수`를 `메서드 형태로 모은` 타입
+
+> PanResponderCallbacks 타입
+
+```tsx
+import type {
+	GestureResponderEvent,
+	PanResponderGestureState,
+} from 'react-native';
+type Event = GestureResponderEvent;
+type State = PanResponderGestureState;
+
+export interface PanResponderCallbacks {
+	onPanResponderGrant?: (e: Event, gestureState: State) => void;
+	onPanResponderMove?: (e: Event, gestureState: State) => void;
+	onPanResponderRelease?: (e: Event, gestureState: State) => void;
+}
+```
+
+- 그런데 `PanResponder`는 `PanResponderCallbacks`의 `다음 메서드가 true를 반환`해야
+- ┗ 비로소 `onPanResponderGrant`와 `onPanResponderRelease` 이벤트 처리 함수를 호출
+
+> onStartShouldSetPanResponder 메서드
+
+```tsx
+export interface PanResponderCallbacks {
+	onStartShoutSetPanResponder: (e: Event, s: State) => boolean;
+}
+```
+
+> onMoveShouldSetPanResponder 메서드
+
+```tsx
+export interface PanResponderCallbacks {
+	onMoveShouldPanResponder: (e: Event, s: State) => boolean;
+}
+```
+
+#### PanResponder 이벤트 처리 함수 구현
+
+- `PanResponder` 이벤트 처리 함수는 `보통 2번째 매개변수` `State` 타입의 `s값만 참조`
+- ┣ 그러므로 다음처럼 구현하면 `화면에 터치(클릭 후 드래깅 느낌)`가 일어났을 때
+- ┣ `onPanResponderGrant`와 `onPanResponderRelease` 함수를 차례롤 호출
+- ┣ 그런데 `IOS` 에서는 `PanResponder를` 사용하는 컴포넌트의 `부모 컴포넌트`가
+- ┣ `FlatList` 혹은 `ScrollView`일 때는 `항상 부모 컴포넌트`의
+- ┣ `scrollEnabled` `속성`이 `false`로 설정되어 있어야 → `onPanResponderMove` 이벤트 처리 함수 `정상 동작`
+- ┣ 그러므로 다음 코드는 앞서 작성한 `useScrollEnabled` 커스텀 훅을 호출하여 얻은
+- ┗ `setScrollEnabled`를 호출
+
+> useScrollEnabled 커스텀 훅으로 얻은 setScrollEnabled 호출
+
+```tsx
+import {useScrollEnabled} from '../contexts'
+const ios = Platform.OS == 'ios'
+
+const [scrollEnabled, setScrollEnabled] = useScrollEnabled();
+const panResponder = PanResponder.create({
+	// onPanResponderGrant와 onPnaResponderRelease 콜백 함수 호출
+	onStartShouldSetPanResponder() {return true},
+	onPanResponderGrant(e: Event, s: State) {
+		// ios일 때 터치가 발생하면 부모 FlatList의 스크롤 기능을 일시 중시
+		ios && setScrollEnabled(false);
+		console.log(Platform.OS, 'onPanResponderGrant',s)
+	}
+	onPanResponderRelease(e: Event, s: State){
+		// ios일 때 정지한 부모 FlatList 스크롤 기능을 다시 활성화
+		ios && setScrollEnabled(true);
+		console.log(Platform.OS, 'onPanResponderGrant',s)
+	}
+})
+```
+
+- 이번엔 onPanResponderMove 이벤트 처리기가 호출되도록 다음 내용을 추가
+
+> onPanResponderMove 이벤트 처리기 호출
+
+```tsx
+const panResponder = PanResponder.create({
+	onMoveShouldSetPanResponder() {
+		return true;
+	},
+	onPanResponderMove(e: Event, s: State) {
+		console.log(Platform.OS, 'onPanResponderMove', s);
+	},
+});
+```
+
+- 두 플렛폼에서 `PanResponder`는 각각 다르게 동작
+- ┣ Android 에서는 `scrollEnabled`가 `true` 인데도 `FlatList`가
+- ┣ `수직 방향으로 스크롤 되지 않음`
+- ┗ `PanResponder` 자체는 잘 동작
+
+- 이와 달리 `아이폰에서는 스크롤은 정상` 이지만
+- ┗ `수직 방향의 제스처`에서는 `잘 동작 하지 않음`
+
+- `PanResponder` 관련 코드를 작성할 때는 앞의 코드에서
+- ┣ `State`로 `타입 별칭(type alias)`을 정했던
+- ┗ `PanResponderGestureState`의 `dx, dy` 등 `멤버 속성`을 알아야함
+
+#### PanResponderGestureState의 속성
+
+- 다음 표는 PanResponderGestureState 의 속성을 정리한 것으로
+- ┗ 이 중 가장 많이 사용되는 속성은 dx, dy
+
+| 속성 이름           | 타입   | 의미                                                 |
+| ------------------- | ------ | ---------------------------------------------------- |
+| stateID             | number | gestureState의 ID로 최소 한 번의 터치가 있는 한 지속 |
+| moveX, moveY        | number | 최근 이동한 터치의 최신 화면 좌표                    |
+| x0, y0              | number | Grant를 호출했을 때의 화면 좌표                      |
+| dx,dy               | number | 터치가 시작된 이후 제스처의 누적 거리                |
+| vx, vy              | number | 제스처의 현재 속도                                   |
+| numberActiveTouches | number | 현재 화면의 터치 수                                  |
+
+- 앞서 구현한 `PersonPanRes` 코드는 작성이 조금 번거로움
+- ┗ 그러므로 `usePanResponder` 라는 이름으로 `커스텀 훅`을 구현
+
+#### usePanResponder 커스텀 훅
+
+- 앞서 구현한 PersonPanRest의 PanResponder 관련 코드에서
+- ┣ 개선할 점과 번거로운 점은
+- ┗ 다음 두 가지
+
+1. 컴포넌트를 `렌더링할 때 마다` `panResponder` `객체가 계속 생성`
+2. true를 반환하는 `onStartShouldSetPanResponder`, `monMoveShouldSetPanResponder`를 `계속 구현`
