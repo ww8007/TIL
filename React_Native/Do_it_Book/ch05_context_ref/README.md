@@ -8,6 +8,50 @@
 
 > 위 의 내용을 학습
 
+## 목차
+
+- [콘텍스트와 ref 속성](#콘텍스트와-ref-속성)
+  - [목차](#목차)
+  - [콘텍스트 이해하기](#콘텍스트-이해하기)
+  - [콘텍스트란?](#콘텍스트란)
+    - [테마 기능이란?](#테마-기능이란)
+      - [AppearanceProvider 컴포넌트와 useColorScheme 커스텀 훅](#appearanceprovider-컴포넌트와-usecolorscheme-커스텀-훅)
+      - [Provider 컴포넌트](#provider-컴포넌트)
+        - [PaperProvider의 theme 속성](#paperprovider의-theme-속성)
+      - [useTheme 커스텀 훅으로 PaperProvider의 테마 기능 사용해 보기](#usetheme-커스텀-훅으로-paperprovider의-테마-기능-사용해-보기)
+      - [createContext API 탐구](#createcontext-api-탐구)
+        - [context 객체가 제공하는 Provider 컴포넌트](#context-객체가-제공하는-provider-컴포넌트)
+        - [useContext 훅](#usecontext-훅)
+        - [ToggleThemeProvider에 toggleTheme 속성 추가](#togglethemeprovider에-toggletheme-속성-추가)
+      - [Switch 컴포넌트](#switch-컴포넌트)
+      - [react-native-paper 패키지가 제공하는 useTheme 커스텀 훅](#react-native-paper-패키지가-제공하는-usetheme-커스텀-훅)
+      - [Home 컴포넌트에 toggleTheme 함수와 Switch 컴포넌트 사요하기](#home-컴포넌트에-toggletheme-함수와-switch-컴포넌트-사요하기)
+  - [useRef 훅 이해하기](#useref-훅-이해하기)
+    - [ref 속성이란?](#ref-속성이란)
+      - [ref 속성의 타입](#ref-속성의-타입)
+    - [useRef 훅](#useref-훅)
+      - [여기서 짚고 가는 옵션 체이닝 연산자](#여기서-짚고-가는-옵션-체이닝-연산자)
+      - [onContextSizeChange 이벤트 속성](#oncontextsizechange-이벤트-속성)
+      - [Input.tsx 파일 구현](#inputtsx-파일-구현)
+        - [TextInput 컴포넌트에서의 useRef 훅 활용 방법](#textinput-컴포넌트에서의-useref-훅-활용-방법)
+        - [Keyboard.dismiss()로 키보드 강제로 내리기](#keyboarddismiss로-키보드-강제로-내리기)
+        - [KeyboardAvoidingView 코어 컴포넌트](#keyboardavoidingview-코어-컴포넌트)
+        - [react-native-keyboard-aware-scroll-view 패키지 설치와 활용](#react-native-keyboard-aware-scroll-view-패키지-설치와-활용)
+        - [KeyboardAwareScrollView의 scrollToFocusedInput 메서드](#keyboardawarescrollview의-scrolltofocusedinput-메서드)
+        - [AutoFocusProvider 컴포넌트와 useAutoFocus 커스텀 훅](#autofocusprovider-컴포넌트와-useautofocus-커스텀-훅)
+  - [useImperactiveHandle 훅 이해하기](#useimperactivehandle-훅-이해하기)
+    - [테마 컴포넌트 구현](#테마-컴포넌트-구현)
+      - [forwardRef API](#forwardref-api)
+      - [forwardRef API의 타입](#forwardref-api의-타입)
+      - [src/theme/paper/TextInput 컴포넌트 구현](#srcthemepapertextinput-컴포넌트-구현)
+      - [src/theme/paper/Text 컴포넌트 구현](#srcthemepapertext-컴포넌트-구현)
+      - [scr/theme/paper/View.tsx](#scrthemepaperviewtsx)
+    - [useImperativeHandle 훅이란?](#useimperativehandle-훅이란)
+      - [useImperativeHandle 훅의 동작 원리](#useimperativehandle-훅의-동작-원리)
+      - [useImperativeHandle 훅의 타입](#useimperativehandle-훅의-타입)
+        - [ImperativeTextInput 사용자 컴포넌트 구현](#imperativetextinput-사용자-컴포넌트-구현)
+      - [Imperative 컴포넌트 구현](#imperative-컴포넌트-구현)
+
 ## 콘텍스트 이해하기
 
 - React 패키지는 `createContext` 라는 `API` 제공
