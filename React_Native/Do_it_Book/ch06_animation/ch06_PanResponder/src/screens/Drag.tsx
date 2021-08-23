@@ -2,9 +2,9 @@ import React, {useCallback, useState, useEffect} from 'react';
 import {View, Text, StyleSheet, Switch, FlatList} from 'react-native';
 import {useTheme} from 'react-native-paper';
 import {useToggleTheme} from '../contexts';
-import {ScrollEnabledProvider, useScrollEnabled} from '../contexts';
+import {useScrollEnabled} from '../contexts';
 import * as D from '../data';
-import Person from './Person';
+import Person from './PersonDrag';
 
 export default function People() {
   const [scrollEnabled] = useScrollEnabled();

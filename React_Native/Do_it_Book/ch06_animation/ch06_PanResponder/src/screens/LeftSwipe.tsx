@@ -1,12 +1,35 @@
-import React, {useCallback, useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Switch, FlatList} from 'react-native';
+import React, {
+  useCallback,
+  useState,
+  useEffect,
+  ReactNode,
+  ComponentProps,
+} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Switch,
+  FlatList,
+  GestureResponderEvent,
+  PanResponderGestureState,
+  Platform,
+  LayoutChangeEvent,
+} from 'react-native';
+import type {FC} from 'react';
 import {useTheme} from 'react-native-paper';
 import {useToggleTheme} from '../contexts';
 import {ScrollEnabledProvider, useScrollEnabled} from '../contexts';
 import * as D from '../data';
-import Person from './Person';
+import Person from './PersonLeftSwipe';
 
-export default function People() {
+type SwipeComponent = (setLayout: (e: LayoutChangeEvent) => void) => ReactNode;
+
+export type LeftSwipeProps = ComponentProps<typeof View> & {
+  left?: SwipeComponent;
+};
+
+export default function LeftSwipe() {
   const [scrollEnabled] = useScrollEnabled();
   const [people, setPeople] = useState<D.IPerson[]>([]);
   const theme = useTheme();
