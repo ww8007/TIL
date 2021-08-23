@@ -1,17 +1,23 @@
 import React from 'react';
-import {StyleSheet, View, Text} from 'react-native';
-import {Colors} from 'react-native-paper';
-import * as D from '../data';
+import {StyleSheet} from 'react-native';
+import {SafeAreaView, View, Text, TopBar} from '../theme/navigation';
 
 const title = 'CopyMe';
 export default function CopyMe() {
   return (
-    <View style={[styles.view]}>
+    <SafeAreaView>
+      <View style={[styles.view]}>
+        <TopBar />
+        <View style={[styles.content]}>
+          <Text style={styles.text}>{title}</Text>
+        </View>
+      </View>
       <Text style={[styles.text]}>{title}</Text>
-    </View>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
-  view: {flex: 1, padding: 5, backgroundColor: Colors.blue900},
-  text: {fontSize: 20, color: 'white'},
+  view: {flex: 1, padding: 5},
+  text: {fontSize: 20},
+  content: {flex: 1, alignItems: 'center', justifyContent: 'center'},
 });
