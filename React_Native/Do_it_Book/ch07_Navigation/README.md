@@ -173,4 +173,598 @@ import 'react-native-gesture-handler';
 ```
 
 - 리액트 내비게이션 5.x 패키지는 그 이전의 4.x 패키지와 다르게
-- ┣ 상당 부분의
+- ┣ `상당 부분의 동작`을 `네이티브 모듈 쪽에서 동작`하게 하여
+- ┣ `전체 화면 렌더링 속도`를 `향상`시켰음
+- ┣ 그리고 이러한 `성능 향상`은 `react-native-screens`
+- ┣ 패키지 기능을 `활용`하여야 얻을 수 있음
+- ┗ `react-native-screens` 모듈을 동작하게 하려면 다음 코드를 `App.tsx` 구현
+
+> react-native-screens 모듈 동작에 필요한 코드
+
+```tsx
+import { enableScreens } from 'react-native-screens';
+enableScreen();
+```
+
+### react-native-safe-area-context 패키지의 역할
+
+- 앞서 아이폰 화면은 텍스트가 정상적인 위치에 보이지 않았음
+- ┣ `@react-navigation` 필수 패키지인
+- ┣ `react-native-safe-area-context`는 다음 컴포넌트를 제공
+- ┗ 아이폰 화면 문제를 해결 가능!!!
+
+> SafeAreaProvider 컴포넌트
+
+```tsx
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+```
+
+- `SafeAReaProvider` 는 `Provider` 이기 때문에
+- ┗ `MainNavigator` 의 부모 컴포넌트여야 함!
+
+> SafeAreaProvider 컴포넌트는 MainNavigator의 부모 컴포넌트로
+
+```tsx
+<SafeAreaProvider>
+	<MainNavigator />
+</SafeAreaProvider>
+```
+
+### 리액트 내비게이션용 App.tsx 컴포넌트 구현하기
+
+- 다음 코드는 언급한 내용을 종합한 최소 구현 리액트 내비게이션용 App.tsx
+
+```tsx
+import React from 'react';
+import MainNavigator from './src/screens/MainNavigator';
+import 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { NavigationContainer } from '@react-navigation/native';
+
+enableScreens();
+
+export default function App() {
+	return (
+		<SafeAreaProvider>
+			<NavigationContainer>
+				<MainNavigator />
+			</NavigationContainer>
+		</SafeAreaProvider>
+	);
+}
+```
+
+- 그러나 앞의 코드의 SafeAreaProvider를 사용하더라도
+- ┗ 다음 코드에서 보듯 SafeAreaView를 사용해야 아이폰의 안전영역 해결
+
+```tsx
+import React from 'react';
+import { StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export default function MainNavigator() {
+	return (
+		<SafeAreaView style={[styles.view]}>
+			<Text style={styles.text}>This is top text.</Text>
+			<Text style={styles.text}>This is bottom text.</Text>
+		</SafeAreaView>
+	);
+}
+const styles = StyleSheet.create({
+	view: { flex: 1, alignItems: 'center', justifyContent: 'space-between' },
+	text: { color: 'black' },
+});
+```
+
+![캡쳐화면](2021-08-23-17-22-35.png)
+
+## 리액트 내비게이션 테마
+
+- 리액트 내비게이션은 theme 속성에 설정할 수 있는
+- ┗ DefaultTheme과 DarkTheme 객체를 다음처럼 제공
+
+> DefaultTheme과 DarkTheme 객체
+
+```tsx
+import {
+	NavigationContainer,
+	DefaultTheme,
+	DarkTheme,
+} from '@react-navigation/native';
+```
+
+- 다음은 DarkTheme 객체의 키와 값
+
+> DarkTheme 객체의 키와 값
+
+```tsx
+{
+    "colors": {
+        "background" : "rgb(1,1,1)"
+        "border": "rgb(39,39,41)"
+        "card": "rgb(18, 18, 18)",
+        "primary": "rgb(10,132,255)",
+        "text": "rgb(229, 229, 231)",
+    },
+    "dark": true
+}
+```
+
+- NavigationContainer는 theme 이란 속성을 제공
+- ┗ theme 속성은 다음 코드처럼 DefaultTheme, DarkTheme 제공하는데 사용
+
+> theme 속성 사용
+
+```tsx
+import { useColorScheme } from 'react-native-appearance';
+import { DefaultTheme, DarkTheme } from '@react-navigation/native';
+
+export default function App() {
+	const isDarkTheme = useColorScheme();
+	const [theme, setTheme] = useState(isDarkTheme ? DarkTheme : DefaultTheme);
+}
+```
+
+### ToggleThemeProvider 컴포넌트 적용
+
+- 앞서 `ToggleThemeProvider` 컴포넌트와 `useToggleTheme` 커스텀 훅을 제작한 바 있음
+- ┣ 이제 App.tsx 에 다음처럼 `ToggleThemeProvider` 컴포넌트를 적용하면
+- ┗ `MainNavigator`의 `Switch` 컴포넌트를 조작하여 앱의 테마 변경 가능
+
+```tsx
+import React, { useState, useCallback } from 'react';
+
+import MainNavigator from './src/screens/MainNavigator';
+import {
+	NavigationContainer,
+	DefaultTheme,
+	DarkTheme,
+} from '@react-navigation/native';
+import { AppearanceProvider, useColorScheme } from 'react-native-appearance';
+import 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ToggleThemeProvider } from './src/contexts';
+
+enableScreens();
+
+export default function App() {
+	const scheme = useColorScheme();
+	const [theme, setTheme] = useState(
+		scheme === 'dark' ? DarkTheme : DefaultTheme
+	);
+	const toggleTheme = useCallback(
+		() => setTheme(({ dark }) => (dark ? DefaultTheme : DarkTheme)),
+		[]
+	);
+	return (
+		<AppearanceProvider>
+			<ToggleThemeProvider toggleTheme={toggleTheme}>
+				<SafeAreaProvider>
+					<NavigationContainer theme={theme}>
+						<MainNavigator />
+					</NavigationContainer>
+				</SafeAreaProvider>
+			</ToggleThemeProvider>
+		</AppearanceProvider>
+	);
+}
+```
+
+### useTheme 훅과 useToggleTheme 커스텀 훅 사용하기
+
+- `@react-navigation/native` 패키지는 다음처럼 useTheme이란 훅을 제공
+- ┗ 이 훅을 이용하면 현재 `NavigationContainer`의
+- ┗ theme 속성에 설정된 테마 객체를 얻을 수 있음
+
+> useTheme 훅
+
+```tsx
+import { useTheme } from '@react-navigation/native';
+```
+
+- 다음 코드는 `useToggleTheme`을 `Switch` 컴포넌트의
+- ┣ `onValueChange` 이벤트 속성에 설정하여
+- ┗ 화면의 스위치로 앱의 테마를 변경하는 기능을 구현한 것
+
+```tsx
+import React from 'react';
+import { StyleSheet, View, Text, Switch } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@react-navigation/native';
+import { useToggleTheme } from '../contexts';
+
+export default function MainNavigator() {
+	const theme = useTheme();
+	const toggleTheme = useToggleTheme();
+	return (
+		<SafeAreaView style={[styles.flex]}>
+			<View style={[styles.view, { backgroundColor: theme.colors.background }]}>
+				<View
+					style={[styles.tobBar, { backgroundColor: theme.colors.primary }]}
+				>
+					<Switch value={theme.dark} onValueChange={toggleTheme} />
+				</View>
+				<View style={styles.view}>
+					<Text style={[styles.text, { color: theme.colors.text }]}>
+						This is top text.
+					</Text>
+					<Text style={[styles.text, { color: theme.colors.text }]}>
+						This is bottom text.
+					</Text>
+				</View>
+			</View>
+		</SafeAreaView>
+	);
+}
+const styles = StyleSheet.create({
+	flex: { flex: 1 },
+	view: { flex: 1, alignItems: 'center', justifyContent: 'space-between' },
+	tobBar: {
+		width: '100%',
+		flexDirection: 'row',
+		padding: 5,
+		justifyContent: 'flex-end',
+	},
+	text: { fontSize: 20 },
+});
+```
+
+- 그러나 앞의 `MainNavigator.tsx`의 구현 내용은 테마 관련 코드 때문에 복잡해 보임
+- ┣ 이제 다음 항부터의 샘플 코드를 간결하게 구현하도록
+- ┣ `Switch`, `View`, `Text`, `TextInput` 등
+- ┗ `theme.colors`의 영향을 받는 컴포넌트를 `테마 컴포넌트`로 구현
+
+## 리액트 내비게이션용 테마 컴포넌트 구현
+
+- 앞에서 `react-native-paper` 관련 `테마 컴포넌트`를 구현한적이 있음
+- ┣ 리액트 내비게이션의 테마 컴포넌트를 구현하는 기법도 마찬가지
+- ┣ 테마 컴포넌트가
+- ┣━ `react-native-paper`의 `useTheme` 훅을 사용 → `paper 용 테마 컴포넌트`
+- ┣━ `@react-navigation/native`가 제공하는 `useTheme` 훅을 사용
+- ┗━━ `리액트 내비게이션용 테마 컴포넌트`가 됨
+
+- 이제 src/theme dir에 navigation dir 생성후 9개 파일 생성
+
+### Switch 테마 컴포넌트 구현
+
+- 다음 코드는 MainNavigator.tsx의 14 행 내용을 테마 전환 기능이 있는
+- ┗ Switch 테마 컴포넌트로 구현한 것
+
+```tsx
+import React from 'react';
+import type { FC, ComponentProps } from 'react';
+import { Switch as RNSwitch } from 'react-native';
+import { useTheme } from '@react-navigation/native';
+import { useToggleTheme } from '../../contexts';
+
+export type SwitchProps = ComponentProps<typeof RNSwitch>;
+
+export const Switch: FC<SwitchProps> = (props) => {
+	const theme = useTheme();
+	const toggleTheme = useToggleTheme();
+	return <RNSwitch {...props} value={theme.dark} onValueChange={toggleTheme} />;
+};
+```
+
+### View 테마 컴포넌트 구현
+
+- 앞서 리액트 내비게이션 DarkTheme 객체의 키와 값을 본 적이 있는데
+- ┣ 리액트 내비게이션 테마의 colors 객체에는
+- ┣ background, border, card, primary 등의 속성이 존재
+- ┣ 이 키에 설정된 값은 View 테마 컴포넌트의 backgroundColor 속성에 설정가능
+- ┣ 그러므로 테마 기능이 있는 View 는 다음처럼 사용할 것을 염두에
+- ┗ 두고 설계하는 것이 바라직함
+
+> 테마 기능이 있는 View
+
+```tsx
+<View /> // backgroundColor 스타일 속성에 theme.colors.background 값 설정
+<View primary /> // backgroundColor 스타일 속성에 theme.colors.primary 값 설정
+<View color /> // backgroundColor 스타일 속성에 theme.colors.color 값 설정
+<View border /> // backgroundColor 스타일 속성에 theme.colors.border 값 설정
+```
+
+```tsx
+import React from 'react';
+import type { FC, ComponentProps } from 'react';
+import { View as RNView } from 'react-native';
+import { useTheme } from '@react-navigation/native';
+
+export type ViewProps = ComponentProps<typeof RNView> & {
+	border?: boolean;
+	card?: boolean;
+	primary?: boolean;
+	notification?: boolean;
+};
+
+export const View: FC<ViewProps> = ({
+	border,
+	card,
+	primary,
+	notification,
+	style,
+	...props
+}) => {
+	const { colors } = useTheme();
+	const backgroundColor = card
+		? colors.card
+		: primary
+		? colors.primary
+		: notification
+		? colors.notification
+		: colors.background;
+	const borderColor = border ? colors.border : undefined;
+	const borderWidth = border ? 1 : undefined;
+	return (
+		<RNView
+			style={[{ backgroundColor, borderColor, borderWidth }, style]}
+			{...props}
+		/>
+	);
+};
+```
+
+### TouchableView 테마 컴포넌트 구현
+
+- 모바일 앱에서는 다음 그림에서 보듯 텍스트를
+- ┣ TouchableOpacity 등으로 감싼 형태의 버튼을 자주 만들게 됨
+- ┣ 이때 앞절에서 만든 TouchableView는 테마 기능이 없으므로
+- ┗ 테마 기능이 있는 TouchableView 컴포넌트를 구현해 놓는 것이 코드 작성 유리
+
+> 주의사항
+>
+> > TouchableOpacity의 style에 기본 스타일 속성값을 부여하는 것
+> > 기본값 부여 : View에 적용하는 스타일에 따라 탄력적 대응
+
+```tsx
+import React from 'react';
+import type {FC} from 'react';
+import {StyleSheet, TouchableOpacity} from 'react-native';
+import type {StyleProp, ViewStyle} from 'react-native';
+import {View} from './View';
+import type {ViewProps} from './View';
+
+export type TouchableViewProps = ViewProps & {
+  onPress?: () => void;
+  touchableStyle?: StyleProp<ViewStyle>;
+};
+
+export const TouchableView: FC<TouchableViewProps> = ({
+  children,
+  onPress,
+  touchableStyle,
+  ...viewProps
+}) => {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      // -1-
+      style={[styles.touchable, touchableStyle]}>
+      <View {...viewProps}>{children}</View>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  touchable: {width: '100%', alignItems: 'center', justifyContent: 'center'},,
+});
+```
+
+1. 아래와 같이 `기본값을 설정` 시 `자식 컴포넌트인 View 스타일`에 따라서
+   - ┗ `탄력적으로 대응`이 가능하다!
+
+### SafeAreaView 구현
+
+- `아이폰`에서는 `항상 다음 형태의 코드`를 작성해야 하는데 이는 상당히 번거로움
+- ┣ 비록 `테마 컴포넌트는 아니지만` 코드를 좀 더 간결하게 구현할 수 잇는
+- ┗ `SafeAreaView` 를 만들도록 함
+
+```tsx
+import React from 'react';
+import type { FC, ComponentProps } from 'react';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context';
+
+export type SafeAreaViewProps = ComponentProps<typeof RNSafeAreaView>;
+
+export const SafeAreaView: FC<SafeAreaViewProps> = ({
+	style,
+	children,
+	...props
+}) => {
+	return (
+		<RNSafeAreaView style={[styles.flex, style]} {...props}>
+			{children}
+		</RNSafeAreaView>
+	);
+};
+
+const styles = StyleSheet.create({
+	flex: { flex: 1 },
+});
+```
+
+### Text 테마 컴포넌트 구현
+
+- 테마 기능이 있는 `Text` 컴포넌트는 `color` 속성만 `리액트 내비게이션 테마`를 따름
+- ┗ fontSize 같은 다른 스타일 속성은 직접 지정해야함
+
+```tsx
+import React from 'react';
+import type { FC, ComponentProps } from 'react';
+import { StyleSheet, Text as RNText } from 'react-native';
+import { useTheme } from '@react-navigation/native';
+
+export type TextProps = ComponentProps<typeof RNText>;
+
+export const Text: FC<TextProps> = ({ style, ...props }) => {
+	const { colors } = useTheme();
+	return <RNText style={[{ color: colors.text }, style]} {...props} />;
+};
+
+export const UnderlineText: FC<TextProps> = ({ style, ...props }) => {
+	const { colors } = useTheme();
+	return (
+		<RNText
+			style={[
+				styles.underline,
+				{ color: colors.text, textDecorationColor: colors.text },
+				style,
+			]}
+			{...props}
+		/>
+	);
+};
+
+const styles = StyleSheet.create({
+	underline: { textDecorationLine: 'underline' },
+});
+```
+
+- 그런데 앞서 본 TouchableView의 사용 예를 보면 텍스트 뿐만 아니라
+- ┣ 아이콘 색상도 테마에 따라 바뀌는 것이 필요함
+- ┣ 그러므로 react-native-vector-icons 패키지 중
+- ┗ Material CommunityIcons 아이콘 세트의 아이콘을 대상으로 테마 컴포넌트 구현
+
+### MaterialCommunityIcon 테마 컴포넌트 구현
+
+- 다음 코드는 MaterialCommunityIcons.tsx 파일의 구현 내용
+- ┗ react-native-vector-icons 패키지의 모든 아이콘 세트는 속성이 같다는 것 고려
+
+```tsx
+import React from 'react';
+import type { FC, ComponentProps } from 'react';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTheme } from '@react-navigation/native';
+
+export type IconProps = ComponentProps<typeof Icon>;
+
+export const MaterialCommunityIcon: FC<IconProps> = ({ ...props }) => {
+	const { colors } = useTheme();
+	return <Icon color={colors.text} {...props} />;
+};
+```
+
+### TextInput 테마 컴포넌트 구현
+
+- 다음 코드는 앞에서 구현했던 코드를 바탕으로 `useTheme` 훅만
+- ┣ `react-native-paper` 가 아닌 `@react-navigation/native` 패키지에서 얻으며
+- ┗ `placeholderTextColor` 속성에 텍스트 색상을 설정
+
+```tsx
+import React, { forwardRef } from 'react';
+import type { ForwardRefRenderFunction, ComponentProps } from 'react';
+import { StyleSheet, TextInput as RNTextInput } from 'react-native';
+import { useTheme } from '@react-navigation/native';
+
+export type TextInputProps = ComponentProps<typeof RNTextInput>;
+
+const _TextInput: ForwardRefRenderFunction<RNTextInput, TextInputProps> = (
+	{ style, ...props },
+	ref
+) => {
+	const { colors } = useTheme();
+
+	return (
+		<RNTextInput
+			ref={ref}
+			style={[
+				{ color: colors.text, borderColor: colors.text },
+				styles.textInput,
+				style,
+			]}
+			placeholderTextColor={colors.text}
+			{...props}
+		/>
+	);
+};
+
+export const TextInput = forwardRef(_TextInput);
+
+const styles = StyleSheet.create({
+	textInput: { borderWidth: 1, borderRadius: 5 },
+});
+```
+
+### TopBar 테마 컴포넌트 구현
+
+- 다음 TopBar 테마 컴포넌트는 테스트 코드를 작성할 때 사용할 목적으로 만든 것
+- ┗ 같은 패턴의 코드를 반복적으로 구현하는 번거로움을 줄일 목적
+
+```tsx
+import React from 'react';
+import type { FC } from 'react';
+import { StyleSheet } from 'react-native';
+import { useTheme } from '@react-navigation/native';
+import { Switch } from './Switch';
+import { View } from './View';
+import type { ViewProps } from './View';
+
+export type TopBarProps = ViewProps & {
+	noSwitch?: boolean;
+};
+
+export const TopBar: FC<TopBarProps> = ({
+	noSwitch,
+	children,
+	style,
+	...props
+}) => {
+	const { dark } = useTheme();
+	return (
+		<View card={!dark} primary={dark} style={[styles.topBar, style]} {...props}>
+			{children}
+			<View style={[styles.flex]} />
+			{!noSwitch && <Switch />}
+		</View>
+	);
+};
+
+const styles = StyleSheet.create({
+	topBar: { flexDirection: 'row', padding: 5, alignItems: 'center' },
+	flex: { flex: 1 },
+});
+```
+
+### 실제 구현
+
+- [파일로 이동](./ch07_Navigation_Init/src/screens/MainNavigator.tsx)
+
+![](2021-08-24-00-08-51.png)
+
+## src/copy 디렉터리 파일 다시 구현
+
+- 다음 코드는 src/copy 디렉터리의 CopyMe.tsx 파일 내용에 리액트 내비게이션 테마 색상을 적용한 것
+- ┗ 이 코드가 화면에서 어떤 모습으로 보일지는 다음 절에서 확인
+
+```tsx
+import React from 'react';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView, View, Text, TopBar } from '../theme/navigation';
+
+const title = 'CopyMe';
+export default function CopyMe() {
+	return (
+		<SafeAreaView>
+			<View style={[styles.view]}>
+				<TopBar />
+				<View style={[styles.content]}>
+					<Text style={styles.text}>{title}</Text>
+				</View>
+			</View>
+			<Text style={[styles.text]}>{title}</Text>
+		</SafeAreaView>
+	);
+}
+const styles = StyleSheet.create({
+	view: { flex: 1, padding: 5 },
+	text: { fontSize: 20 },
+	content: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+});
+```
+
+- 이제 src/copy 디렉터리의 People.tsx, Person.tsx, Person.style.ts 파일을 수정
+- 수정 내용은 단지 시각적으로 현실감 있게 구현
