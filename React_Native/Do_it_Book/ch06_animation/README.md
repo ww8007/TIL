@@ -2390,4 +2390,407 @@ const panResponder = PanResponder.create({
 - ┗ 다음 두 가지
 
 1. 컴포넌트를 `렌더링할 때 마다` `panResponder` `객체가 계속 생성`
-2. true를 반환하는 `onStartShouldSetPanResponder`, `monMoveShouldSetPanResponder`를 `계속 구현`
+2. true를 반환하는 `onStartShouldSetPanResponder`, `onMoveShouldSetPanResponder`를 `계속 구현`
+
+```tsx
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useMemo } from 'react';
+import { PanResponder } from 'react-native';
+
+import type {
+	GestureResponderEvent,
+	PanResponderGestureState,
+} from 'react-native';
+import type { PanResponderCallbacks, PanResponderInstance } from 'react-native';
+
+type Event = GestureResponderEvent;
+type State = PanResponderGestureState;
+
+// true를 반환하는 defaultCallback 구현
+const defaultCallback = {
+	onStartShouldSetPanResponder: (e: Event, s: State) => true,
+	onMoveShouldSetPanResponder: (e: Event, s: State) => true,
+};
+
+export const usePanResponder = (
+	callbacks: PanResponderCallbacks,
+	deps: any[] = []
+): PanResponderInstance => {
+	const panResponder = useMemo<PanResponderInstance>(
+		() => PanResponder.create({ ...defaultCallback, ...callbacks }), // callback 존재시 재구현 하도록
+		deps
+	);
+	return panResponder;
+};
+```
+
+1. 컴포넌트를 `렌더링할 때 마다` `panResponder` `객체가 계속 생성`
+2. true를 반환하는 `onStartShouldSetPanResponder`, `onMoveShouldSetPanResponder`를 `계속 구현`
+
+- 이 코드는 `1의 비효율`을 개선하고자` useMemo 훅`을 사용하여 컴포넌트를 처음 랜더링할 때
+- ┗ `생성한 panResponder 객체를 캐시` → 1의 단점이 해결
+
+- `2번의 번거로움`을 해결하고자 `defaultCallback`을 구현
+- ┣ `defaultCallback`은 입력 매개변수 `callbacks에 같은 이름의 메서드`가 있더라도
+- ┗ `이를 재정의 하도록` 구현
+
+### 컴포넌트 드래깅 구현
+
+- 이번에는 아바타 컴포넌트를 4개 만들고 각각을 드래깅 하면서
+- ┗ 드래깅하면서 이동한 거리를 확인하는 기능을 구현
+
+#### DragAvatar 컴포넌트 초기 구현
+
+- 다음 코드는 앞서 구현한 `usePanResponder` 커스텀 훅만 사용하고 있음
+- ┗ 앞의 화면에서는 4개의 아바타 이미지가 있으므로 DragAvatar 컴포넌트는 총 4개 사용
+
+[코드로 이동]('./../ch06_PanResponder/src/screens/DragAvatar.tsx')
+
+> 이제 실제로 아바타 이미지를 드래깅 할 수 있도록
+>
+> > PanResponder와 함께 동작하도록 설계된
+> > Animated.ValueXY 클래스 학습
+
+#### Animated.ValueXY 클래스
+
+- `Animated는 Value` 클래스 이 외에도 `ValueXY` 클래스를 제공
+- ┣ 이름에서 알 수 있듯이 `Animated.Value` 타입 `x, y를 속성`으로 가지는 `클래스`
+- ┣ 이 `ValueXY` 타입의 객체의 `x 값`을 → `translateX`에 적용
+- ┗ `y 값`을 `translateY` 에 적용하는 방식으로 애니메이션 구현 가능
+
+> ValueXY 클래스
+
+```tsx
+export class ValueXY {
+	x: Animated.Value,
+	y: Animated.Value,
+	constructor(valueIn? {x: number | Animated.Value; y: number | Animated.Value})
+	setValue(value: {x:number, y: number}): void;
+	extractOffset(): void;
+}
+```
+
+- `드래깅`을 할 때는 `오프셋(offset)` 이란 기능이 필요
+- ┣ 다음은 `첫 번째 드래깅`으로 `onPanResponderMove`를 호출
+- ┗ 이때 발생한 `dx,dy의 값`에 따라 `원의 x, y 값이 10, 10` 으로 변경
+
+- 그런데 원을 `다시 드래깅`하면 `onPanResponderMove`의 `dx, dy` 값은
+- ┣ `두번째 위치를 기준`으로 한 값이므로
+- ┗ `세 번째 원의 위치`에는 `첫 번째 이동결과`가 반영되어야 함
+
+- `Animated.Value`에는 이처럼 누적한 값을 반영할 수 있도록 `offset` 이란 속성 존재
+- ┣ 이 누적된 값을 반영하는 `extractOffset` 이란 메서드를 제공
+- ┗ `ValueXY` 또한 `extractOffset` 메서드를 제공
+
+- extractOffset은 잠시 후 살펴보기로 하고 앞서
+- ┣ useAnimatedValue, useMonitorAnimatedValue 커스텀 훅과 같은 기능의
+- ┗ useAnimatedValueXY와 useMonitorAnimatedValueXY 커스텀 훅을 생성
+
+#### useAnimatedValueXY와 useMonitorAnimatedValueXY 커스텀 훅 만들기
+
+- useAnimatedValueXY 파일을 구현
+- ┗ 앞에서 구현한적이 있는 Animated.Value 대신 Animated.ValueXY를 사용한 것 외에는 다른점이 없음
+
+```tsx
+import { useRef } from 'react';
+import { Animated } from 'react-native';
+
+export const useAnimatedValueXY = (
+	initValue: { x: number; y: number } = { x: 0, y: 0 }
+): Animated.ValueXY => {
+	return useRef(new Animated.ValueXY(initValue)).current;
+};
+```
+
+- 이번엔 useMonitorAnimatedValueXY 구현
+
+```tsx
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useEffect } from 'react';
+import { Animated } from 'react-native';
+
+export type XY = { x: number; y: number };
+
+export const useMonitorAnimatedValueXY = (animValueXY: Animated.ValueXY) => {
+	const [realAnimValueXY, setRealAnimValueXY] = useState<XY>({ x: 0, y: 0 });
+
+	useEffect(() => {
+		const id = animValueXY.addListener((value: XY) => {
+			setRealAnimValueXY(value);
+		});
+		return () => animValueXY.removeListener(id);
+	}, []);
+	return realAnimValueXY;
+};
+```
+
+- 마지막으로 같은 디렉터리의 index.ts 파일에
+- ┗ useAnimatedValueXY, useMonitorAnimatedValueXY 커스텀 훅을 반영
+
+> index.ts 에 반영
+
+```ts
+export * from './useAnimatedValueXY';
+export * from './useMonitorAnimatedValueXY';
+```
+
+#### 컴포넌트 드래깅의 원리 이해하기
+
+- 다음 코드는 앞 `DragAvatar` 컴포넌트 코드 일부를 발췌하여 간소화
+- ┗ `Animated.View` 컴포넌트가 Avatar 컴포넌트를 감싸는
+- ┗ `부모 / 자식 관계`로 구현
+
+> Avatar를 감싸는 Animated.View
+
+```tsx
+<Animated.View>
+	<Avatar uri={avatarUrl} size={60} />
+</Animated.View>
+```
+
+- 이 `코드에서 주목해야 할 부분`은
+- ┣ `Avatar`를 드래깅 하는 것이 아니라 `Animated.View를 드래깅`한다는 점
+- ┣ 만약 `Avatar를 직접 드래깅`하려면
+- ┗ `Animated.Avatar와 같은 컴포넌트를 만들어야` 하는데 `몹시 번거로움`
+
+- R/N 애니메이션 에서 컴포넌트를 움직이는 것 → 드래깅은
+- ┣ 다음 코드에서 보듯 `Animated.View`의 `transform` 속성에
+- ┗ `translateX` 값과 `translateY` `값을 변화`시켜야 한다는 것을 의미
+
+> 드래깅의 의미
+
+```tsx
+const transformStyle = useTransformStyle({
+	translateX: /*어떤 값*/
+	translateY: /*어떤 값*/
+});
+
+<Animated.View style={[style, transformStyle]}>
+	<Avatar uri={avatarUrl} size={60}/>
+</Animated.View>
+```
+
+- 다음 형태의 코드를 만들면 translateX와 translateY 값을 변경시킬 수 있음
+- ┣ 그런데 이 코드의 한 가지 문제는 Animated.ValueXY 타입 변수 → animValueXY의
+- ┗ 실제 값을 보간할 수 있는 마땅한 방법이 없다는 것
+
+> 이것이 PanResponder 타입이 만들어진 배경
+
+> 드래깅 구현
+
+```tsx
+const animValueXY = useAnimatedValueXY();
+const transformStyle = useTransformStyle({
+	translateX: animValueXY.x,
+	translateY: animValueXY.y,
+});
+
+const panResponder = usePanResponder({
+	onPanResponderMove(e: Event, s: State) {
+		const { dx, dy } = s;
+		animValueXY.setValue({ x: dx, y: dy });
+	},
+});
+<Animated.View style={[style, transformStyle]}>
+	<Avatar uri={avatarUrl} size={60} />
+</Animated.View>;
+```
+
+### 다시 사용할 수 있는 LeftSwipe 컴포넌트 구현
+
+- `스와이프 제스처`는 `터치를 왼쪽에서 오른쪽`
+- ┣ 오른쪽에서 왼쪽으로 움직이는 것 두가지 존재
+- ┣ 여기서는 화면 왼쪽 바깥에 어떤 컴포넌트를 위치 시켰다가
+- ┗ 스와이프 제스처가 일어나면 화면 안쪽이 보이게 하는 LeftSwipe 컴포넌트 생성
+
+> 화면을 왼쪽에서 오른쪽으로 스와이프 하면 왼쪽에 휴지통 아이콘이 나타나게 설정
+
+- [코드로 이동](./ch06_PanResponder/src/screens/LeftSwipe.tsx)
+
+- 이런 형태로 구현한 이유
+- ┣ left 속성에 설정한 화면 왼쪽 바깥에 있는 컴포넌트의 넓이를 leftWidth라고 할 때
+- ┗ leftSwipe 컴포넌트의 전체 넓이는 `'leftWidth + children width'`
+
+- 이때 `LeftSwipe`는 `left 컴포넌트`의 `transform` 속성에
+- ┣ `{translateX: -leftWidth}`를 설정하여 `화면에서 보이지 않도록` 해야 함
+- ┣ 그러다가 스와이프 제스처가 발생하면 `left 컴포넌트`의 `transform 속성`에
+- ┣ `{translateX: 0}`을 설정하여 화면에서 보이도록 하고 `{children}`은 오른쪽 일부가
+- ┗ 화면 오른쪽 일부가 `leftWidth` 만큼 `화면 바깥으로 나가도록` 이동하면 앞서 본 화면과 같은 효과
+
+#### 설명
+
+- 그런데 이처럼 구현하려면 `left 컴포넌트`의 `width(leftWidth)`를 알아야 하는데
+- ┣ 이는 `useLayout` `커스텀 훅`을 사용하면 쉽게 알 수 있음
+- ┣ 앞의 `LeftSwipe` 컴포넌트의 초기 구현 내용에서 이와 관련된 부분만 발췌
+- ┗ 이 코드는 `useLayout`으로 얻은 `setLeftLayout` 함수를 `component 쪽에 넘겨주고 있음`
+
+> left 컴포넌트 넓이 구하기
+
+```tsx
+export const LeftSwipe: FC<LeftSwipeProps> = ({
+	component,
+	children,
+	style,
+	...viewProps
+}) => {
+	const [{ width: leftWidth }, setLeftLayout] = useLayout();
+	return (
+		<Animated.View style={[styles.animViewStyle, style]} {...vieProps}>
+			{left && left(setLeftLayout)}
+		</Animated.View>
+	);
+};
+```
+
+- 그리고 이런 코드로 구현할 수 있도록 `LeftSwipe의 left 속성`에는 다음처럼
+- ┗ `setLayout`을 `매개변수로 받는 함수`가 설정되도록 타입을 정의
+
+> 타입 정의
+
+```tsx
+type SwipeComponent = (setLayout: (e: LayoutChangeEvent) => void) => ReactNode;
+
+export type LeftSwipeProps = ComponentProps<typeof View> & {
+	left?: SwipeComponent;
+};
+```
+
+- `LeftSwipe`의 `component 속성`은 `onLayout` 함수를 `매개변수로 입력`받고
+- ┗ `ReactNode` 타입 객체를 반환하는 함수여야 하므로 `PersonLeftSwipe.tsx `코드는 다음 형태로 구현
+
+> PersonLeftSwipe.tsx 쪽 코드
+
+```tsx
+<LeftSwipe left={(setLayout) => (
+	<View style={styles.leftAnimView} onLayout={setLayout}>
+		[왼쪽에 위치하는 컴포넌트]
+	</View>)}>
+</LeftSwipe>
+)}>
+```
+
+- 이제 LeftSwipe 컴포넌트의 화면 영역에서 스와이프 제스처가 발생할 때의 애니메이션 구현
+- ┗ 다음 코드는 LeftSwipe의 초기 구현 코드 중 `PanResponder`와 관련된 부분만 발췌
+
+> PanResponder 관련 코드
+
+```tsx
+export const LeftSwipe: FC<LeftSwipeProps> = ({
+	component, children, style, ...viewProps
+}) => {
+	const panResponder = usePanResponder({})
+	return (
+	<Animated.View>
+		{left && left(setLeftLayout)}
+		<View style={[width: '100%']} {...panResponder.pnaHandlers}>
+			{children}
+		</View>
+	</Animated.View>
+	)
+}
+```
+
+- `LeftSwipe` 화면영역에서 스와이프 제스처 관련 코드가 동작하는 영역은
+- ┣ `{children}`이 렌더링된 영역
+- ┣ 그러므로 `LeftSwipe`는 `panResponder.panHandlers`를 설정할 수 있도록
+- ┣ `{children}`을 자식 컴포넌트로 하는 View를 하나 만들어 감싸준 다음
+- ┣ 이 `View`에 `panResponder.panHandlers`를 설정함
+- ┣ 그런데 `스와이프 제스처`를 탐지하는 부분은
+- ┣ `<View>{children}</View>` 이지만 수평 애니메이션을 해야 하는 부분에는
+- ┣ `<View>` 뿐만 아니라 `{left(setLayout)}` 부분도 포함해야 함
+- ┗ `{left}`와 `<View>{children}</View>`를 다시 Animated.View로 감싸줌
+
+- 여기서 `Animated.View`가 스와이프 제스처로 `오른쪽으로 이동할 거리`는
+- ┣ `[0, leftWidth]` 범위를 넘지 말아야 함
+- ┗ 다음 코드에서는 이 조건을 `translateX`의 `interpolate` 메서드를 사용하여 구현
+
+> 이동 거리 제헌
+
+```tsx
+export const LeftSwipe: FC<LeftSwipeProps> = ({
+	component,
+	children,
+	style,
+	...viewProps
+}) => {
+	const translateX = useAnimatedValue(0);
+
+	const transformStyle = useTransformStyle(
+		{
+			translateX: translateX.interpolate({
+				inputRange: [0, leftWidth],
+				outputRange: [-leftWidth, 0],
+			}),
+		},
+		[leftWidth]
+	);
+	return <Animated.View style={[transformStyle]}>생략...</Animated.View>;
+};
+```
+
+- 다음 코드는 스와이프 제스처가 일어날 때의 onPanResponderMove 콜백 함수 구현
+- ┣ 코드에서는 제스처의 이동 거리 dx 값을 translateX에 넘겨줌
+- ┣ 그리고 translateX는 Animated.Value 타입 객체이므로
+- ┣ 이전 값을 보간하면서 dx 값으로 바뀌고 이 과정에서
+- ┗ 자연스러운 수평 방향(translateX) 애니메이션과 함께 오른쪽으로 이동
+
+> onPanResponderMove 콜백 함수
+
+```tsx
+const panResponder = usePanResponder({
+	(...code...)
+	onPanResponderMove(event, gesture) {
+		const {dx} = gesture;
+		translateX.setValue(dx);
+	}
+})
+```
+
+- 그런데 한 가지 문제는 왼쪽 컴포넌트가 열려 있지 않은 상태(보통 상태)
+- ┣ `FlatList`를 스크롤하면 `왼쪽 오른쪽으로 랜덤하게` 움직이는 경우가 발생
+- ┣ 이에 따라서 왼쪽 컴포넌트가 열려야 하는 조건이 아닌 경우
+- ┣ 아무런 스와이프 움직임이 발생하지 않게 해줘야 함
+- ┗ 이 조건 체크는 onPanResponderRelease 때도 해줘야 함
+
+> 특정 조건에서는 스와이프가 발생하지 않음
+
+```tsx
+onPanResponderMove(e: Event, s: State) {
+	const {dx} = s;
+	if (!show && dx < 0) {
+		return // 이 움직임을 무시
+	}
+	translateX.setValue(dx);
+}
+```
+
+- 이제 스와이프 터치가 끝날 때 호출하는 `onPanResponderRelease` 콜백 메서드에서
+- ┣ `[0, leftWidth]` 범위 바깥의 값이 `translateX`에 설정될 때를 대비하여
+- ┣ `Animated.spring(translateX)` 코드를 호출하여 `끝값(toValue)`이
+- ┣━ `0` 또는 `leftWidth` 두 값 중 하나가 되도록 함
+- ┣ 그러면 앞서 본 코드 중 `transformStyle` 객체의
+- ┣ `interpolate({inputRange : [0, leftWidth], outputRange: [-leftWidth, 0]})`
+- ┣ 부분이 동작하여 스와이프 제스처로 이동한 거리를
+- ┗ `[0, leftWidth]` 범위로 한정하게 됨
+
+> 스와이프 제스처 이동 거리 제한
+
+```tsx
+const [show, toggleShow] = useToggle();
+
+const panResponder = usePanResponder(
+	{
+		onPanResponderRelease(event, gesture) {
+			Animated.spring(translateX, { toValue: show ? 0 : leftWidth }).start(
+				toggleShow
+			);
+		},
+	},
+	[show, leftWidth]
+);
+```
+
+- 다음 코드는 지금가지 내용을 모두 결합하여 LeftSwipe.tsx 구성
+
+> 하지만 안드로이드 환경에서 FlatList의 스크롤링이 원활하지 않음
