@@ -24,3 +24,7 @@
 5. 리액트 네이티브 애니메이션
 
 > [설명으로 이동](./ch06_animation/README.md)
+
+6. 리액트 내비게이션
+
+> [설명으로 이동](./ch07_Navigation/README.md)
