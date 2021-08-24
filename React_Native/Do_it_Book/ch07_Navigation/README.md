@@ -768,3 +768,215 @@ const styles = StyleSheet.create({
 
 - 이제 src/copy 디렉터리의 People.tsx, Person.tsx, Person.style.ts 파일을 수정
 - 수정 내용은 단지 시각적으로 현실감 있게 구현
+
+# 스택 내비게이션 이해하기
+
+- 스택 내비게이션은 내비게이션의 가장 기본 기능
+- ┗ 여기서는 스택 내비게이션 기능을 알아보도록 함
+
+> native-init
+
+    npx react-native init ch07_Stack_Navi --template react-native-template-typescript
+
+> 필수 패키지 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6 react-native-appearance
+     yarn add @types/react-native-vector-icons @types/color @types/faker
+     yarn add react-native-keyboard-aware-scroll-view
+
+> 내비게이션 필수 패키지 설치
+
+    yarn add react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context
+    yarn add @react-native-community/masked-view
+    yarn add @react-navigation/native
+    yarn add @react-navigation/stack @react-navigation/bottom-tabs @react-navigation/drawer
+
+## 스택 내비게이션이란?
+
+- 스택 내비게이션은 `여러 개의 화면 컴포넌트를 미리 만들어`두고
+- ┣ `그 중 하나`만 화면에 표시하는 것
+- ┣ 리액트 내비게이션에서 화면 컴포넌트 간의 이동은 조금 뒤 설명하는
+- ┣ `useNavigation` 훅을 호출하여 얻은 `navigation 객체`의
+- ┣ `navigate`나 `goBack` 메서드를 호출 하는 방식으로 실행
+- ┣ `'스택(stack)'`이란 이름이 붙은 이유는 마치 `스택의 push/pop` 메서드 처럼
+- ┗ `push`, `goBack` 메서드는 `pop` 메서드와 똑같은 개념으로 동작
+
+- 스택 내비게이션 개발은 `@react-navigation/stack` 패키지가 제공하는
+- ┗ `createStackNavigator` 함수를 호출하는 것에서 시작!!!
+
+### createStackNavigator 함수
+
+- @react-navigation/stack 패키지는 다음처럼 createStackNavigator 함수를 제공
+
+> createStackNavigator 함수
+
+```tsx
+import { createStackNavigator } from '@react-navigation/stack';
+```
+
+- 이 함수를 호출하면 `Navigator`와 `Screen`이란 이름의 컴포넌트를 제공하는
+- ┗ Stack 객체를 얻을 수 있음
+
+```tsx
+const Stack = createStackNavigator();
+// <Stack.Navigator>
+// <Stack.Screen>
+```
+
+- Stack 객체가 제공하는 Navigator와 Screen은 다음 코드처럼 부모/자식 형태로
+- ┗ 사용하도록 설계된 컴포넌트
+
+> Navigator와 Screen 컴포넌트 사용
+
+```tsx
+const stack = createStackNavigator();
+
+export default function MainNavigator() {
+    return (
+        <Stack.Navigator>
+          <Stack.Screen name="home" component={Home}>
+        </Stack.Navigator>
+    )
+}
+```
+
+> 실제 코드 작성
+
+```tsx
+import React from 'react';
+import { createStackNavigator } from '@react-navigation/stack';
+import Home from './Home';
+import HomeLeft from './HomeLeft';
+import HomeRight from './HomeRight';
+
+const Stack = createStackNavigator();
+
+export default function MainNavigator() {
+	return (
+		<Stack.Navigator>
+			<Stack.Screen name="Home" component={Home} />
+			<Stack.Screen name="HomeLeft" component={HomeLeft} />
+			<Stack.Screen name="HomeRight" component={HomeRight} />
+		</Stack.Navigator>
+	);
+}
+```
+
+- 이 코드는 `Home`, `HomeLeft`, `HomeRight` 라는 이름의 3개 화면 컴포넌트를 생성
+- 셋 중 가장 먼저 생성하는 Home 컴포넌트를 화면에 출력하는 내용
+
+- 리액트 내비게이션의 모든 `Navigator` 컴포넌트는
+- ┣ `initialRouteName` 이란 속성을 제공
+- ┣ Navigator에 `initialRouteName` 설정이 없으면 가장 먼저 생기는
+- ┗━ Screen 컴포넌트가 화면에 나타남
+
+- 파일을 저장하고 화면을 보면
+- ┣ `Stack.Screen` `name` 속성에 설정한 텍스트가
+- ┣ 안드로이드는 화면 왼쪽 위
+- ┣ 아이폰은 화면 가운데 위에 보이는데
+- ┣ 이를 React Navigation `헤더(header)`
+- ┗ 그러나 `아이폰`에서는 `헤더와 TopBar 사이에 틈이 존재`
+
+> 현상에 이유에 대해서는 뒤에서 설명
+
+### useNavigation 커스텀 훅 함수
+
+- `@react-navigation/native` 패키지는 다음 useNavigation 패키지를 사용
+
+> useNavigation
+
+```tsx
+import { useNavigation } from '@react-navigation/native';
+```
+
+- 이 useNavigation 훅을 호출하여 다음처럼 navigation 객체를 얻을 수 있음
+
+> navigation 객체 얻기
+
+```tsx
+const navigation = useNavigation();
+```
+
+- 이렇게 얻어진 navigation 객체는 다음 3가지 메서드를 제공
+
+> navigation 객체의 가지 메서드
+
+```tsx
+{
+    navigate(routerName: string, params?:object): void;
+    goBack(): void;
+    canGoBack(): boolean;
+}
+```
+
+### navigation 객체의 navigate 메서드
+
+- `navigate` 메서드는 이름대로 다른 화면 컴포넌트로 이동하고 싶을 때 사용
+- ┣ 다음 코드는 `navigate` 메서드를 사용하여 `MainNavigator.tsx`에서
+- ┣ name을 'HomeLeft'로 설정한 화면 컴포넌트로 이동
+
+> 컴포넌트 이동
+
+```tsx
+navigation.navigate('HomeLeft');
+```
+
+- navigate 메서드는 다음처럼 `두 번째 매개변수에 파라미터`를 줄 수 있음
+- ┗ 이에 대해서는 잠시 후 설명
+
+```tsx
+navigation.navigate('HomeRight', { name: 'Jack', age: 32 });
+```
+
+> 실제 코드 작성
+
+```tsx
+  const navigation = useNavigation();
+  const goLeft = useCallback(() => navigation.navigate('HomeLeft'), []);
+  const goRight = useCallback(
+    () => navigation.navigate('HomeRight', {name: 'Jack', age: 32}),
+    [],
+
+```
+
+- 이 코드는 `navigation.navigate`를 사용하여 goLeft, goRight 함수를 구현
+- ┗ 그리고 구현한 함수를 각각 onPress 이벤트 속성에 설정
+
+### navigation 객체의 canGoBack과 goBack 메서드
+
+- navigation 객체의 canGoBack 메서드는
+- ┣ goBack 메서드를 호출할 수 있는지를 결정하는 데 사용
+- ┣ HomeLeft는 Home 에서 `navigation.navigate('HomeLeft')`
+- ┣ 호출로 화면에 나타난 것이므로 다음 처럼 goBack 메서드를 호출하면
+- ┗ 다시 Home 화면으로 돌아갈 수 있음
+
+> 이전 화면으로 되돌아 가기
+
+```tsx
+navigation.canGoBack() && navigation.goBack();
+```
+
+- goBack, goCenter 함수를 `navigation.canGoBack`
+- ┗ `navigation.goBack`, `navigation.navigate` 형태로 구현
+
+```tsx
+const navigation = useNavigation();
+const goBack = useCallback(() => {
+	navigation.canGoBack() && navigation.goBack();
+}, []);
+const goRight = useCallback(() => {
+	navigation.navigate('HomeRight', { id: D.randomId() });
+}, []);
+```
+
+- 여기서는 navigation.navigate('HomeRight')가 아닌
+- ┣ `navigation.navigate('HomeRight', {id: D.randomId()})` 형태로 구현
+- ┗ 이에 대해서는 잠시 후 알아보도록 함
+
+- 앞의 코드 `navigation.navigate` 메서드에는
+- ┣ 두 번째 매개변수에 `파라미터(params)` 라는 객체를 입력할 수 있음
+- ┗ `HomeRight` 컴포넌트를 구현하면서 이 파라미터와 `useRoute` 커스텀 훅을 알아보기
+
+### useRoute 커스텀 훅 함수
+
+- @react-navigation/native
