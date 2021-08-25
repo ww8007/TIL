@@ -6,7 +6,9 @@ export const useInterval = (
   deps: any[] = [],
 ): void => {
   useEffect(() => {
-    if (duration === 0) return;
+    if (duration === 0) {
+      return;
+    }
     const id = setInterval(callback, duration);
     return () => clearInterval(id);
   }, [duration, ...deps]);

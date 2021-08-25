@@ -1,8 +1,7 @@
-import React, {forwardRef, ForwardRefRenderFunction} from 'react';
-import type {ComponentProps} from 'react';
+import React, {forwardRef} from 'react';
+import type {ForwardRefRenderFunction, ComponentProps} from 'react';
 import {TextInput as RNTextInput} from 'react-native';
 import {useTheme} from 'react-native-paper';
-
 export type TextInputProps = ComponentProps<typeof RNTextInput>;
 
 const _TextInput: ForwardRefRenderFunction<RNTextInput, TextInputProps> = (
@@ -10,7 +9,6 @@ const _TextInput: ForwardRefRenderFunction<RNTextInput, TextInputProps> = (
   ref,
 ) => {
   const {colors} = useTheme();
-
   return (
     <RNTextInput
       ref={ref}
@@ -19,5 +17,4 @@ const _TextInput: ForwardRefRenderFunction<RNTextInput, TextInputProps> = (
     />
   );
 };
-
 export const TextInput = forwardRef(_TextInput);

@@ -1,26 +1,21 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useCallback, useMemo, useRef} from 'react';
+import React, {useRef, useMemo, useCallback} from 'react';
 import type {FC} from 'react';
-import {Animated, FlatList, Image, StyleSheet, View} from 'react-native';
+import {StyleSheet, FlatList, Image, View, Animated} from 'react-native';
 import type {NativeSyntheticEvent, NativeScrollEvent} from 'react-native';
 import {Colors} from 'react-native-paper';
 import {TouchableView} from './TouchableView';
-
-import {
-  useAnimatedValue,
-  useMonitorAnimatedValue,
-  useTransformStyle,
-} from '../hooks';
+// prettier-ignore
+import {useAnimatedValue, useMonitorAnimatedValue, useTransformStyle}
+from '../hooks';
 
 export type ImageSliderProps = {
   imageUrls: string[];
   imageWidth: number;
   showThumbnails?: boolean;
 };
-
-const circleWidth = 10,
-  circleMarginRight = 5,
-  thumbnailSize = 30;
+// prettier-ignore
+const circleWidth = 10, circleMarginRight = 5, thumbnailSize = 30;
 
 export const ImageSlider: FC<ImageSliderProps> = ({
   imageUrls,
@@ -30,34 +25,26 @@ export const ImageSlider: FC<ImageSliderProps> = ({
   const flatListRef = useRef<FlatList | null>(null);
   const selectedIndexAnimValue = useAnimatedValue(0);
   const selectedIndex = useMonitorAnimatedValue(selectedIndexAnimValue);
-
   const circleWidthAnimValue = useAnimatedValue(circleWidth);
   const circleMarginRightAnimValue = useAnimatedValue(circleMarginRight);
-
   const onScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (imageWidth === 0) {
+      if (imageWidth == 0) {
         return;
-      } // imageWidth가 0일 시 아래 index 변수값 무한 방식
+      }
       const {contentOffset} = event.nativeEvent;
       const index = Math.round(contentOffset.x / imageWidth);
       selectedIndexAnimValue.setValue(index);
     },
     [imageWidth],
   );
-
   const selectImage = useCallback(
     (index: number) => () => {
+      selectedIndexAnimValue.setValue(index);
       flatListRef.current?.scrollToIndex({index});
     },
     [],
   );
-  const translateX = useTransformStyle({
-    translateX: Animated.multiply(
-      selectedIndexAnimValue,
-      Animated.add(circleWidthAnimValue, circleMarginRightAnimValue),
-    ),
-  });
   const circles = useMemo(
     () =>
       imageUrls.map((uri, index) => <View key={index} style={styles.circle} />),
@@ -82,19 +69,25 @@ export const ImageSlider: FC<ImageSliderProps> = ({
           />
         </TouchableView>
       )),
-    [selectedIndex],
+    [],
   );
+  const translateX = useTransformStyle({
+    translateX: Animated.multiply(
+      selectedIndexAnimValue,
+      Animated.add(circleWidthAnimValue, circleMarginRightAnimValue),
+    ),
+  });
 
   return (
     <>
       <FlatList
         ref={flatListRef}
-        horizontal={true}
         scrollEnabled={true}
+        pagingEnabled={true}
         onScroll={onScroll}
         contentContainerStyle={{width: imageUrls.length * imageWidth}}
-        pagingEnabled={true}
         showsHorizontalScrollIndicator={false}
+        horizontal={true}
         data={imageUrls}
         renderItem={({item}) => (
           <Image

@@ -1,22 +1,13 @@
-import React, {ReactNode, ComponentProps} from 'react';
-import {
-  View,
-  StyleSheet,
-  GestureResponderEvent,
-  PanResponderGestureState,
-  Platform,
-  LayoutChangeEvent,
-  Animated,
-} from 'react-native';
-import type {FC} from 'react';
-import {
-  useAnimatedValue,
-  useLayout,
-  usePanResponder,
-  useToggle,
-  useTransformStyle,
-} from '../hooks';
+import React from 'react';
+import type {ReactNode, FC, ComponentProps} from 'react';
+import {Platform, View, Animated, StyleSheet} from 'react-native';
+// prettier-ignore
+import type {GestureResponderEvent, PanResponderGestureState} from 'react-native';
+import type {LayoutChangeEvent} from 'react-native';
 import {useScrollEnabled} from '../contexts';
+// prettier-ignore
+import {useLayout, usePanResponder, useToggle, useAnimatedValue, useTransformStyle}
+from '../hooks';
 
 type Event = GestureResponderEvent;
 type State = PanResponderGestureState;
@@ -24,7 +15,6 @@ type State = PanResponderGestureState;
 const ios = Platform.OS === 'ios';
 
 type SwipeComponent = (setLayout: (e: LayoutChangeEvent) => void) => ReactNode;
-
 export type LeftSwipeProps = ComponentProps<typeof View> & {
   left?: SwipeComponent;
 };
@@ -37,9 +27,7 @@ export const LeftSwipe: FC<LeftSwipeProps> = ({
 }) => {
   const [scrollEnabled, setScrollEnabled] = useScrollEnabled();
   const [{width: leftWidth}, setLayout] = useLayout();
-
   const translateX = useAnimatedValue(0);
-
   const transformStyle = useTransformStyle(
     {
       translateX: translateX.interpolate({
@@ -49,9 +37,7 @@ export const LeftSwipe: FC<LeftSwipeProps> = ({
     },
     [leftWidth],
   );
-
   const [show, toggleShow] = useToggle();
-
   const panResponder = usePanResponder(
     {
       onPanResponderGrant() {
@@ -60,30 +46,29 @@ export const LeftSwipe: FC<LeftSwipeProps> = ({
       onPanResponderMove(e: Event, s: State) {
         const {dx} = s;
         if (!show && dx < 0) {
-          return;
+          return; // 이 움직임을 무시합니다.
         }
+        console.log(typeof dx, 'hihi');
         translateX.setValue(dx);
       },
       onPanResponderRelease(e: Event, s: State) {
         ios && setScrollEnabled(true);
-
         const {dx} = s;
         if (!show && dx < 0) {
-          return; // 이 움직임 무시
+          return; // 이 움직임을 무시합니다.
         }
         Animated.spring(translateX, {
           useNativeDriver: false,
           toValue: show ? 0 : leftWidth,
-        }).start(toggleShow);
+        }).start(toggleShow); // 스와이프 길이가 [0, leftWidth] 범위에 있도록 조정
       },
     },
     [show, leftWidth],
   );
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-
   return (
-    <Animated.View style={[transformStyle, styles.animViewStyle, style]}>
+    <Animated.View
+      style={[transformStyle, styles.animViewStyle, style]}
+      {...viewProps}>
       {left && left(setLayout)}
       <View style={[{width: '100%'}]} {...panResponder.panHandlers}>
         {children}
@@ -91,7 +76,6 @@ export const LeftSwipe: FC<LeftSwipeProps> = ({
     </Animated.View>
   );
 };
-
 const styles = StyleSheet.create({
   animViewStyle: {flexDirection: 'row', width: '100%'},
 });
