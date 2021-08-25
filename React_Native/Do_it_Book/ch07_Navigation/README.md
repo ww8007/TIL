@@ -979,4 +979,623 @@ const goRight = useCallback(() => {
 
 ### useRoute 커스텀 훅 함수
 
-- @react-navigation/native
+- `@react-navigation/native` 패키지는 다음처럼 `useRoute` 훅 함수를 제공
+
+> useRoute 훅 함수
+
+```tsx
+import { useRoute } from '@react-navigation/native';
+```
+
+- 이 useRoute 훅 함수는 다음 라우트(route) 객체를 반환
+
+> route 객체
+
+```tsx
+const route = useRoute();
+```
+
+> 실제 코드 사용
+
+```tsx
+const navigation = useNavigation();
+const goBack = useCallback(
+	() => navigation.canGoBack() && navigation.goBack(),
+	[]
+);
+const goRight = useCallback(
+	() => navigation.navigate('HomeRight', { id: D.randomId() }),
+	[]
+);
+const route = useRoute();
+```
+
+- 다음 화면은 `route` 객체에 어떤 정보가 있는지 나타낸 것
+- ┣ 내비게이션이 내부적으로 사용하는 것으로 보이는 `key` 속성과
+- ┣ `Stack.Screen`에 설정된 `name` 속성이 보임
+- ┗ `params` 속성에 `navigate` `두번째 매개변수`로 설정한 것도 확인 가능
+
+![](2021-08-24-13-16-43.png)
+
+- 어떤 화면에서 다른 화면으로 이동할 때
+- `navigate(화면이름, params)` 형태로 정보를 `전달`하면
+- `수신`하는 쪽 화면 : `useRoute` 호출로 얻은 `route` 객체의 `params` 속성에서 정보얻기
+
+### 포커스를 가진 컴포넌트
+
+- 리액트 내비게이션은 현재 화면에 보이는 컴포넌트를
+- ┣ `포커스를 가진 컴포넌트`라 표현
+- ┣ 화면 컴포넌트가 현재 포커스를 가졌는지 확인?
+- ┣ `useIsFocused` `커스텀 훅`을 호출하면 알 수 있음
+- ┗ `포커스 가졌을 때` 작업 : `useFocusEffect` 훅 사용!!!
+
+### useIsFocused 와 useFocusEffect 커스텀 훅 함수
+
+- @react-navigation/native 패키지는 다음처럼
+- useIsFocused, useFocusEffect 훅 함수를 제공
+
+```tsx
+import { useIsFocused, useFocusEffect } from '@react-navigation/native';
+```
+
+- 이제 HomeLeft 컴포넌트에 다음 코드를 삽입하여 콘솔 창에 출력되는 로그 확인
+
+> 콘솔 창으로 로그 확인
+
+```tsx
+import { useIsFocused, useFocusEffect } from '@react-navigation/naive';
+
+export default function HomeLeft() {
+	const focused = useIsFocused();
+	useEffect(() => {
+		console.log('HomeLeft isFocused', focused);
+	}, [focused]);
+	useFocusEffect(() => {
+		console.log('useFocusEffect called');
+	});
+}
+```
+
+- useIsFocused 가 true를 반활 할 때만 useFocusEffect 콜백 함수가 호출됨을 암
+
+### Stack.Navigator 의 screenOptions 속성 탐구
+
+- 현재 MainNavigator.tsx 파일에 구현한 Stack.Navigator 컴포넌트는
+- ┗ screenOptions 속성을 제공
+
+```tsx
+export default function MainNavigator() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {backgroundColor: Colors.pink500},
+        headerTintColor: 'white',
+        headerTitleStyle: {fontWeight: 'bold'},
+      }}>
+```
+
+- `screenOptions`에 설정된 `headerStyle`, `headerTintColor`, `headerTitleStyle의` 의미
+- ┣ `headerStyle` : 헤더의 `바탕색`
+- ┣ `headerTintColor` : 글자 색상
+- ┗ `headerTitleStyle` : 헤더 타이틀 글자에 적용되는 스타일
+
+- `R/N navigation`은 `헤더를 커스터마이징`할 수 있도록 많은 `옵션`을 제공
+- ┣ 하지만 의미와 사용법을 이해하는 것이 `제법 까다로움`
+- ┣ 그러므로 단순히 리액트 내비게이션이 `헤더를 렌더링하는 것이 아닌`
+- ┣ `화면 컴포넌트에서 직접 헤더를 그리는 쪽`이 더 간편
+- ┗ 이제 `리액트 내비게이션이 전혀 헤더를 렌더링하지 않게` 하는 방법 탐구
+
+### screenOptions의 headerShown 속성
+
+- `Stack.Navigator`가 제공하는 `screenOptions`에 다음처럼
+- ┣ `headerShown : false` 설정하면
+- ┗ 헤더가 `전혀 렌더링 되지 않게` 할 수 있음
+
+```tsx
+export default function MainNavigator() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
+```
+
+> 헤더가 나타나지 않고 아이폰의 버그도 사라짐!!!
+>
+> > 아이폰 헤더와 TopBar 간의 틈
+
+## 헤더와 SafeAreaView 간의 관계 이해
+
+- 리액트 내비게이션은 `react-native`가 제공하는 `SafeAreaView`를 사용하는 것이 아닌
+- ┣ `react-native-safe-area-context` 패키지가 제공하는 것을 사용
+- ┣ 다음 코드는 공식 사이트에서 발췌
+- ┣ `SafeAreaView`의 역할이 단순히
+- ┣ `paddingTop`, `paddingBottom` 속성에 아이폰 모델에 따른
+- ┗ `오프셋을 설정한 View` 라는 것을 보여줌
+
+> SafeAreaView의 역할
+
+```tsx
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+function Demo() {
+	const insets = useSafeAreaInsets();
+
+	return (
+		<View
+			style={{
+				paddingTop: insets.top,
+				paddingBottom: insets.bottom,
+			}}
+		>
+			<Text> This is top text.</Text>
+			<Text> This is bottom text.</Text>
+		</View>
+	);
+}
+```
+
+- `스택 내비게이션`은 `Screen`의 `Header`가 일종의 `SafeAreaView`로 동작
+- ┗ `Home`과 같은 컴포넌트가 굳이 `SafeAreaView` 를 `사용하지 않아도 됨`!!!
+
+- 그러나 지금까지는 `Home` 컴포넌트에서 `SafeAreaView`를 사용
+- ┣ 그렇기 때문에 `insets.top 만큼의 오프셋이 작용`
+- ┣ 여기서 `Navigator` 에 `headerShow: false` 설정 시
+- ┗ 헤더가 사라지고 이 때문에 Home의 SafeAreaView만 작동
+
+- 사실 리액트 스택 내비게이션의 헤더 커스터마이징 방법은 매우 복잡
+- ┗ 사용자 컴포넌트로 직접 헤더를 구현하는 편이 더 쉽고 융통성이 있음
+
+- 화면 컴포넌트에서 `직접 헤더를 렌더링`할 수 있도록
+- ┗ `NavigationHeader`라는 컴포넌트 만들어보도록 함
+
+### NavigationHeader 컴포넌트 만들기
+
+- 리액트 내비게이션에 헤더 렌더링을 맡기지 않고
+- ┣ 직접 헤더를 만드는 이유
+- ┣ 1. 화면마다 다른 헤더를 렌더링 하고 싶음
+- ┗ 2. 헤더가 대화상자(modal dialog)의 모습을 윤내 내는 것처럼 보이게 하고 싶음
+
+> 이처럼 다양한 요구 사항을 충족하려면 커스텀 헤더 컴포넌트 다음과 같음
+
+```tsx
+import type { FC, ReactNode } from 'react';
+import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+
+export type NavigationHeaderProps = {
+	title?: string;
+	Left?: () => ReactNode;
+	Right?: () => ReactNode;
+	viewStyle?: StyleProp<ViewStyle>;
+	titleStyle?: StyleProp<TextStyle>;
+};
+export const NavigationHeader: FC<NavigationHeaderProps> = ({
+	title,
+	left,
+	viewStyle,
+	titleStyle,
+}) => {
+	return <></>;
+};
+```
+
+- NavigationHeader 컴포넌트를 다음과 형태로 구현하여 사용?
+- ┗ title, Left, Right 등의 속성 용도를 짐작할 수 있을 것
+
+> 실제 구현
+
+```tsx
+import React from 'react';
+import type { FC, ReactNode } from 'react';
+import { StyleSheet } from 'react-native';
+import { View, Text } from './navigation';
+import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+
+export type NavigationHeaderProps = {
+	title?: string;
+	Left?: () => ReactNode;
+	Right?: () => ReactNode;
+	viewStyle?: StyleProp<ViewStyle>;
+	titleStyle?: StyleProp<TextStyle>;
+};
+
+export const NavigationHeader: FC<NavigationHeaderProps> = ({
+	title,
+	Left,
+	Right,
+	viewStyle,
+	titleStyle,
+}) => {
+	return (
+		<View style={[styles.view, viewStyle]}>
+			{Left && Left()}
+			<View style={styles.flex}>
+				<Text style={[styles.title, titleStyle]}>{title}</Text>
+			</View>
+			{Right && Right()}
+		</View>
+	);
+};
+
+const styles = StyleSheet.create({
+	view: {
+		width: '100%',
+		padding: 5,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+	},
+	title: { fontSize: 20, fontWeight: '500', textAlign: 'center' },
+	flex: { flex: 1, backgroundColor: 'transparent' },
+});
+```
+
+> index.ts 에 반영
+
+```tsx
+export * from './NavigationHeader';
+export * from './navigation';
+```
+
+- NavigationHeader를 컴포넌트에 적용하는 것은
+- ┣ LeftRightNavigation 컴포넌트를 구현한 다음에 해보겠음
+- ┗ 이제 스택 내비게이션이 화면을 전환 할 때 실행하는 애니메이션 방법
+
+## 왼쪽이나 오른쪽에서 진입하는 화면 전환 애니메이션 구현
+
+- 아이폰의 화면 컴포넌트간 `전환(translation)`은
+- ┣ 아이폰 : `화면 오른쪽이나 왼쪽으로 진입하는 방식`
+- ┗ 안드로이드 : `화면 아래쪽에서 위쪽`
+
+- 인스타그램 같은 몇몇 앱은 화면 왼쪽에서 오른쪽으로 진입하는 화면도 있고
+- ┗ 왼쪽에서 오른쪽으로 진입하는 화면도 있음
+
+> 아이폰, 안드로이드에서 양쪽 모두에서 동작하는 화면 전환 애니메이션 구현
+
+### Stack.Screen 컴포넌트의 options 속성 탐구
+
+- Stack.Screen 컴포넌트는 다음 코드에서 보듯 options 속성을 제공
+
+> Stack.Screen 컴포넌트의 options 속성
+
+```tsx
+<Stack.Screen name="HomeLeft" component={HomeLeft} options={{...}} />
+```
+
+- `수평 방향으로 진입`하는 애니메이션과 관련하여 `options`에 설정할 수 있는 속성
+- ┗ `gestureDirection`, `cardStyleInterpolator`
+
+- `gestureDirection` 속성에는
+- ┗ '`horizontal`', '`horizontal-inverted`' 등 4가지 한 값을 지정가능
+
+> GestureDirection
+
+```tsx
+type GestureDirection =
+	| 'horizontal'
+	| 'horizontal-inverted'
+	| 'vertical'
+	| 'vertical-inverted';
+```
+
+- 아이폰의 `gestureDirection` 속성에는 기본값
+- ┣ '`horizontal`'이 설정됨
+- ┣ 화면이 `오른쪽 → 왼쪽` 으로 진입
+- ┣ 다음 코드는 인스타그램 앱처럼
+- ┣━ HomeLeft는 화면 왼쪽에서 오른쪽으로 진입
+- ┗━ HomeRight는 화면 오른쪽에서 왼쪽으로 진입
+
+```tsx
+<Stack.Screen
+	name="homeLeft"
+	component={HomeLeft}
+	options={{ gestureDirection: 'horizontal-inverted' }}
+/>
+<Stack.Screen
+	name="homeRight"
+	component={HomeRight}
+	options={{ gestureDirection: 'horizontal' }}
+/>
+```
+
+- 그런데 안드로이드에서는 이 방법만으로는 수평 방향으로 화면을 진입하게
+- ┣ 할 수는 없다.
+- ┗ cardStyleInterpolator에 다음에 다음과 같은 설정을 해야함
+
+### useNavigationHorizontalInterpolator 커스텀 훅 구현
+
+- cardStyleInterpolator 타입은 다음과 같음
+- ┣ 즉, StackCardInterpolator 타입 입력을 매개변수로 받아
+- ┗ StackCardInterpolatedStyle 타입 객체를 반환하는 함수 만들어야 함
+
+> CardStyleInterpolator의 타입
+
+```tsx
+export declare type StackCardStyleInterpolator = (
+	props: StackCardInterpolationProps
+) => StackCardInterpolatedStyle;
+```
+
+- 다음 코드는 src/hooks 디렉터리에 touch 명령으로 생성한
+- ┗ useNavigationHorizontalInterpolator.ts 파일에 내용을 작성한 초기 모습
+
+```tsx
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type {
+	StackCardInterpolationProps,
+	StackCardInterpolatedStyle,
+} from '@react-navigation/stack';
+import { useCallback } from 'react';
+
+export const useNavigationHorizontalInterpolator = () => {
+	const interpolator = useCallback(
+		(props: StackCardInterpolationProps): StackCardInterpolatedStyle => {
+			// 잠시 후 구현
+		},
+		[]
+	);
+	return interpolator;
+};
+```
+
+- 결국 `StackCardInterpolationProps` 타입 객체에서
+- ┣ `current.progress`, `inverted`, `layout.screen.width` 이용하여
+- ┗ `StackCardInterpolatedStyle` 타입 객체를 반환하는 함수 만들기
+
+> StackCardInterpolatedStyle 타입 객체
+
+```tsx
+export declare type StackCardInterpolatedStyle = {
+	cardStyle?: any;
+};
+```
+
+- 다음 코든는 앞의 두 개의 타입 내용을 참조하여 좀 더 구체적으로
+- ┗ `interpolator` 변수에 설정된 함수를 구현
+
+```tsx
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type {
+	StackCardInterpolationProps,
+	StackCardInterpolatedStyle,
+} from '@react-navigation/stack';
+import { useCallback } from 'react';
+
+export const useNavigationHorizontalInterpolator = () => {
+	const interpolator = useCallback(
+		(props: StackCardInterpolationProps): StackCardInterpolatedStyle => {
+			const { current, inverted, layouts } = props;
+			return { cardStyle };
+		},
+		[]
+	);
+	return interpolator;
+};
+```
+
+- 코드에서 `current.progress`와 `inverted`는 모두 6장에서
+- ┣ `Animated.Value`의 `interpolate` 메서드의 반환 타입
+- ┣ `Animated.AnimatedInterpolation` 타입 객체
+- ┗ `inverted`는 `Animated.multiply(어떤 값, inverted)` 형태로 사용하라는 뜻
+
+- 그런데 지금은 화면 오른쪽에서 왼쪽으로 이동하는 화면 전환 애니메이션을 다룸
+- ┣ 그러므로 이 '어떤 값'은 다음 코드의 반환값이 됨
+
+- 즉, Animated.Value의 초깃값 0 일 때는 화면 오른쪽에 있어야 함
+- ┣ outputRange는 layout.scree.width 지점에 translateX되어 있다가
+- ┣ 1로 보간할수록 translateX 값이 0으로 수렴하면서 결과적으로
+- ┗ 오른쪽에서 왼쪽으로 진입하는 애니메이션이 완성
+
+> 오른쪽에서 왼쪽으로 진입하는 애니메이션
+
+```tsx
+current.progress.interpolate({
+	inputRange: [0, 1],
+	outputRange: [layouts.screen.width, 0],
+});
+```
+
+> custom hook 구현
+
+```tsx
+import type {
+	StackCardInterpolationProps,
+	StackCardInterpolatedStyle,
+	StackCardStyleInterpolator,
+} from '@react-navigation/stack';
+import { useCallback } from 'react';
+import Animated from 'react-native-reanimated';
+
+export const useNavigationHorizontalInterpolator =
+	(): StackCardStyleInterpolator => {
+		const interpolator = useCallback(
+			(props: StackCardInterpolationProps): StackCardInterpolatedStyle => {
+				const { current, inverted, layouts } = props;
+				return {
+					cardStyle: {
+						transform: [
+							{
+								translateX: Animated.multiply(
+									current.progress.interpolate({
+										inputRange: [0, 1],
+										outputRange: [layouts.screen.width, 0],
+									}),
+									inverted
+								),
+							},
+						],
+					},
+				};
+			},
+			[]
+		);
+		return interpolator;
+	};
+```
+
+#### useNavigationHorizontalInterpolator 커스텀 훅 적용하기
+
+- 다음 코드는 `useNavigationHorizontalInterpolator` 커스텀 훅을 적용한
+- ┣ `MainNavigator.tsx` 최종 모습
+- ┗ Home 컴포넌트에서 `<go left>`를 누르면 HomeLeft가 화면 왼쪽에서 진입
+
+> 실제 구현
+
+```tsx
+export default function MainNavigator() {
+	const interpolator = useNavigationHorizontalInterpolator();
+	const leftOptions = useMemo<StackNavigationOptions>(
+		() => ({
+			gestureDirection: 'horizontal-inverted',
+			cardStyleInterpolator: interpolator,
+		}),
+		[]
+	);
+	const rightOptions = useMemo<StackNavigationOptions>(
+		() => ({
+			gestureDirection: 'horizontal',
+			cardStyleInterpolator: interpolator,
+		}),
+		[]
+	);
+	return (
+		<Stack.Navigator
+			screenOptions={{
+				headerShown: false,
+			}}
+		>
+			<Stack.Screen name="Home" component={Home} />
+			<Stack.Screen
+				name="HomeLeft"
+				component={HomeLeft}
+				options={leftOptions}
+			/>
+			<Stack.Screen
+				name="HomeRight"
+				component={HomeRight}
+				options={rightOptions}
+			/>
+		</Stack.Navigator>
+	);
+}
+```
+
+### 인스타그램 스타일 내비게이션
+
+- 인스타그램 앱은 메인 화면
+- ┣ 왼쪽에서 오른쪽으로 드래깅: 카메라 접근 허용 화면으로 전환됨
+- ┗ 오른쪽에서 왼쪽으로 드래깅 : Direct 라는 제목의 화면으로 전환
+
+- 위의 화면 전환 방식은 6.4 에서 알아본
+- ┗ PanResponder의 onPanResponderMove 콜백 함수를 다음처럼 만들면 쉽게 구현 가능
+
+> onPanResponderMove 콜백 함수
+
+```tsx
+onPanResponderMove(e, s) {
+    const distance = 40;
+    const {dx} = s;
+    if (dx> distance) {
+        navigation.navigate('Screen_3', {name: 'Jack', age: 32})
+    } else if (dx < -distance) {
+        navigation.navigate('Scree_2')
+    }
+}
+```
+
+- 이제 이 코드를 일반화한 LeftRightNavigation 컴포넌트 생성
+
+### LeftRightNavigation 컴포넌트 제작
+
+- 먼저 다음 명령으로 src/components 디렉터리에 LeftRightNavigation.tsx 파일을 생성
+
+- 앞 절에서 `usePanResponder` 커스텀 훅 함수를 구현한 적이 있음
+- ┣ 그러므로 다음 코드가 요구하는 `distance`, `onRightToLeft`, `onLeftToRight`를
+- ┣ 외부 속성으로 받아들일 수 있는 컴포넌트를 만들면
+- ┗ `LeftRightNavigation` 컴포넌트가 됨
+
+> `usePanResponder` 커스텀 훅 함수
+
+```tsx
+const panResponder = usePanResponder({
+    onPanResponderMove(e,s) {
+        const {dx, dy} = s;
+        if (dx > distance) {
+            onLeftToRight && onLeftToRight(); // 왼쪽에서 오른쪽 제스처 길이
+        } else if (dx < -distance) {
+            onRightToLeft && on RightToLeft(); // 오른쪽에서 왼쪽 제스처 길이
+        }
+    }
+})
+```
+
+- 그런데 이 코드형태에는 다음처럼 `FlatList`의 `부모 컴포넌트로 사용`하면
+- ┗ `FlatList`의 `수직 스크롤 기능을 무력화` 하는 문제점이 있음
+
+> 수직 스크롤 기능 사라짐
+
+```tsx
+<LeftRightNavigation
+	distance={40}
+	onLeftToRight={goLeft}
+	onRightToLeft={goRight}
+>
+	<FlatList ref={flatListRef} />
+</LeftRightNavigation>
+```
+
+- 다음 코드에서는 `FlatList`의 수직 방향 스크롤이 가능하도록 `FlatList`의
+- ┣ `scrollToOffset` 메서드를 호출해
+- ┗ `onPanResponseMove`에서 얻은 `dy 값을 전달`하는 부분을 추가로 구현
+
+> `scrollToOffset` 메서드로 dy 값 전달
+
+```tsx
+export const LeftRightNavigation: FC<LeftRightNavigationProps> = ({
+	distance,
+	children,
+	onRightToLeft,
+	onLeftToRight,
+	flatListRef,
+}) => {
+	const [offset, setOffset] = useState<number>(0);
+	const panResponder = usePanResponder({
+		onPanResponderMove(e, s) {
+			const { dx, dy } = s;
+			if (flatListRef) {
+				flatListRef.current?.scrollToOffset({
+					offset: offset - dy,
+					animated: false,
+				});
+				setOffset((offset) => offset - dy);
+			}
+            if (Math.abs(dy) < 30>){
+                if (dx > distance) {
+                    onLeftToRight && onLeftToRight();
+                } else if (dx < -distance) {
+                    onRightToLeft && onRightToLeft();
+                }
+            }
+		},
+	}, [offset]);
+};
+```
+
+- FlatList에서 아이템을 삭제하면 offset의 값이 FlatList의 것과 달라짐
+- ┣ 그러므로 앞에서 알아본 useImperativeHandle 훅을 사용하여 다음처럼
+- ┣ offset 값을 0으로 만드는 resetOffset 메서드 제공 부분을 추가
+- ┗ 인스타그램 앱처럼 아이템을 삭제하지 않는 FlatList에는 굳이 구현하지 않아도 됨
+
+> resetOffset 메서드 추가
+
+```tsx
+useImperativeHandle(
+	ref,
+	() => ({
+		resetOffset() {
+			setOffset(0);
+		},
+	}),
+	[]
+);
+```
