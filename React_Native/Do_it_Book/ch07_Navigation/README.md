@@ -1599,3 +1599,43 @@ useImperativeHandle(
 	[]
 );
 ```
+
+# 탭 내비게이션 이해하기
+
+- 탭 내비게이션은 리액트 내비게이션의 또 다른 기능
+- ┗ 여기서는 탭 내비게이션 기능을 학습
+
+> 설치
+
+> native-init
+
+    npx react-native init ch07_Navigation_Init --template react-native-template-typescript
+
+> 필수 패키지 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6 react-native-appearance
+     yarn add @types/react-native-vector-icons @types/color @types/faker
+     yarn add react-native-keyboard-aware-scroll-view
+
+> 내비게이션 필수 패키지 설치
+
+    yarn add react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context
+    yarn add @react-native-community/masked-view
+    yarn add @react-navigation/native
+    yarn add @react-navigation/stack @react-navigation/bottom-tabs @react-navigation/drawer
+
+> 복사
+
+    cp copy/CopyMe.tsx screens/MainNavigator.tsx
+
+## 탭 내비게이션이란?
+
+- 앞서 `react-native-paper` 패키지가 제공하는 `BottomNavigation` 컴포넌트를 사용한적이 있음
+- ┣ 리액트 내비게이션의 탭 내비게이션 또한 `BottomNavigation`과 같은 개념
+- ┣ 리액트 내비게이션의 탭 내비게이션 개발은
+- ┣ `@react-navigation/bottom-tabs` 패키지가 제공하는
+- ┗ `createBottomTabNavigator` 함수를 호출하는 것에서 출발
+
+### createBottomTabNavigator 함수
+
+- @react-navigation/bottom-tabs 패키지는 createBottomTabNavigator 함수를 제공
