@@ -1915,3 +1915,214 @@ export  default function Home() {
     yarn add @react-native-community/masked-view
     yarn add @react-navigation/native
     yarn add @react-navigation/stack @react-navigation/bottom-tabs @react-navigation/drawer
+
+## 드로어 내비게이션이란?
+
+- 드로어 내비게이션은 서랍장에서 서랍을 열듯 숨어 있다가
+- ┠ 필요할 때 화면 왼쪽 모서리 부분을 누르고
+- ┠ 오른쪽으로 드래깅하면서 나타나는 내비게이션
+- ┠ 드로어 내비게이션 개발 `@react-navigation/drawer` 패키지가 제공하는
+- ┗ `createDrawerNavigator` 함수를 호출하는 것에서 출발
+
+### createDrawerNavigator 함수
+
+- `@react-navigation/drawer` 패키지는 다음처럼
+- ┗ `createDrawerNavigator` 함수를 제공
+
+> `createDrawerNavigator` 함수
+
+- 그리고 이 함수를 호출하면 `Navigator`와 `Screen` 컴포넌트가 있는 드로어 객체
+- ┗ 얻을 수 있게 됨
+
+> 드로어 객체
+
+```tsx
+const Drawer = createDrawerNavigator;
+// <Drawer.Navigator />
+// <Drawer.Screen />
+```
+
+### Drawer.Navigator 컴포넌트의 drawerContent 속성
+
+- Drawer 객체가 제공하는 `Drawer.Navigator` 컴포넌트는
+- ┠ 서랍장 역할을 하는 `DrawerContent`와 컴포넌트를
+- ┠ `drawerContent` 속성에 설정하게 함
+- ┗ 그리고 이 컴포넌트는 서랍을 열었을 때 화면에 나타남
+
+> DrawerContent 컴포넌트
+
+```tsx
+import DrawerContent from './DrawerContent';
+
+<Drawer.Navigator drawerContent={DrawerContent} />;
+```
+
+> 실제 구현
+
+```tsx
+import React from 'react';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import Login from './Login';
+import SignUp from './SignUp';
+import TabNavigator from './TabNavigator';
+import DrawerContent from './DrawerContent';
+
+const Drawer = createDrawerNavigator();
+
+export default function MainNavigator() {
+	return (
+		<Drawer.Navigator drawerContent={DrawerContent}>
+			<Drawer.Screen name="Login" component={Login} />
+			<Drawer.Screen name="SignUp" component={SignUp} />
+			<Drawer.Screen
+				name="TabNavigator"
+				component={TabNavigator}
+				options={{ title: 'Home' }}
+			/>
+		</Drawer.Navigator>
+	);
+}
+```
+
+- 이 코드에서 주목해야 할 부분은
+- ┠ `drawerContent={DrawerContent}`부분
+- ┠ 코드가 이런 형태로 작성되어 있으면 MainNavigator 쪽 코드는 정상동작
+- ┠ 하지만 DrawerContent 컴포넌트 구현시
+- ┠ useState, useCallback 같은 리액트 훅 사용 불가!!!
+- ┠ 이에 대한 대책은 잠시 후 살펴보기
+- ┗ DrawerContent 컴포넌트에서 훅 함수를 호출할 수 있게 해주는
+- ┗ `DrawerContentComponentProps` 타입 학습
+
+### DrawerContentComponentProps 타입
+
+- `@react-navigation/drawer` 패키지는 다음 DrawerContentComponentProps
+- ┗ 타입을 제공
+
+> DrawerContentComponentProps 타입
+
+```tsx
+import type { DrawerContentComponentProps } from '@react-navigation/drawer';
+```
+
+> 실제 구현
+
+```tsx
+const title = 'DrawerContent';
+
+const DrawerContent: FC<DrawerContentComponentProps> = (props) => {
+	console.log(Object.keys(props));
+	return (
+		<SafeAreaView>
+			<TopBar />
+			<View style={[styles.content]}>
+				<Text style={[styles.text]}>{title}</Text>
+			</View>
+		</SafeAreaView>
+	);
+};
+
+export default DrawerContent;
+```
+
+- props 매개변수에 어떤 내용이 담겨 있는지 출력 로그로 학습
+
+> 터미널에 출력한 props
+
+```js
+['state', 'navigation', 'descriptors'];
+```
+
+- useNavigation 훅 호출을 통해 얻던 navigation 객체가 있음
+
+#### DrawerContentComponentProps의 navigation 속성
+
+- `DrawerContentComponentProps` 타입 `DrawerContent` 컴포넌트는
+- ┠ 일반 리액트 컴포넌트와 달리 `특별하게 생성되고 관리`됨
+- ┠ 그러므로 이 컴포넌트 내부에서 그냥은
+- ┗ `useCallback` 과 같은 `리액트 훅, 커스텀 훅`을 `호출 불가!!!`
+
+- 그렇기에 Drawer.Navigator의 drawerContent 속성의 설정은
+- ┗ 다음과 같은 코드 형태로 구현해야 함
+
+> MainNavigator.tsx
+
+```tsx
+const Drawer = createDrawerNavigator();
+
+export default function MainNavigator() {
+	return (
+		<Drawer.Navigator drawerContent={(props) => <DrawerContent {...props} />}>
+			<Drawer.Screen name="Login" component={Login} />
+			<Drawer.Screen name="SignUp" component={SignUp} />
+			<Drawer.Screen
+				name="TabNavigator"
+				component={TabNavigator}
+				options={{ title: 'Home' }}
+			/>
+		</Drawer.Navigator>
+	);
+}
+```
+
+- 하지만 DrawerContent 에서 useNavigation 훅을 호출하면
+- ┣ 여전히 오류가 발생하게 됨
+- ┠ 이 오류를 수정하기 위해서는
+- ┠ DrawerContent 에서는 useNavigation 훅이 아니라
+- ┗ 다음과 형태로 navigation 객체를 얻어야 함
+
+> navigation 객체 얻기
+
+```tsx
+const { navigation } = props;
+```
+
+- `DrawerContent` 에서는 이 방식으로 `navigation 객체를 얻음`
+- ┗ DrawerContent 에서는 훅 호출로 navigation 얻을 수 없음
+
+- 이번엔 `DrawerContent` 컴포넌트에서 사용할 목적으로 제공하는
+- ┗ `DrawerContentScrollView` 컴포넌트 학습
+
+### DrawerContentScrollView 컴포넌트
+
+- `@react-navigation/drawer` 패키지는 다음처럼
+- ┗ `DrawerContentScrollView` 컴포넌트도 제공
+
+> DrawerContentScrollView 컴포넌트
+
+```tsx
+import { DrawerContentScrollView } from '@react-navigation/drawer';
+```
+
+- `DrawerContentScrollView` 는 이름대로
+- ┠ `DrawerContent` 전용 ScrollView임
+- ┠ DrawerContentScrollView는 ScrollView 이기 때문에
+- ┠ 자식요소의 스타일링은 style이 아닌 contentContainerStyle 속성에 설정
+- ┠ DrawerContentScrollView의 또 다른 주요 기능은
+- ┗ SafeAreaView 역할도 대신함
+
+> DrawerContentScrollView 사용 모습
+
+```tsx
+import type { DrawerContentComponentProps } from '@react-navigation/drawer';
+import { DrawerContentScrollView } from '@react-navigation/drawer';
+
+const title = 'DrawerContent';
+
+const DrawerContent: FC<DrawerContentComponentProps> = (props) => {
+	const { navigation } = props;
+	const go = useCallback(() => {}, []);
+	return (
+		<DrawerContentScrollView {...props} contentContainerStyle={[styles.view]}>
+			<TopBar />
+			<View style={[styles.content]}>
+				<Text style={[styles.text]}>{title}</Text>
+			</View>
+		</DrawerContentScrollView>
+	);
+};
+```
+
+- 안드로이드와 ios 양쪽에서 `DrawerContent`가 정상적으로 보임
+- ┠ 이는 `DrawerContentScrollView`의 `contentContainerStyle`에
+- ┠ `flex : 1` 값을 설정했기 때문
+- ┗ 아이폰에서는 `DrawerContentScrollView`가 `SafeAreView` 역할 수행!!!
