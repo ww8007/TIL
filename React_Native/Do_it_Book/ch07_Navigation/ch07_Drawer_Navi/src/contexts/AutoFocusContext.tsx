@@ -1,39 +1,40 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {createContext, useContext, useRef, useCallback} from 'react';
+import React, {createContext, useCallback, useContext, useRef} from 'react';
+
 import type {FC, ComponentProps} from 'react';
 import {findNodeHandle} from 'react-native';
 import type {NativeSyntheticEvent, TextInputFocusEventData} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 export type FocusEvent = NativeSyntheticEvent<TextInputFocusEventData>;
-export type AutoFocusContextType = {
-  autoFocus: (event: FocusEvent) => void;
-};
-const defaultAutoFocusContext = {
-  autoFocus: (event: FocusEvent) => {},
-};
-const AutoFocusContext = createContext<AutoFocusContextType>(
-  defaultAutoFocusContext,
-);
 
+// 공유하려는 데이터 속성
+export type FocusContextType = {autoFocus: (e: FocusEvent) => void};
+
+// 공유하려는 데이터 값
+const defaultFocusContext = {autoFocus: (e: FocusEvent) => {}};
+
+const AutoFocusContext = createContext<FocusContextType>(defaultFocusContext);
 export type AutoFocusProviderProps = ComponentProps<
   typeof KeyboardAwareScrollView
 >;
+
+export type AutoFocusContextType = {
+  autoFocus: (e: FocusEvent) => void;
+};
+
 export const AutoFocusProvider: FC<AutoFocusProviderProps> = ({
   children,
   ...props
 }) => {
   const scrollRef = useRef<KeyboardAwareScrollView | null>(null);
-  const scrollToInput = useCallback((reactNode: any) => {
-    // scrollRef.current?.scrollToFocusedInput(reactNode);
+  const scrollInput = useCallback((reactNode: any) => {
+    scrollRef.current?.scrollToFocusedInput(reactNode);
   }, []);
-  const autoFocus = useCallback((event: FocusEvent) => {
-    // scrollToInput(findNodeHandle(event.target));
+  const autoFocus = useCallback((e: FocusEvent) => {
+    scrollInput(findNodeHandle(e.target));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const value = {
-    autoFocus,
-  };
-
+  const value = {autoFocus};
   return (
     <AutoFocusContext.Provider value={value}>
       <KeyboardAwareScrollView

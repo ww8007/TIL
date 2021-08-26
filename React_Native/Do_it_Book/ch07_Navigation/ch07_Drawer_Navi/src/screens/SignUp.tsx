@@ -6,6 +6,7 @@ import {useNavigation} from '@react-navigation/native';
 import {SafeAreaView, View, Text, TextInput, TouchableView, UnderlineText}
 from '../theme';
 import * as D from '../data';
+
 import {useAutoFocus, AutoFocusProvider} from '../contexts';
 
 export default function SignUp() {
@@ -14,9 +15,9 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState<string>(password);
   const focus = useAutoFocus();
   const navigation = useNavigation();
-  const goHomeNavigator = useCallback(() => {
+  const goTabNavigator = useCallback(() => {
     if (password === confirmPassword) {
-      navigation.navigate('HomeNavigator');
+      navigation.navigate('TabNavigator');
     } else {
       Alert.alert('password is invalid');
     }
@@ -26,69 +27,65 @@ export default function SignUp() {
   return (
     <SafeAreaView>
       <View style={[styles.view]}>
-        <AutoFocusProvider contentContainerStyle={[styles.keyboardAwareFocus]}>
-          <View style={[styles.textView]}>
-            <Text style={[styles.text]}>email</Text>
-            <View border style={[styles.textInputView]}>
-              <TextInput
-                onFocus={focus}
-                style={[styles.textInput]}
-                value={person.email}
-                onChangeText={email =>
-                  setPerson(person => ({...person, email}))
-                }
-                placeholder="enter your email"
-              />
-            </View>
+        {/* <AutoFocusProvider contentContainerStyle={[styles.keyboardAwareFocus]}> */}
+        <View style={[styles.textView]}>
+          <Text style={[styles.text]}>email</Text>
+          <View border style={[styles.textInputView]}>
+            <TextInput
+              onFocus={focus}
+              style={[styles.textInput]}
+              value={person.email}
+              onChangeText={email => setPerson(person => ({...person, email}))}
+              placeholder="enter your email"
+            />
           </View>
-          <View style={[styles.textView]}>
-            <Text style={[styles.text]}>name</Text>
-            <View border style={[styles.textInputView]}>
-              <TextInput
-                onFocus={focus}
-                style={[styles.textInput]}
-                value={person.name}
-                onChangeText={name => setPerson(person => ({...person, name}))}
-                placeholder="enter your name"
-              />
-            </View>
+        </View>
+        <View style={[styles.textView]}>
+          <Text style={[styles.text]}>name</Text>
+          <View border style={[styles.textInputView]}>
+            <TextInput
+              onFocus={focus}
+              style={[styles.textInput]}
+              value={person.name}
+              onChangeText={name => setPerson(person => ({...person, name}))}
+              placeholder="enter your name"
+            />
           </View>
-          <View style={[styles.textView]}>
-            <Text style={[styles.text]}>password</Text>
-            <View border style={[styles.textInputView]}>
-              <TextInput
-                onFocus={focus}
-                style={[styles.textInput]}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="enter your password"
-              />
-            </View>
+        </View>
+        <View style={[styles.textView]}>
+          <Text style={[styles.text]}>password</Text>
+          <View border style={[styles.textInputView]}>
+            <TextInput
+              onFocus={focus}
+              style={[styles.textInput]}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="enter your password"
+            />
           </View>
-          <View style={[styles.textView]}>
-            <Text style={[styles.text]}>confirm password</Text>
-            <View border style={[styles.textInputView]}>
-              <TextInput
-                onFocus={focus}
-                style={[styles.textInput]}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                placeholder="confirm password"
-              />
-            </View>
+        </View>
+        <View style={[styles.textView]}>
+          <Text style={[styles.text]}>confirm password</Text>
+          <View border style={[styles.textInputView]}>
+            <TextInput
+              onFocus={focus}
+              style={[styles.textInput]}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="confirm password"
+            />
           </View>
-          <TouchableView
-            notification
-            style={[styles.touchableView]}
-            onPress={goHomeNavigator}>
-            <Text style={[styles.text]}>SignUp</Text>
-          </TouchableView>
-          <UnderlineText
-            style={[styles.text, {marginTop: 15}]}
-            onPress={goLogin}>
-            Login
-          </UnderlineText>
-        </AutoFocusProvider>
+        </View>
+        <TouchableView
+          notification
+          style={[styles.touchableView]}
+          onPress={goTabNavigator}>
+          <Text style={[styles.text]}>SignUp</Text>
+        </TouchableView>
+        <UnderlineText style={[styles.text, {marginTop: 15}]} onPress={goLogin}>
+          Login
+        </UnderlineText>
+        {/* </AutoFocusProvider> */}
       </View>
     </SafeAreaView>
   );

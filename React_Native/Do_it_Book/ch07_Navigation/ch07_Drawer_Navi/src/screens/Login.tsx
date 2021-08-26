@@ -8,7 +8,7 @@ import {SafeAreaView, View, Text, TextInput, TouchableView, UnderlineText}
 from '../theme';
 import * as D from '../data';
 
-export default function Login() {
+const Login = () => {
   const [person, setPerson] = useState<D.IPerson>(D.createRandomPerson());
 
   const [password, setPassword] = useState<string>(
@@ -17,7 +17,7 @@ export default function Login() {
   const focus = useAutoFocus();
   const navigation = useNavigation();
   const goHomeNavigator = useCallback(
-    () => navigation.navigate('HomeNavigator'),
+    () => navigation.navigate('TabNavigator'),
     [],
   );
   const goSignUp = useCallback(() => navigation.navigate('SignUp'), []);
@@ -25,50 +25,48 @@ export default function Login() {
   return (
     <SafeAreaView>
       <View style={[styles.view]}>
-        <AutoFocusProvider contentContainerStyle={[styles.keyboardAwareFocus]}>
-          <View style={[styles.textView]}>
-            <Text style={[styles.text]}>email</Text>
-            <View border style={[styles.textInputView]}>
-              <TextInput
-                onFocus={focus}
-                style={[styles.textInput]}
-                value={person.email}
-                onChangeText={email =>
-                  setPerson(person => ({...person, email}))
-                }
-                placeholder="enter your email"
-              />
-            </View>
+        {/* <AutoFocusProvider contentContainerStyle={[styles.keyboardAwareFocus]}> */}
+        <View style={[styles.textView]}>
+          <Text style={[styles.text]}>ID</Text>
+          <View border style={[styles.textInputView]}>
+            <TextInput
+              onFocus={focus}
+              style={[styles.textInput]}
+              value={person.email}
+              onChangeText={email => setPerson(person => ({...person, email}))}
+              placeholder="enter your ID"
+            />
           </View>
-          <View style={[styles.textView]}>
-            <Text style={[styles.text]}>password</Text>
-            <View border style={[styles.textInputView]}>
-              <TextInput
-                secureTextEntry
-                onFocus={focus}
-                style={[styles.textInput]}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="enter your password"
-              />
-            </View>
+        </View>
+        <View style={[styles.textView]}>
+          <Text style={[styles.text]}>password</Text>
+          <View border style={[styles.textInputView]}>
+            <TextInput
+              secureTextEntry
+              onFocus={focus}
+              style={[styles.textInput]}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="enter your password"
+            />
           </View>
-          <TouchableView
-            notification
-            style={[styles.touchableView]}
-            onPress={goHomeNavigator}>
-            <Text style={[styles.text]}>Login</Text>
-          </TouchableView>
-          <UnderlineText
-            style={[styles.text, {marginTop: 15}]}
-            onPress={goSignUp}>
-            SignUp
-          </UnderlineText>
-        </AutoFocusProvider>
+        </View>
+        <TouchableView
+          notification
+          style={[styles.touchableView]}
+          onPress={goHomeNavigator}>
+          <Text style={[styles.text]}>Login</Text>
+        </TouchableView>
+        <UnderlineText
+          style={[styles.text, {marginTop: 15}]}
+          onPress={goSignUp}>
+          SignUp
+        </UnderlineText>
+        {/* </AutoFocusProvider> */}
       </View>
     </SafeAreaView>
   );
-}
+};
 const styles = StyleSheet.create({
   view: {flex: 1, justifyContent: 'space-between', alignItems: 'center'},
   text: {fontSize: 20},
@@ -90,3 +88,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+export default Login;

@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useCallback, useEffect, useRef} from 'react';
 import {StyleSheet, FlatList} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {DrawerActions, useNavigation} from '@react-navigation/native';
 // prettier-ignore
 import {SafeAreaView, View, UnderlineText,TopBar,
 NavigationHeader, MaterialCommunityIcon as Icon} from '../theme';
@@ -18,6 +19,9 @@ export default function Home() {
     () => navigation.navigate('HomeRight', {name: 'Jack', age: 32}),
     [],
   );
+  const open = useCallback(() => {
+    navigation.dispatch(DrawerActions.openDrawer());
+  }, []);
   const logout = useCallback(() => {
     navigation.navigate('Login');
   }, []);
@@ -49,6 +53,7 @@ export default function Home() {
         <View style={[styles.view]}>
           <NavigationHeader
             title="Home"
+            Left={() => <Icon name="menu" size={30} onPress={open} />}
             Right={() => <Icon name="logout" size={30} onPress={logout} />}
           />
           <TopBar noSwitch>
