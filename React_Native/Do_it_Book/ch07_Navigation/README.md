@@ -1897,3 +1897,21 @@ export  default function Home() {
 	/>)
 }
 ```
+
+# 드로어 내비게이션 이해하기
+
+- 이 절에서는 드로어 내비게이션을 제공하는
+- ┗ @react-navigation/drawer 패키지의 기능을 알아보도록 함
+
+> 필수 패키지 설치
+
+     yarn add react-native-vector-icons react-native-paper color faker moment moment-with-locales-es6 react-native-appearance
+     yarn add @types/react-native-vector-icons @types/color @types/faker
+     yarn add react-native-keyboard-aware-scroll-view
+
+> 내비게이션 필수 패키지 설치
+
+    yarn add react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context
+    yarn add @react-native-community/masked-view
+    yarn add @react-navigation/native
+    yarn add @react-navigation/stack @react-navigation/bottom-tabs @react-navigation/drawer
