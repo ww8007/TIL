@@ -33,11 +33,11 @@ export default function MainNavigator() {
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen name="Login" component={Login} />
       <Tab.Screen name="SignUp" component={SignUp} />
-      {/* <Tab.Screen
+      <Tab.Screen
         name="HomeNavigator"
         component={HomeNavigator}
         options={{tabBarLabel: 'Home', tabBarBadge: 3}}
-      /> */}
+      />
     </Tab.Navigator>
   );
 }
