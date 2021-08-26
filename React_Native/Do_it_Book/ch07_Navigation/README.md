@@ -1639,3 +1639,209 @@ useImperativeHandle(
 ### createBottomTabNavigator 함수
 
 - @react-navigation/bottom-tabs 패키지는 createBottomTabNavigator 함수를 제공
+
+> createBottomTabNavigator
+
+```tsx
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+```
+
+- 그리고 이 함수를 호출하면 Navigator와 Screen 컴포넌트가 있는 탭 객체를 얻을 수 있음
+
+> 탭 객체
+
+```tsx
+const Tab = createBottomTabNavigator();
+// <Tab.Navigator />
+// <Tab.Screen />
+```
+
+> 실제 구현
+
+```tsx
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+import Login from './Login';
+import SingUP from './SignUp';
+import HomeNavigator from './HomeNavigator';
+
+const Tab = createBottomTabNavigator();
+
+export default function MainNavigator() {
+	return (
+		<Tab.Navigator>
+			<Tab.Screen name="Login" component={Login} />
+			<Tab.Screen name="SignUP" component={SingUP} />
+			<Tab.Screen
+				name="HomeNavigator"
+				component={HomeNavigator}
+				options={{ tabBarLabel: 'Home' }}
+			/>
+		</Tab.Navigator>
+	);
+}
+```
+
+- 흥미로운 것은 Home 탭을 눌러보면 만들었던 Home 컴포넌트가 나타난다는 점
+- ┗ 또한 왼쪽에서 오른쪽으로 드래깅하면 HomeLeft, 오른쪽 왼쪽 HomeRight
+
+- 리익트 내비게이션에서는 이처럼 `특정 내비게이션(Tab.Screen)` 화면 컴포넌트를
+- ┣ `다른 내비게이션(스택 내비게이션을 구현한 HomeNavigator)`에서 사용 가능
+- ┗ 이를 `중첩 내비게이션(nested navigation)` 이라고 부름!
+
+### 탭에 아이콘 부착하기
+
+- `Tab.Navigator`의 `screenOptions` 속성에 설정하는 객체에는
+- ┗ 다음처럼 `tabBarIcon` 이란 속성을 사용할 수 있음
+
+> tabBarIcon 속성 사용
+
+```tsx
+import type { RouteProps, ParamListBase } from '@react-navigation/native';
+
+type TabBarIconProps = { focused: boolean; color: string; size: number };
+const screenOptions = ({
+	route,
+}: {
+	route: RouteProp<ParamListBase, string>;
+}) => {
+	const { name } = route;
+	return {
+		tabBarIcon: ({ focused, color, size }: TabBarIconProps) => {
+			return <></>;
+		},
+	};
+};
+return <Tab.Navigator screenOptions={screeOptions}>
+```
+
+- `react-native-paper`가 제공하는 `BottomNavigation` 컴포넌트의 아이콘으로는
+- ┣ `react-native-vector-icons`의 `MaterialCommunityIcons`를 사용해야 함
+- ┣ 이와 달리 `@react-navigation/bottom-tabs` 아이콘은
+- ┗ 다음 코드에서 확인할 수 있듯이 자유롭게 선택이 가능하다.
+
+> 실제 구현 코드
+
+```tsx
+const screenOptions = ({
+	route,
+}: {
+	route: RouteProp<ParamListBase, string>;
+}) => {
+	return {
+		tabBarIcon: ({ focused, color, size }: TabBarIconProps) => {
+			const { name } = route;
+			switch (name) {
+				case 'Login':
+					return <AntIcon name="login" size={size} color={color} />;
+				case 'SignUp':
+					return <FontAwesomeIcon name="sign-in" size={size} color={color} />;
+			}
+			return <Icon name="home" size={size} color={color} />;
+		},
+	};
+};
+
+const Tab = createBottomTabNavigator();
+
+export default function MainNavigator() {
+	return (
+		<Tab.Navigator screenOptions={screenOptions}>
+			<Tab.Screen name="Login" component={Login} />
+			<Tab.Screen name="SignUp" component={SingUP} />
+			<Tab.Screen
+				name="Home"
+				component={HomeNavigator}
+				options={{ tabBarLabel: 'Home' }}
+			/>
+		</Tab.Navigator>
+	);
+}
+```
+
+- 다음 코드에서 확인할 수 있듯 focused 값에 따라
+- ┗ 아이콘을 바구거나 크기나 색상을 자유롭게 지정가능
+
+```tsx
+const icons: Record<string, string[]> = {
+	HomeNavigator: ['home-circle', 'home-circle-outline'],
+	Login: ['account-search', 'account-search-outline'],
+	SignUp: ['account-clock', 'account-clock-outline'],
+};
+
+const screenOptions = ({
+	route,
+}: {
+	route: RouteProp<ParamListBase, string>;
+}) => {
+	return {
+		tabBarIcon: ({ focused, color, size }: TabBarIconProps) => {
+			const { name } = route;
+			const focusedSize = focused ? size + 6 : size;
+			const focusedColor = focused ? Colors.lightBlue500 : color;
+			const [icon, iconOutline] = icons[name];
+			const iconName = focused ? icon : iconOutline;
+			return <Icon name={iconName} size={focusedSize} color={focusedColor} />;
+		},
+	};
+};
+```
+
+- 이번에는 탭의 라벨을 바꾸는 방법과 배지(badge)를 부착하는 방법을 학습
+
+### tabBarLabel과 tabBarBade 속성
+
+- 앞에 Stack 부분에서 `Stack.Screen`의 `options` 속성을 사용한 적이 있는데
+- ┣ 사실 리액트 네비에션에서
+- ┣ `Navigator` 컴포넌트 : `screenOptions` 제공
+- ┣ `Screen` 컴포넌트 : `options` 제공
+- ┗ `속성의 이름은 같지만` `속성에 설정하는 객체의 속성`은 패키지마다 조금 다름
+
+- Tab.Screen의 options 속성에 설정하는 객체에는 다음처럼
+- ┗ tabBarLabel, tabBarBade 속성을 선택해서 사용 가능
+
+| 속성 이름   | 의미                                                                                            |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| tabBarLabel | 탭 아래의 라벨 텍스트를 설정함(ex: 'Home', 'Search') 설정 안하면 name 속성에 설정한 문자열 사용 |
+| tabBarBadge | 탭의 아이콘에 1,2,3 등의 숫자를 붙일 수 있는데 이를 배지라고 함                                 |
+
+- 이제 다음 코드의 의미가 명확해졌음
+- ┣ 다음 코드에서는 `Screen` 이므로 `options` 속성을 사용하며
+- ┗ `탭의 라벨`은 `tabBarLabel` 속성을, `배지`는 `tabBarBadge` 속성을 사용하여 설정
+
+> options 속성에 라벨과 배지 설정
+
+```tsx
+<Tab.Screen
+	name="HomeNavigator"
+	component={HomeNavigator}
+	options={{ tabBarLabel: 'Home', tabBarBadge: 3 }}
+/>
+```
+
+## 탭 화면 컴포넌트 간 이동하기
+
+- 리액트 내비게이션이 제공하는
+- ┣ `useNavigation`, `useFocusEffect` 등의 훅 함수는
+- ┣ 항상 `@react-navigation/native` 패키지로부터 얻음
+- ┣ 그리고 이처럼 `@react-navigation/native` 패키지에서 얻는 것은
+- ┣ 앞에서 보았듯 스택 네비게이션, 탭 네비게이션, 드로어 내비게이션에서
+- ┗ 모두 같은 의미로 사용이 가능하다.
+
+- 요컨대 탭 `화면 간의 이동`은 `스택 내비게이션 때`처럼
+- ┗ `navigation.navigate(화면_이름)` 형태의 코드를 호출하면 됨
+
+### Login 컴포넌트 구현
+
+```tsx
+const goHomeNavigator = useCallback(
+	() => navigation.navigate('HomeNavigator'),
+	[]
+);
+const goSignUp = useCallback(() => navigation.navigate('SignUp'), []);
+```
+
+- 위의 코드는 SignUp이나 Home 화면 이동을 어떻게 구현하는지 보여줌
+- ┣ 사실 이 코드는 AutoFocus.tsx 구현 내용에 내비게이션 로직을 추가한 것에 불과
+- ┗ 이 코드에서 유심히 봐야할 부분은 navigate를 호출하는 부분
