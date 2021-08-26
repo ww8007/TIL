@@ -2126,3 +2126,173 @@ const DrawerContent: FC<DrawerContentComponentProps> = (props) => {
 - ┠ 이는 `DrawerContentScrollView`의 `contentContainerStyle`에
 - ┠ `flex : 1` 값을 설정했기 때문
 - ┗ 아이폰에서는 `DrawerContentScrollView`가 `SafeAreView` 역할 수행!!!
+
+## 서랍을 열고 닫는 UI 구현
+
+- 왼쪽 화면위에 줄 세 개로 구성된 아이콘이 있음
+- ┠ 이 아이콘을 누르면 화면 오른쪽처럼 Drawer Content 컴포넌트가 화면에 나타남(Open)
+- ┠ 또한 Drawer Content 의 화면 오른쪽 위에 나타난 X 버튼을 누르면
+- ┗ 화면을 끌 수 있음
+
+> 먼저 이 UI를 구성하기 위해 필요한 DrawerActions라는 객체를 알아보도록 하자
+
+### DrawerActions 객체
+
+- 다음은 앞의 X 모양 아이콘을 표시하는 코드로
+- ┗ 이 아이콘을 눌러 호출하는 close 함수를 어떻게 구현하는지 궁금해짐
+
+> X 모양 아이콘 표시
+
+```tsx
+import {NavigationHeader} from '../components';
+
+const DrawerContent: FC<DrawerContentComponentProps> = (props) => {
+	const {navigation} = props;
+	const close = () => {/*조금 뒤 구현*/}
+	return <NavigationHeader Right={()=> <Icon name='close' size={24}>} />
+}
+```
+
+- `@react-navigation/native` 패키지는 `DrawerActions`란 객체를 제공
+
+```tsx
+import { DrawerActions } from '@react-navigation/native';
+```
+
+- `DrawerActions`는 `서랍을 열거니 닫는` 또는 `이를 토글하는 데이터`를 생성하는 다음
+- ┗ 메서드를 제공
+
+> DrawerActions 메서드
+
+```tsx
+DrawerActions.closeDrawer(); // 서랍을 닫음
+DrawerActions.openDrawer(); // 서랍을 염
+DrawerActions.toggleDrawer(); // 현재 서랍의 상태를 토글
+```
+
+- `DrawerActions`는 `navigation`의 `dispatch 메서드`의 `매개변수 형태`로 동작
+- ┗ 즉 다음 코드의 `close 메서드`를 호출하면 서랍을 닫을 수 있음
+
+> close 함수
+
+```tsx
+const close = () => navigation.dispatch(DrawerActions.closeDrawer());
+```
+
+- 이제 DrawerContent.tsx에 아이콘을 추가하고 onPress 처리기에 앞의 close 함수 설정
+
+### 서랍을 닫는 UI 구현
+
+- 다음 코드는 src/screens 디렉터리의 DrawerContent.tsx
+- ┠ 파일에 서랍을 닫는 close 라는 아이콘과
+- ┠ `navigation.dispatch(DrawerActions.closeDrawer())`
+- ┗ 형태로 서랍을 닫는 코드를 추가한 것
+
+> 실제 코드 구현
+
+```tsx
+const DrawerContent: FC<DrawerContentComponentProps> = (props) => {
+	const { navigation } = props;
+	const close = useCallback(
+		() => navigation.dispatch(DrawerActions.closeDrawer()),
+		[]
+	);
+	return (
+		<DrawerContentScrollView {...props} contentContainerStyle={[styles.view]}>
+			<NavigationHeader
+				Right={() => <Icon name="close" size={24} onPress={close} />}
+			/>
+			<View style={[styles.content]}>
+				<View style={[styles.content]}>
+					<Avatar uri={loginUser.avatar} size={40} />
+					<Text style={[styles.text, styles.m]}>{loginUser.name}</Text>
+				</View>
+				<View style={[styles.row]}>
+					<UnderlineText
+						numberOfLines={1}
+						ellipsizeMode="tail"
+						style={[styles.text, styles.m]}
+					>
+						{loginUser.email}
+					</UnderlineText>
+				</View>
+				<View style={[styles.row, { marginTop: 20 }]}>
+					<Switch />
+				</View>
+			</View>
+		</DrawerContentScrollView>
+	);
+};
+
+export default DrawerContent;
+
+const styles = StyleSheet.create({
+	view: { flex: 1, padding: 5 },
+	row: { flexDirection: 'row', padding: 5, alignItems: 'center' },
+	m: { marginLeft: 5 },
+	text: { fontSize: 20 },
+	content: { flex: 1, padding: 5 },
+});
+```
+
+- 이제 코드를 실행하면 DrawerContent 화면 위에는 서랍을 닫는 X 모양 아이콘이 보이고
+- ┠ 이를 누르면 서랍이 닫히는 것을 확인할 수 있음
+- ┠ 만약 서랍을 닫는 UI가 있다면 서랍을 여는 UI도 있어야 자연스러울 것
+- ┗ 이제 서랍을 여는 UI를 Home.tsx에 구현
+
+### 서랍을 여는 UI 구현
+
+- 화면 왼쪽에 서랍을 여는 아이콘과 오른쪽에 로그아웃 아이콘을 추가한 모습
+
+- 서랍을 여는 아이콘의 onPress 이벤트 속성에 다음 open 함수를 설정하면
+- ┗ 간단히 서랍을 열 수 있음
+
+> open 함수
+
+```tsx
+const open = () => {
+	navigation.dispatch(DrawerActions.openDrawer());
+};
+```
+
+- 로그아웃 기능은 다음 코드로 쉽게 구현 가능
+- ┗ 로그인 화면으로 이동하는 것이 로그아웃이기 때문
+
+> 로그아웃 기능
+
+```tsx
+const logout = useCallback(() => {
+	navigation.navigate('Login');
+}, []);
+```
+
+> 이제 마지막으로 Login.tsx, SignUp.tsx 파일 내용을 수정하여
+>
+> > 로그인이나 계정을 생성하면 Home 컴포넌트가 화면에 나타도록 구현
+
+## Login과 SignUp 컴포넌트의 내비게이션 관려 코드 수정
+
+> src/screens/Login.tsx
+
+```tsx
+const navigation = useNavigation();
+const goHomeNavigator = useCallback(
+	() => navigation.navigate('TabNavigator'), // TabNavigator로 이동하도록 수정
+	[]
+);
+```
+
+- line : 18 ~ 22
+- [코드로 이동](./ch07_Drawer_Navi/src/screens/Login.tsx)
+
+> src/screens/SignUp.tsx
+
+```tsx
+const goTabNavigator = useCallback(() => {
+	if (password === confirmPassword) {
+		navigation.navigate('TabNavigator'); // TabNavigator로 이동하도록 수정
+	} else {
+		Alert.alert('password is invalid');
+	}
+}, [password, confirmPassword]);
+```
