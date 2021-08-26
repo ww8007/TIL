@@ -1,72 +1,85 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useCallback} from 'react';
-import {useAutoFocus, AutoFocusProvider} from '../contexts';
-import {StyleSheet} from 'react-native';
+import {Keyboard, StyleSheet} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 // prettier-ignore
-import {SafeAreaView, View, Text, TextInput, TouchableView, UnderlineText}
-from '../theme';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  UnderlineText,
+  TextInput,
+  TouchableView,
+  TopBar,
+  MaterialCommunityIcon as Icon,
+} from '../theme/navigation';
 import * as D from '../data';
+import {useAutoFocus, AutoFocusProvider} from '../contexts';
 
-const Login = () => {
+export default function Login() {
   const [person, setPerson] = useState<D.IPerson>(D.createRandomPerson());
-
   const [password, setPassword] = useState<string>(
     D.random(10000, 1000000).toString(),
   );
   const focus = useAutoFocus();
   const navigation = useNavigation();
-  const goHomeNavigator = useCallback(
-    () => navigation.navigate('TabNavigator'),
-    [],
-  );
+  // const goHomeNavigator = useCallback(
+  //   () => navigation.navigate('HomeNavigator'),
+  //   []
+  // )
+  // prettier-ignore
+  const goTabNavigator = useCallback(() => navigation.navigate('TabNavigator'), []);
   const goSignUp = useCallback(() => navigation.navigate('SignUp'), []);
 
   return (
     <SafeAreaView>
       <View style={[styles.view]}>
-        {/* <AutoFocusProvider contentContainerStyle={[styles.keyboardAwareFocus]}> */}
-        <View style={[styles.textView]}>
-          <Text style={[styles.text]}>ID</Text>
-          <View border style={[styles.textInputView]}>
-            <TextInput
-              onFocus={focus}
-              style={[styles.textInput]}
-              value={person.email}
-              onChangeText={email => setPerson(person => ({...person, email}))}
-              placeholder="enter your ID"
-            />
+        <AutoFocusProvider contentContainerStyle={[styles.keyboardAwareFocus]}>
+          <UnderlineText onPress={Keyboard.dismiss} style={[styles.text]}>
+            dismiss keyboard
+          </UnderlineText>
+          <View style={[styles.textView]}>
+            <Text style={[styles.text]}>email</Text>
+            <View border style={[styles.textInputView]}>
+              <TextInput
+                onFocus={focus}
+                style={[styles.textInput]}
+                value={person.email}
+                onChangeText={email =>
+                  setPerson(person => ({...person, email}))
+                }
+                placeholder="enter your email"
+              />
+            </View>
           </View>
-        </View>
-        <View style={[styles.textView]}>
-          <Text style={[styles.text]}>password</Text>
-          <View border style={[styles.textInputView]}>
-            <TextInput
-              secureTextEntry
-              onFocus={focus}
-              style={[styles.textInput]}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="enter your password"
-            />
+          <View style={[styles.textView]}>
+            <Text style={[styles.text]}>password</Text>
+            <View border style={[styles.textInputView]}>
+              <TextInput
+                secureTextEntry
+                onFocus={focus}
+                style={[styles.textInput]}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="enter your password"
+              />
+            </View>
           </View>
-        </View>
-        <TouchableView
-          notification
-          style={[styles.touchableView]}
-          onPress={goHomeNavigator}>
-          <Text style={[styles.text]}>Login</Text>
-        </TouchableView>
-        <UnderlineText
-          style={[styles.text, {marginTop: 15}]}
-          onPress={goSignUp}>
-          SignUp
-        </UnderlineText>
-        {/* </AutoFocusProvider> */}
+          <TouchableView
+            notification
+            style={[styles.touchableView]}
+            onPress={goTabNavigator}>
+            <Text style={[styles.text]}>Login</Text>
+          </TouchableView>
+          <UnderlineText
+            style={[styles.text, {marginTop: 15}]}
+            onPress={goSignUp}>
+            SignUp
+          </UnderlineText>
+        </AutoFocusProvider>
       </View>
     </SafeAreaView>
   );
-};
+}
 const styles = StyleSheet.create({
   view: {flex: 1, justifyContent: 'space-between', alignItems: 'center'},
   text: {fontSize: 20},
@@ -88,5 +101,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
-export default Login;

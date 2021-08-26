@@ -1,21 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useCallback} from 'react';
+import React, {useMemo, useCallback} from 'react';
 import {StyleSheet} from 'react-native';
-import {
-  View,
-  Text,
-  NavigationHeader,
-  UnderlineText,
-  MaterialCommunityIcon as Icon,
-  Switch,
-} from '../theme';
-
-import {DrawerContentComponentProps} from '@react-navigation/drawer';
+// prettier-ignore
+import {View, Text, NavigationHeader, UnderlineText,
+MaterialCommunityIcon as Icon, Switch} from '../theme';
+import type {FC} from 'react';
+import type {DrawerContentComponentProps} from '@react-navigation/drawer';
 import {DrawerContentScrollView} from '@react-navigation/drawer';
 import {DrawerActions} from '@react-navigation/native';
 import {Avatar} from '../components';
 import * as D from '../data';
-import type {FC} from 'react';
+
 const loginUser = D.createRandomPerson();
 
 const DrawerContent: FC<DrawerContentComponentProps> = props => {
@@ -24,6 +19,7 @@ const DrawerContent: FC<DrawerContentComponentProps> = props => {
     () => navigation.dispatch(DrawerActions.closeDrawer()),
     [],
   );
+
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={[styles.view]}>
       <NavigationHeader
@@ -49,9 +45,7 @@ const DrawerContent: FC<DrawerContentComponentProps> = props => {
     </DrawerContentScrollView>
   );
 };
-
 export default DrawerContent;
-
 const styles = StyleSheet.create({
   view: {flex: 1, padding: 5},
   row: {flexDirection: 'row', padding: 5, alignItems: 'center'},

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useMemo} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import type {StackNavigationOptions} from '@react-navigation/stack';

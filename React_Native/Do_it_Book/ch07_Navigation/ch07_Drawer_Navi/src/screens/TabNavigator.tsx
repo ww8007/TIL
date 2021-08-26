@@ -10,6 +10,7 @@ type TabBarIconProps = {focused: boolean; color: string; size: number};
 const icons: Record<string, string[]> = {
   HomeNavigator: ['home-circle', 'home-circle-outline'],
 };
+
 const screenOptions = ({route}: {route: RouteProp<ParamListBase, string>}) => {
   return {
     tabBarIcon: ({focused, color, size}: TabBarIconProps) => {
@@ -25,7 +26,7 @@ const screenOptions = ({route}: {route: RouteProp<ParamListBase, string>}) => {
 };
 const Tab = createBottomTabNavigator();
 
-export default function MainNavigator() {
+export default function TabNavigator() {
   return (
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen

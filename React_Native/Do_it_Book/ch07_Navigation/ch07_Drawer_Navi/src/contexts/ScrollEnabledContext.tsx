@@ -14,7 +14,6 @@ const defaultScrollEnabledContext = {
 const ScrollEnabledContext = createContext<ScrollEnabledContextType>(
   defaultScrollEnabledContext,
 );
-
 type ScrollEnabledContextProps = {};
 export const ScrollEnabledProvider: FC<ScrollEnabledContextProps> = ({
   children,
@@ -30,7 +29,6 @@ export const ScrollEnabledProvider: FC<ScrollEnabledContextProps> = ({
     </ScrollEnabledContext.Provider>
   );
 };
-
 export const useScrollEnabled = (): [boolean, (enabled: boolean) => void] => {
   const {scrollEnabled, setScrollEnabled} = useContext(ScrollEnabledContext);
   return [scrollEnabled, setScrollEnabled];
