@@ -1,9 +1,9 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useCallback, useEffect, useRef} from 'react';
 import {StyleSheet, FlatList} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 // prettier-ignore
-import {SafeAreaView, View, UnderlineText,TopBar} from '../theme/navigation';
+import {SafeAreaView, View, UnderlineText,TopBar,
+NavigationHeader, MaterialCommunityIcon as Icon} from '../theme';
 import {ScrollEnabledProvider, useScrollEnabled} from '../contexts';
 import * as D from '../data';
 import Person from './Person';
@@ -18,6 +18,9 @@ export default function Home() {
     () => navigation.navigate('HomeRight', {name: 'Jack', age: 32}),
     [],
   );
+  const logout = useCallback(() => {
+    navigation.navigate('Login');
+  }, []);
   // for people
   const [scrollEnabled] = useScrollEnabled();
   const [people, setPeople] = useState<D.IPerson[]>([]);
@@ -44,14 +47,10 @@ export default function Home() {
     <SafeAreaView>
       <ScrollEnabledProvider>
         <View style={[styles.view]}>
-          <TopBar>
-            <UnderlineText onPress={goLeft} style={styles.text}>
-              go Left
-            </UnderlineText>
-            <UnderlineText onPress={goRight} style={styles.text}>
-              go Right
-            </UnderlineText>
-          </TopBar>
+          <NavigationHeader
+            title="Home"
+            Right={() => <Icon name="logout" size={30} onPress={logout} />}
+          />
           <TopBar noSwitch>
             <UnderlineText onPress={addPerson} style={styles.text}>
               add

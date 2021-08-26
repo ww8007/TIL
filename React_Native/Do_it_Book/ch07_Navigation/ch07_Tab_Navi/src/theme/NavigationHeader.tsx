@@ -29,6 +29,7 @@ export const NavigationHeader: FC<NavigationHeaderProps> = ({
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   view: {
     width: '100%',

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, {createContext, useContext, useRef, useCallback} from 'react';
 import type {FC, ComponentProps} from 'react';
@@ -26,10 +25,10 @@ export const AutoFocusProvider: FC<AutoFocusProviderProps> = ({
 }) => {
   const scrollRef = useRef<KeyboardAwareScrollView | null>(null);
   const scrollToInput = useCallback((reactNode: any) => {
-    scrollRef.current?.scrollToFocusedInput(reactNode);
+    // scrollRef.current?.scrollToFocusedInput(reactNode);
   }, []);
   const autoFocus = useCallback((event: FocusEvent) => {
-    scrollToInput(findNodeHandle(event.target));
+    // scrollToInput(findNodeHandle(event.target));
   }, []);
   const value = {
     autoFocus,

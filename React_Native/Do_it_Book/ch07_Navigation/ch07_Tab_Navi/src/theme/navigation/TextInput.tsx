@@ -1,29 +1,29 @@
-import React, {forwardRef} from 'react'
-import type {ForwardRefRenderFunction, ComponentProps} from 'react'
-import {StyleSheet, TextInput as RNTextInput} from 'react-native'
-import {useTheme} from '@react-navigation/native'
+import React, {forwardRef} from 'react';
+import type {ForwardRefRenderFunction, ComponentProps} from 'react';
+import {StyleSheet, TextInput as RNTextInput} from 'react-native';
+import {useTheme} from '@react-navigation/native';
 
-export type TextInputProps = ComponentProps<typeof RNTextInput>
+export type TextInputProps = ComponentProps<typeof RNTextInput>;
 
 const _TextInput: ForwardRefRenderFunction<RNTextInput, TextInputProps> = (
   {style, ...props},
-  ref
+  ref,
 ) => {
-  const {colors} = useTheme()
+  const {colors} = useTheme();
   return (
     <RNTextInput
       ref={ref}
       style={[
         {color: colors.text, borderColor: colors.text},
         styles.textInput,
-        style
+        style,
       ]}
       placeholderTextColor={colors.text}
       {...props}
     />
-  )
-}
-export const TextInput = forwardRef(_TextInput)
+  );
+};
+export const TextInput = forwardRef(_TextInput);
 const styles = StyleSheet.create({
-  textInput: {borderWidth: 1, borderRadius: 5}
-})
+  textInput: {borderWidth: 1, borderRadius: 5},
+});

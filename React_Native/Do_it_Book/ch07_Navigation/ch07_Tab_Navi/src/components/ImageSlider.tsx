@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useRef, useMemo, useCallback} from 'react';
 import type {FC} from 'react';
 import {StyleSheet, FlatList, Image, View, Animated} from 'react-native';

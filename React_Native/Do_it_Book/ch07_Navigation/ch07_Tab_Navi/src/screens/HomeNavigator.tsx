@@ -1,12 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React from 'react';
+import React, {useMemo} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import type {StackNavigationOptions} from '@react-navigation/stack';
+import {useNavigationHorizontalInterpolator} from '../hooks';
 import Home from './Home';
 import HomeLeft from './HomeLeft';
 import HomeRight from './HomeRight';
-import {useNavigationHorizontalInterpolator} from '../hooks';
-import {useMemo} from 'react';
 
 const Stack = createStackNavigator();
 
@@ -27,10 +26,7 @@ export default function MainNavigator() {
     [],
   );
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}>
+    <Stack.Navigator screenOptions={{headerShown: false}}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen
         name="HomeLeft"

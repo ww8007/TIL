@@ -1,22 +1,22 @@
-import React, {useState} from 'react';
-import type {FC} from 'react';
-import {Image} from 'react-native';
-import {Colors} from 'react-native-paper';
+import React, {useState} from 'react'
+import type {FC} from 'react'
+import {Image} from 'react-native'
+import {Colors} from 'react-native-paper'
 // prettier-ignore
 import {View, Text, UnderlineText, TouchableView,
-MaterialCommunityIcon as Icon} from '../theme/navigation';
-import moment from 'moment-with-locales-es6';
-import * as D from '../data';
-import {Avatar} from '../components';
-import {styles} from './Person.style';
+MaterialCommunityIcon as Icon} from '../theme/navigation'
+import moment from 'moment-with-locales-es6'
+import * as D from '../data'
+import {Avatar} from '../components'
+import {styles} from './Person.style'
 
 export type PersonProps = {
-  person: D.IPerson;
-  deletePressed: () => void;
-};
+  person: D.IPerson
+  deletePressed: () => void
+}
 
 const Person: FC<PersonProps> = ({person: initialPerson, deletePressed}) => {
-  const [person, setPerson] = useState<D.IPerson>(initialPerson);
+  const [person, setPerson] = useState<D.IPerson>(initialPerson)
   return (
     <View style={[styles.view]}>
       <View style={[styles.leftView]}>
@@ -59,6 +59,6 @@ const Person: FC<PersonProps> = ({person: initialPerson, deletePressed}) => {
         </View>
       </View>
     </View>
-  );
-};
-export default Person;
+  )
+}
+export default Person

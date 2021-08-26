@@ -1,7 +1,7 @@
 import React, {useState, forwardRef, useImperativeHandle} from 'react';
 // prettier-ignore
 import type {ForwardRefRenderFunction, ReactNode, MutableRefObject} from 'react';
-import {Platform, StyleSheet, Animated, FlatList} from 'react-native';
+import {Platform, StyleSheet, Animated, FlatList, View} from 'react-native';
 import {usePanResponder} from '../hooks';
 
 export type LeftRightNavigationMethods = {

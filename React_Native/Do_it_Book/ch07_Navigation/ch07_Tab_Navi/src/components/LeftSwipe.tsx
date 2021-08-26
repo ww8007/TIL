@@ -48,7 +48,6 @@ export const LeftSwipe: FC<LeftSwipeProps> = ({
         if (!show && dx < 0) {
           return; // 이 움직임을 무시합니다.
         }
-        console.log(typeof dx, 'hihi');
         translateX.setValue(dx);
       },
       onPanResponderRelease(e: Event, s: State) {

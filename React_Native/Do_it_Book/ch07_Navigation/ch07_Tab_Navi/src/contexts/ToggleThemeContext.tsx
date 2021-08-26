@@ -1,12 +1,13 @@
-import React, {createContext, FC, useContext} from 'react';
+import React, {createContext, useContext} from 'react';
+import type {FC} from 'react';
 
 export type ToggleThemeContextType = {
   toggleTheme: () => void;
 };
+
 const defaultToggleThemeContext = {
   toggleTheme: () => {},
 };
-
 const ToggleThemeContext = createContext<ToggleThemeContextType>(
   defaultToggleThemeContext,
 );
@@ -18,7 +19,9 @@ export const ToggleThemeProvider: FC<ToggleThemeContextProps> = ({
   children,
   toggleTheme,
 }) => {
-  const value = {toggleTheme};
+  const value = {
+    toggleTheme,
+  };
   return (
     <ToggleThemeContext.Provider value={value}>
       {children}

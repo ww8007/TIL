@@ -1,9 +1,9 @@
-import type {IPerson} from './IPerson';
-import * as F from './faker';
-import * as U from './util';
+import type {IPerson} from './IPerson'
+import * as F from './faker'
+import * as U from './util'
 
 export const createRandomPerson = (): IPerson => {
-  const name = F.randomName();
+  const name = F.randomName()
   return {
     id: F.randomId(),
     createdDate: F.randomDate(),
@@ -16,7 +16,7 @@ export const createRandomPerson = (): IPerson => {
     counts: {
       comment: U.random(10, 100),
       retweet: U.random(10, 100),
-      heart: U.random(100, 1000),
-    },
-  };
-};
+      heart: U.random(100, 1000)
+    }
+  }
+}

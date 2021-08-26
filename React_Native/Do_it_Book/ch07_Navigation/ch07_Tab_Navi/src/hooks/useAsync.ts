@@ -9,6 +9,5 @@ export const useAsync = <T>(
     asyncCallback().catch(setError);
   }, deps);
   const resetError = useCallback(() => setError(notUsed => null), []);
-
   return [error, resetError];
 };

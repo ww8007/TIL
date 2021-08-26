@@ -1,12 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 import {useMemo} from 'react';
 import {PanResponder} from 'react-native';
-
-import type {
-  GestureResponderEvent,
-  PanResponderGestureState,
-} from 'react-native';
+// prettier-ignore
+import type {GestureResponderEvent, PanResponderGestureState} from 'react-native';
 import type {PanResponderCallbacks, PanResponderInstance} from 'react-native';
 
 type Event = GestureResponderEvent;

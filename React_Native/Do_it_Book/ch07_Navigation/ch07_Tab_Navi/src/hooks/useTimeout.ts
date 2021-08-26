@@ -6,8 +6,9 @@ export const useTimeout = (
   deps: any[] = [],
 ): void => {
   useEffect(() => {
-    console.log(deps);
-    if (duration === 0) return;
+    if (duration === 0) {
+      return;
+    }
     const id = setTimeout(callback, duration);
     return () => clearTimeout(id);
   }, [duration, ...deps]);
