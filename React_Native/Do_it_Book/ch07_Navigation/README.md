@@ -1845,3 +1845,55 @@ const goSignUp = useCallback(() => navigation.navigate('SignUp'), []);
 - 위의 코드는 SignUp이나 Home 화면 이동을 어떻게 구현하는지 보여줌
 - ┣ 사실 이 코드는 AutoFocus.tsx 구현 내용에 내비게이션 로직을 추가한 것에 불과
 - ┗ 이 코드에서 유심히 봐야할 부분은 navigate를 호출하는 부분
+
+- 그러므로 위의 코드를 실행하게 되면
+- ┣ `HomeNavigator` 로 이동했다가 `HomeNavigator의 구현 로직`에 의해
+- ┣ 첫 번째 화면인 `Home` 컴포넌트로 이동
+- ┣ 즉 탭 내비게이션의 `Login` 컴포넌트는
+- ┣ 곧바로 `스택 내비게이션`의 `Home`으로 이동하는 것이 아닌
+- ┗ 이처럼 중간 단계를 거쳐야 함
+
+> HomeNavigator 를 거쳐야만 오류가 안생기고 갈 수 있음
+
+- TextInput 부분에 secureTextEntry 속성값에 true를 설정하면
+- ┣ 패스워드를 입력한 텍스트가 화면에 나타나지 않게 설정가능
+- ┣ `<TextInput secureTextEntry={true}>` 부분에서 `={true}` 부분
+- ┗ 생략 가능!!
+
+### SinUP 컴포넌트 구현
+
+```tsx
+const goHomeNavigator = useCallback(() => {
+	if (password === confirmPassword) {
+		navigation.navigate('HomeNavigator');
+	} else {
+		Alert.alert('password is invalid');
+	}
+}, [password, confirmPassword]);
+```
+
+- 앞의 Login.tsx 구현 내용과 다르게
+- ┠ password 변수 값 === confirmPassword
+- ┗ 같을 때만 HomeNavigator로 이동하도록 하는 내용 추가
+
+### Home에서 Login 화면 컴포넌트로 이동하기
+
+- 계정을 등록하고 로그인했다면 `로그아웃도 가능`해야 함
+- ┠ 다음 코드에서는 Home 컴포넌트 화면 오른쪽의 로그아웃 아이콘을 누르면
+- ┠ `Login 컴포넌트로 이동`하도록 구현
+- ┠ `중첩 내비게이션 구성`이라면
+- ┠ `상위(name='Login')` → `하위(name='Home')` `컴포넌트로 직접 이동 불가`
+- ┗ 그러나 상위 컴포넌트로는 이동가능
+
+> Home 컴포넌트의 로그아웃 아이콘
+
+```tsx
+export  default function Home() {
+	const logout() => navigate.navigate('Login');
+	return (<NavigationHandler title={title}
+		Right={()=> <Icon name="logout" size={30} color={Colors.lightBlue700}
+		onPress={logout}
+		/>}
+	/>)
+}
+```
