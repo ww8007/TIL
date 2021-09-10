@@ -19,7 +19,7 @@ Today I Learn
 
 ## 현재 공부중
 
-> [Do it R/N](./React_Native/Do_it_Book/README.md)
+> [Javascript](./JavaScript/README.md)
 
 ## 공부하는 목록
 
@@ -102,7 +102,13 @@ Today I Learn
 
 ### JavaScript
 
-> [Generator 정리](./JavaScript/README.md)
+1. Generator
+
+   > [Generator 정리](./JavaScript/README.md)
+
+2. 모던 자바스크립트 Deep Dive
+
+   > [Deep Dive](./Javascript/README.md)
 
 [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
