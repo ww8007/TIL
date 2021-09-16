@@ -21,6 +21,8 @@ Today I Learn
 
 > [Javascript](./JavaScript/README.md)
 
+> [CS](./CS지식/README.md)
+
 ## 공부하는 목록
 
 - [React](./React)
@@ -139,6 +141,9 @@ Today I Learn
    [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
 
 ### CS지식
+
+1. 네트워크
+   - [네트워크](./CS지식/README.md)
 
 > [CS 정리](./CS지식/Computer%20Science/README.MD)
 
