@@ -486,10 +486,10 @@ Object.defineProperty(person, 'name', { configurable: true });
 
 ### 16.5.3 객체 동결
 
-- Object.freeze 메서드는 객체를 동결
-- ┣ 객체 동결 : 프로퍼티 추가 및 삭제와
-- ┣ 프로퍼티 어트리뷰트 재정의 금지
-- ┣ 프로퍼티 값 갱신 금지 의미
+- `Object.freeze` 메서드는 객체를 동결
+- ┣ `객체 동결` : 프로퍼티 추가 및 삭제와
+- ┣ `프로퍼티 어트리뷰트 재정의 금지`
+- ┗ `프로퍼티 값 갱신 금지` 의미
 
 > 동결된 객체는 읽기만 가능
 
@@ -498,10 +498,66 @@ Object.defineProperty(person, 'name', { configurable: true });
 ### 16.5.4 불변 객체
 
 - 지금까지의 변경 방지 메서드들은
-- ┣ 얕은 (shallow only)로 직속 프로퍼티만 변경이 방지되고
-- ┣ 중첩 객체까지는 영향을 주지 못함
-- ┗ Object.freeze 메서드로 객체를 동결하여도 중첩 객체까지 동결은 불가
+- ┣ `얕은 (shallow only)로 직속 프로퍼티만 변경`이 방지되고
+- ┣ `중첩 객체까지는 영향을 주지 못함`
+- ┗ `Object.freeze` 메서드로 객체를 동결하여도 `중첩 객체까지 동결은 불가`
 
 - 객체의 중첩 객체까지 동결하여 변경이 불가능한 읽기 전용의 불변 객체를 구현하려면
-- ┣ 객체를 값으로 갖는 모든 프로퍼티에 대해 `재귀적으로 Object.freeze` 메서드를
-- ┗ 호출 해야함
+- ┣ 객체를 값으로 갖는 `모든 프로퍼티`에 대해 `재귀적으로 Object.freeze` 메서드를
+- ┗ `호출 해야함`
+
+```js
+const person = {
+	name: 'Lee',
+	address: { city: 'Seoul' },
+};
+
+// 얕은 객체 동결
+Object.freeze(person);
+
+// 직속 프로퍼티만 동결
+console.log(Object.isFrozen(person)); //true
+// 중첩 객체까지 동결하지 못함
+console.log(Object.isFrozen(person.address)); //false
+
+person.address.city = 'Busan';
+console.log(person);
+// {name: "Lee", address: {city: "Busan"}}
+```
+
+- 객체의 `중첩 객체까지 동결하여 변경이 불가능한 읽기 전용`의
+- ┣ `읽기 전용의 불변 객체`를 `구현`하기 위해서는
+- ┣ 객체를 값으로 갖는 `모든 프로퍼티에 대해서`
+- ┗ `재귀적으로 Object.freeze 메서드 호출`
+
+```js
+function deepFreeze(target) {
+	// 객체가 아니거나 동결된 객체는 무시하고
+	// 동결되지 않은 객체만 동결
+	if (target && typeof target === 'object' && !Object.isFrozen(target)) {
+		Object.freeze(target);
+		Object.keys(target).forEach((key) => deepFreeze(target[key]));
+	}
+	// 모든 프로퍼티를 순회하여 재구적으로 동결
+	// Object.keys 메서드는 객체 자신의 열거 가능한
+	// 프로퍼티 키를 배열로 반환함
+	// forEach 메서드는 배열을 순회하여 배열의 각 요소에 대해서
+	// 콜백 함수를 실행
+	return target;
+}
+
+const person = {
+	name: 'Lee',
+	address: { city: 'Seoul' },
+};
+
+// 깊은 객체 동결
+deepFreeze(person);
+
+console.log(Object.isFrozen(person)); // true
+// 중첩 객체까지 동결
+console.log(Object.isFrozen(person.address)); // true
+
+person.address.city = 'Busan';
+// 변경해도 오류는 안나지만 변경은 되지 않음!!!
+```
