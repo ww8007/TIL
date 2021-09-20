@@ -2,6 +2,24 @@
 
 - HTTP `프로토콜 구조`에 대해 설명
 
+## 목차
+
+- [2. 간단한 프로토콜 HTTP](#2-%EA%B0%84%EB%8B%A8%ED%95%9C-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C-http)
+  - [2.1 HTTP는 클라이언트와 서버 간에 통신을 함](#21-http%EB%8A%94-%ED%81%B4%EB%9D%BC%EC%9D%B4%EC%96%B8%ED%8A%B8%EC%99%80-%EC%84%9C%EB%B2%84-%EA%B0%84%EC%97%90-%ED%86%B5%EC%8B%A0%EC%9D%84-%ED%95%A8)
+  - [2.2 리퀘스트와 리스폰스를 교환하여 성립](#22-%EB%A6%AC%ED%80%98%EC%8A%A4%ED%8A%B8%EC%99%80-%EB%A6%AC%EC%8A%A4%ED%8F%B0%EC%8A%A4%EB%A5%BC-%EA%B5%90%ED%99%98%ED%95%98%EC%97%AC-%EC%84%B1%EB%A6%BD)
+  - [2.3 HTTP는 상태를 유지하지 않는 프로토콜](#23-http%EB%8A%94-%EC%83%81%ED%83%9C%EB%A5%BC-%EC%9C%A0%EC%A7%80%ED%95%98%EC%A7%80-%EC%95%8A%EB%8A%94-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C)
+  - [2.4 리퀘스트 URI로 리소스를 식별](#24-%EB%A6%AC%ED%80%98%EC%8A%A4%ED%8A%B8-uri%EB%A1%9C-%EB%A6%AC%EC%86%8C%EC%8A%A4%EB%A5%BC-%EC%8B%9D%EB%B3%84)
+  - [2.5 서버에 임무를 부여하는 HTTP 메소드](#25-%EC%84%9C%EB%B2%84%EC%97%90-%EC%9E%84%EB%AC%B4%EB%A5%BC-%EB%B6%80%EC%97%AC%ED%95%98%EB%8A%94-http-%EB%A9%94%EC%86%8C%EB%93%9C)
+    - [GET: 리소스 획득](#get-%EB%A6%AC%EC%86%8C%EC%8A%A4-%ED%9A%8D%EB%93%9D)
+    - [POST: 엔티티 전송](#post-%EC%97%94%ED%8B%B0%ED%8B%B0-%EC%A0%84%EC%86%A1)
+    - [PUT: 파일 전송](#put-%ED%8C%8C%EC%9D%BC-%EC%A0%84%EC%86%A1)
+    - [HEAD: 메시지 헤더 취득](#head-%EB%A9%94%EC%8B%9C%EC%A7%80-%ED%97%A4%EB%8D%94-%EC%B7%A8%EB%93%9D)
+    - [DELETE: 파일 삭제](#delete-%ED%8C%8C%EC%9D%BC-%EC%82%AD%EC%A0%9C)
+    - [OPTIONS: 제공하고 잇는 메소드의 문의](#options-%EC%A0%9C%EA%B3%B5%ED%95%98%EA%B3%A0-%EC%9E%87%EB%8A%94-%EB%A9%94%EC%86%8C%EB%93%9C%EC%9D%98-%EB%AC%B8%EC%9D%98)
+    - [TRACE: 경로 조사](#trace-%EA%B2%BD%EB%A1%9C-%EC%A1%B0%EC%82%AC)
+    - [CONNECT: 프록시에 터널링 요구](#connect-%ED%94%84%EB%A1%9D%EC%8B%9C%EC%97%90-%ED%84%B0%EB%84%90%EB%A7%81-%EC%9A%94%EA%B5%AC)
+  - [2.6 메소드를 사용해서 지시를 내리다](#26-%EB%A9%94%EC%86%8C%EB%93%9C%EB%A5%BC-%EC%82%AC%EC%9A%A9%ED%95%B4%EC%84%9C-%EC%A7%80%EC%8B%9C%EB%A5%BC-%EB%82%B4%EB%A6%AC%EB%8B%A4)
+
 ## 2.1 HTTP는 클라이언트와 서버 간에 통신을 함
 
 - TCP/IP에 있는 다른 많은 프로토콜과 마찬가지로
