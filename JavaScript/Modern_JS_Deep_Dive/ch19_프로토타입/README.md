@@ -10,6 +10,47 @@
 > JS의 경우 클래스 기반 객체지향 프로그래밍 언어보다 효율적이며
 > 프로토타입 기반의 객체지향 프로그래밍 언어
 
+## 목차
+
+- [19. 프로토타입](#19-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85)
+  - [클래스](#%ED%81%B4%EB%9E%98%EC%8A%A4)
+  - [19.1 객체지향 프로그래밍](#191-%EA%B0%9D%EC%B2%B4%EC%A7%80%ED%96%A5-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D)
+  - [19.2 상속과 프로토 타입](#192-%EC%83%81%EC%86%8D%EA%B3%BC-%ED%94%84%EB%A1%9C%ED%86%A0-%ED%83%80%EC%9E%85)
+  - [19.3 프로토타입 객체](#193-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85-%EA%B0%9D%EC%B2%B4)
+    - [19.3.1 `__proto__` 접근자 프로퍼티](#1931-__proto__-%EC%A0%91%EA%B7%BC%EC%9E%90-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0)
+      - [`__proto__`는 접근자 프로퍼티다.](#__proto__%EB%8A%94-%EC%A0%91%EA%B7%BC%EC%9E%90-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0%EB%8B%A4)
+      - [`__proto__` 접근자 프로퍼티는 상속을 통해 사용](#__proto__-%EC%A0%91%EA%B7%BC%EC%9E%90-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0%EB%8A%94-%EC%83%81%EC%86%8D%EC%9D%84-%ED%86%B5%ED%95%B4-%EC%82%AC%EC%9A%A9)
+      - [Object.prototype](#objectprototype)
+      - [`__proto__` 접근자 프로퍼티를 통해 프로토타입에 접근하는 이유](#__proto__-%EC%A0%91%EA%B7%BC%EC%9E%90-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0%EB%A5%BC-%ED%86%B5%ED%95%B4-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85%EC%97%90-%EC%A0%91%EA%B7%BC%ED%95%98%EB%8A%94-%EC%9D%B4%EC%9C%A0)
+      - [`__proto__` 접근자 프로퍼티를 코드 내에서 직접 사용하는 것은 권장하지 않음](#__proto__-%EC%A0%91%EA%B7%BC%EC%9E%90-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0%EB%A5%BC-%EC%BD%94%EB%93%9C-%EB%82%B4%EC%97%90%EC%84%9C-%EC%A7%81%EC%A0%91-%EC%82%AC%EC%9A%A9%ED%95%98%EB%8A%94-%EA%B2%83%EC%9D%80-%EA%B6%8C%EC%9E%A5%ED%95%98%EC%A7%80-%EC%95%8A%EC%9D%8C)
+    - [19.3.2 함수 객체의 prototype 프로퍼티](#1932-%ED%95%A8%EC%88%98-%EA%B0%9D%EC%B2%B4%EC%9D%98-prototype-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0)
+    - [19.3.3 프로토타입의 constructor 프로퍼티와 생성자 함수](#1933-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85%EC%9D%98-constructor-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0%EC%99%80-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98)
+  - [19.4 리터럴 표기법에 의해 생성된 객체의 생성자 함수와 프로토타입](#194-%EB%A6%AC%ED%84%B0%EB%9F%B4-%ED%91%9C%EA%B8%B0%EB%B2%95%EC%97%90-%EC%9D%98%ED%95%B4-%EC%83%9D%EC%84%B1%EB%90%9C-%EA%B0%9D%EC%B2%B4%EC%9D%98-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98%EC%99%80-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85)
+  - [19.5 프로토타입의 생성 시점](#195-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85%EC%9D%98-%EC%83%9D%EC%84%B1-%EC%8B%9C%EC%A0%90)
+    - [19.5.1 사용자 정의 생성자 함수와 프로토타입 생성 시점](#1951-%EC%82%AC%EC%9A%A9%EC%9E%90-%EC%A0%95%EC%9D%98-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98%EC%99%80-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85-%EC%83%9D%EC%84%B1-%EC%8B%9C%EC%A0%90)
+    - [19.5.2 빌트인 생성자 함수와 프로토타입 생성 시점](#1952-%EB%B9%8C%ED%8A%B8%EC%9D%B8-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98%EC%99%80-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85-%EC%83%9D%EC%84%B1-%EC%8B%9C%EC%A0%90)
+      - [전역 객체](#%EC%A0%84%EC%97%AD-%EA%B0%9D%EC%B2%B4)
+  - [19.6 객체 생성 방식과 프로토타입의 결정](#196-%EA%B0%9D%EC%B2%B4-%EC%83%9D%EC%84%B1-%EB%B0%A9%EC%8B%9D%EA%B3%BC-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85%EC%9D%98-%EA%B2%B0%EC%A0%95)
+    - [19.6.1 객체 리터럴에 의해 생성된 객체의 프로토타입](#1961-%EA%B0%9D%EC%B2%B4-%EB%A6%AC%ED%84%B0%EB%9F%B4%EC%97%90-%EC%9D%98%ED%95%B4-%EC%83%9D%EC%84%B1%EB%90%9C-%EA%B0%9D%EC%B2%B4%EC%9D%98-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85)
+    - [19.6.2 Object 생성자 함수에 의해 생성된 객체의 프로토타입](#1962-object-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98%EC%97%90-%EC%9D%98%ED%95%B4-%EC%83%9D%EC%84%B1%EB%90%9C-%EA%B0%9D%EC%B2%B4%EC%9D%98-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85)
+    - [19.6.3 생성자 함수에 의해 생성된 객체의 프로토타입](#1963-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98%EC%97%90-%EC%9D%98%ED%95%B4-%EC%83%9D%EC%84%B1%EB%90%9C-%EA%B0%9D%EC%B2%B4%EC%9D%98-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85)
+  - [19.7 프로토타입 체인](#197-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85-%EC%B2%B4%EC%9D%B8)
+  - [19.8 오버라이딩과 프로퍼티 섀도잉](#198-%EC%98%A4%EB%B2%84%EB%9D%BC%EC%9D%B4%EB%94%A9%EA%B3%BC-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0-%EC%84%80%EB%8F%84%EC%9E%89)
+  - [19.9 프로토타입의 교체](#199-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85%EC%9D%98-%EA%B5%90%EC%B2%B4)
+    - [19.9.1 생성자 함수에 의한 프로토타입의 교체](#1991-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98%EC%97%90-%EC%9D%98%ED%95%9C-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85%EC%9D%98-%EA%B5%90%EC%B2%B4)
+    - [19.9.2 인스턴스에 의한 프로토타입의 교체](#1992-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4%EC%97%90-%EC%9D%98%ED%95%9C-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85%EC%9D%98-%EA%B5%90%EC%B2%B4)
+  - [19.10 instanceof 연산자](#1910-instanceof-%EC%97%B0%EC%82%B0%EC%9E%90)
+  - [19.11 직접 상속](#1911-%EC%A7%81%EC%A0%91-%EC%83%81%EC%86%8D)
+    - [19.11.1 Object.create에 의한 직접 상속](#19111-objectcreate%EC%97%90-%EC%9D%98%ED%95%9C-%EC%A7%81%EC%A0%91-%EC%83%81%EC%86%8D)
+    - [19.11.2 객체 리터럴 내부에서 **proto** 에 의한 직접 상속](#19112-%EA%B0%9D%EC%B2%B4-%EB%A6%AC%ED%84%B0%EB%9F%B4-%EB%82%B4%EB%B6%80%EC%97%90%EC%84%9C-proto-%EC%97%90-%EC%9D%98%ED%95%9C-%EC%A7%81%EC%A0%91-%EC%83%81%EC%86%8D)
+  - [19.12 정적 프로퍼티/메서드](#1912-%EC%A0%95%EC%A0%81-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0%EB%A9%94%EC%84%9C%EB%93%9C)
+  - [19.13 프로퍼티 존재 확인](#1913-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0-%EC%A1%B4%EC%9E%AC-%ED%99%95%EC%9D%B8)
+    - [19.13.1 in 연산자](#19131-in-%EC%97%B0%EC%82%B0%EC%9E%90)
+    - [19.13.2 Object.prototype.hasOwnProperty 메서드](#19132-objectprototypehasownproperty-%EB%A9%94%EC%84%9C%EB%93%9C)
+  - [19.14 프로퍼티 열거](#1914-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0-%EC%97%B4%EA%B1%B0)
+    - [19.14.1 for ... in 문](#19141-for--in-%EB%AC%B8)
+    - [19.14.2 Object.keys/values/entries 메서드](#19142-objectkeysvaluesentries-%EB%A9%94%EC%84%9C%EB%93%9C)
+
 ## 클래스
 
 - `ES6에서는 클래스가 도입`
