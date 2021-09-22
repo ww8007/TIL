@@ -16,12 +16,15 @@ Today I Learn
     - [Docker](#docker)
     - [CSS](#css)
     - [CS지식](#cs지식)
+    - [알고리즘](#알고리즘)
 
 ## 현재 공부중
 
 > [Javascript](./JavaScript/README.md)
 
 > [CS](./CS지식/README.md)
+
+> [코테](./Algorithm/README.md)
 
 ## 공부하는 목록
 
@@ -148,3 +151,8 @@ Today I Learn
 > [CS 정리](./CS지식/Computer%20Science/README.MD)
 
 [[↑] Back to top](#%EB%AA%A9%EC%B0%A8)
+
+### 알고리즘
+
+1. 이것이 코딩 테스트다
+   - [이것이 코딩 테스트다](./Algorithm/README.md)
