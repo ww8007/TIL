@@ -80,3 +80,7 @@
 19. 19장 프로토타입
 
 - [프로토타입](ch19_프로토타입/README.md)
+
+20. 20장 strict mode
+
+- [strict mode](ch20_strict_mode/README.md)
