@@ -1,10 +1,52 @@
 # 25. 클래스
 
+## 목차
+
+- [25. 클래스](#25-%ED%81%B4%EB%9E%98%EC%8A%A4)
+  - [25.1 클래스는 프로토타입의 문법적 설탕인가?](#251-%ED%81%B4%EB%9E%98%EC%8A%A4%EB%8A%94-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85%EC%9D%98-%EB%AC%B8%EB%B2%95%EC%A0%81-%EC%84%A4%ED%83%95%EC%9D%B8%EA%B0%80)
+  - [25.2 클래스 정의](#252-%ED%81%B4%EB%9E%98%EC%8A%A4-%EC%A0%95%EC%9D%98)
+  - [25.3 클래스 호이스팅](#253-%ED%81%B4%EB%9E%98%EC%8A%A4-%ED%98%B8%EC%9D%B4%EC%8A%A4%ED%8C%85)
+  - [25.4 인스턴스 생성](#254-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EC%83%9D%EC%84%B1)
+  - [25.5 메서드](#255-%EB%A9%94%EC%84%9C%EB%93%9C)
+    - [25.5.1 constructor](#2551-constructor)
+    - [25.5.2 프로토타입 메서드](#2552-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85-%EB%A9%94%EC%84%9C%EB%93%9C)
+    - [25.5.3 정적 메서드](#2553-%EC%A0%95%EC%A0%81-%EB%A9%94%EC%84%9C%EB%93%9C)
+    - [25.5.4 정적 메서드와 프로토타입 메서드의 차이](#2554-%EC%A0%95%EC%A0%81-%EB%A9%94%EC%84%9C%EB%93%9C%EC%99%80-%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85-%EB%A9%94%EC%84%9C%EB%93%9C%EC%9D%98-%EC%B0%A8%EC%9D%B4)
+    - [25.5.5 클래스에서 정의한 메서드의 특징](#2555-%ED%81%B4%EB%9E%98%EC%8A%A4%EC%97%90%EC%84%9C-%EC%A0%95%EC%9D%98%ED%95%9C-%EB%A9%94%EC%84%9C%EB%93%9C%EC%9D%98-%ED%8A%B9%EC%A7%95)
+  - [25.6 클래스의 인스턴스 생성 과정](#256-%ED%81%B4%EB%9E%98%EC%8A%A4%EC%9D%98-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EC%83%9D%EC%84%B1-%EA%B3%BC%EC%A0%95)
+    - [1. 인스턴스 생성과 this 바인딩](#1-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EC%83%9D%EC%84%B1%EA%B3%BC-this-%EB%B0%94%EC%9D%B8%EB%94%A9)
+    - [2. 인스턴스 초기화](#2-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EC%B4%88%EA%B8%B0%ED%99%94)
+    - [3. 인스턴스 반환](#3-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EB%B0%98%ED%99%98)
+  - [25.7 프로퍼티](#257-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0)
+    - [25.7.1 인스턴스 프로퍼티](#2571-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0)
+    - [25.7.2 접근자 프로퍼티](#2572-%EC%A0%91%EA%B7%BC%EC%9E%90-%ED%94%84%EB%A1%9C%ED%8D%BC%ED%8B%B0)
+    - [25.7.3 클래스 필드 정의 제안](#2573-%ED%81%B4%EB%9E%98%EC%8A%A4-%ED%95%84%EB%93%9C-%EC%A0%95%EC%9D%98-%EC%A0%9C%EC%95%88)
+      - [클래스 필드와 화살표 함수](#%ED%81%B4%EB%9E%98%EC%8A%A4-%ED%95%84%EB%93%9C%EC%99%80-%ED%99%94%EC%82%B4%ED%91%9C-%ED%95%A8%EC%88%98)
+    - [25.7.4 private 필드 정의 제언](#2574-private-%ED%95%84%EB%93%9C-%EC%A0%95%EC%9D%98-%EC%A0%9C%EC%96%B8)
+      - [25.7.5 static 필드 정의 제안](#2575-static-%ED%95%84%EB%93%9C-%EC%A0%95%EC%9D%98-%EC%A0%9C%EC%95%88)
+  - [25.8 상속에 의한 클래스 확장](#258-%EC%83%81%EC%86%8D%EC%97%90-%EC%9D%98%ED%95%9C-%ED%81%B4%EB%9E%98%EC%8A%A4-%ED%99%95%EC%9E%A5)
+    - [25.8.1 클래스 상속과 생성자 함수 상속](#2581-%ED%81%B4%EB%9E%98%EC%8A%A4-%EC%83%81%EC%86%8D%EA%B3%BC-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98-%EC%83%81%EC%86%8D)
+    - [25.8.2 extends 키워드](#2582-extends-%ED%82%A4%EC%9B%8C%EB%93%9C)
+    - [25.8.3 동적 상속](#2583-%EB%8F%99%EC%A0%81-%EC%83%81%EC%86%8D)
+    - [25.8.4 서브클래스의 constructor](#2584-%EC%84%9C%EB%B8%8C%ED%81%B4%EB%9E%98%EC%8A%A4%EC%9D%98-constructor)
+    - [25.8.5 super 키워드](#2585-super-%ED%82%A4%EC%9B%8C%EB%93%9C)
+      - [super 호출](#super-%ED%98%B8%EC%B6%9C)
+      - [super 호출 주의 점](#super-%ED%98%B8%EC%B6%9C-%EC%A3%BC%EC%9D%98-%EC%A0%90)
+    - [super 참조](#super-%EC%B0%B8%EC%A1%B0)
+    - [25.8.6 상속 클래스의 인스턴스 생성 과정](#2586-%EC%83%81%EC%86%8D-%ED%81%B4%EB%9E%98%EC%8A%A4%EC%9D%98-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EC%83%9D%EC%84%B1-%EA%B3%BC%EC%A0%95)
+      - [1. 서브클래스의 super 호출](#1-%EC%84%9C%EB%B8%8C%ED%81%B4%EB%9E%98%EC%8A%A4%EC%9D%98-super-%ED%98%B8%EC%B6%9C)
+      - [2. 수퍼클래스의 인스턴스 생성과 this 바인딩](#2-%EC%88%98%ED%8D%BC%ED%81%B4%EB%9E%98%EC%8A%A4%EC%9D%98-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EC%83%9D%EC%84%B1%EA%B3%BC-this-%EB%B0%94%EC%9D%B8%EB%94%A9)
+      - [3. 수퍼클래스의 인스턴스 초기화](#3-%EC%88%98%ED%8D%BC%ED%81%B4%EB%9E%98%EC%8A%A4%EC%9D%98-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EC%B4%88%EA%B8%B0%ED%99%94)
+      - [4. 서브클래스 constructor로 복귀와 this 바인딩](#4-%EC%84%9C%EB%B8%8C%ED%81%B4%EB%9E%98%EC%8A%A4-constructor%EB%A1%9C-%EB%B3%B5%EA%B7%80%EC%99%80-this-%EB%B0%94%EC%9D%B8%EB%94%A9)
+      - [5. 서브클래스의 인스턴스 초기화](#5-%EC%84%9C%EB%B8%8C%ED%81%B4%EB%9E%98%EC%8A%A4%EC%9D%98-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EC%B4%88%EA%B8%B0%ED%99%94)
+      - [6. 인스턴스 반환](#6-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EB%B0%98%ED%99%98)
+    - [25.8.7 표준 빌트인 생성자 함수 확장](#2587-%ED%91%9C%EC%A4%80-%EB%B9%8C%ED%8A%B8%EC%9D%B8-%EC%83%9D%EC%84%B1%EC%9E%90-%ED%95%A8%EC%88%98-%ED%99%95%EC%9E%A5)
+
 ## 25.1 클래스는 프로토타입의 문법적 설탕인가?
 
 - JS : 프로토 타입 기반의 객체지향 언어임
 - ┣ 비록 다른 객체 지향 언어와의 차이점이 존재하지만
-- ┗ 강력한 객체지향 프로그래밍 능력을 지니고 있음
+- ┗ `강력한 객체지향 프로그래밍 능력`을 지니고 있음
 
 - 프로토타입 기반 객체지향 언어 : 클래스가 필요 없는
 - ┣ class free 객체 지향 프로그래밍 언어임
@@ -65,7 +107,7 @@ my.sayHi(); // Hi! My name is Lee
 ## 25.2 클래스 정의
 
 - 클래스 : class 키워드를 사용하여 정의
-- ┣ 클래스 이름 : 파스칼 케이스를 사용하느 것이 일반적
+- ┣ 클래스 `이름` : `파스칼 케이스`를 사용하는 것이 일반적
 - ┗ But : 사용하지 않아도 문제 발생 x
 
 ```js
@@ -73,7 +115,7 @@ my.sayHi(); // Hi! My name is Lee
 class Person {}
 ```
 
-- 일반적이지는 않지만 표현식으로 클래스 정의 가능
+- 일반적이지는 않지만 `표현식으로 클래스 정의 가능`
 - ┗ 이름을 가질 수도 있고, 가지지 않을 수 도 있음
 
 ```js
@@ -84,21 +126,21 @@ const Person = class {};
 const Person = class MyClass {};
 ```
 
-- 클래스를 표현식으로 정의가 가능함 →
-- ┣ 클래스 : 값으로 사용할 수 있는 일급 객체임을 의미
+- `클래스를 표현식으로 정의가 가능`함 →
+- ┣ `클래스` : 값으로 사용할 수 있는 `일급 객체`임을 의미
 - ┗ 클래스는 일급 객체로 다음과 같은 특징을 가짐
 
-1. 무명의 리터럴로 생성가능 → 런타임에 생성 가능
+1. `무명의 리터럴`로 생성가능 → `런타임에 생성 가능`
 
-2. 변수나 자료구조(객체, 배열)에 저장이 가능
+2. `변수나 자료구조(객체, 배열)에 저장`이 가능
 
-3. 함수의 매개변수에 전달 가능
+3. `함수의 매개변수`에 `전달` 가능
 
-4. 함수의 반환값으로 사용 가능
+4. `함수의 반환값`으로 `사용` 가능
 
-> 좀 더 자세히 말하면 클래스 : 함수
+> 좀 더 자세히 말하면 클래스 : `함수`
 
-- 고로 값처럼 사용할 수 있는 일급 객체임
+- 고로 값처럼 사용할 수 있는 `일급 객체임`
 
 - 클래스 몸체에는 0 개 이상의 메서드만 정의가 가능함
 - ┣ 클래스 몸체 정의 메서드 :
@@ -150,9 +192,9 @@ console.log(typeof Person); // function
 
 - 클래스 선언문으로 정의한 클래스 : 함수 선언문과 같이
 - ┣ 소스코드 평가 과정, 즉 : 런타임 이전에 먼저 평가 되어서
-- ┣ 함수 객체를 생성하게 됨
-- ┣ 클래스가 평가되어 생성된 함수 객체 : 생성자 함수로서 호출할 수 있는
-- ┣ 함수 → constructor임
+- ┣ `함수 객체를 생성`하게 됨
+- ┣ 클래스가 평가되어 생성된 함수 객체 : `생성자 함수로서 호출할 수 있는`
+- ┣ 함수 → `constructor`임
 - ┣ 생성자 함수로서 호출할 수 있는 함수 : 함수 정의가 평가되어 함수 객체를
 - ┗ `생성하는 시점에 프로토타입도 더불어 생성`됨
 
@@ -471,15 +513,15 @@ me instanceOf Object; // true
 me.constructor === Person; // true
 ```
 
-- 이처럼 클래스 몸체에서 정의한 메서드 :
-- ┣ 인스턴스의 프로토타입에 존재하는 프로토타입 메서드가 됨
-- ┗ 인스턴스 : 프로토타입 메서드를 상속받아 사용 가능
+- 이처럼 `클래스 몸체에서 정의한 메서드` :
+- ┣ 인스턴스의 프로토타입에 존재하는 `프로토타입 메서드`가 됨
+- ┗ 인스턴스 : `프로토타입 메서드를 상속`받아 사용 가능
 
-- 프로토타입 체인 : 기존의 모든 객체 생성 방식 뿐만 아니라
-- ┣ 클래스에 의해 생성된 인스턴스도 동일하게 적용됨
-- ┗ 생성자 함수의 역할을 클래스가 할 뿐
+- 프로토타입 `체인` : 기존의 모든 객체 생성 방식 뿐만 아니라
+- ┣ 클래스에 의해 생성된 `인스턴스도 동일하게 적용`됨
+- ┗ `생성자 함수의 역할을 클래스가 할 뿐`
 
-- 결국 클래스 : 생성자 함수와 같이 인스턴스를 생성하는
+- 결국 클래스 : `생성자 함수와 같이 인스턴스를 생성`하는
 - ┗ 생성자 함수라고 볼 수 있음
 
 > 결론적 : 클래스 → 프로토타입 기반의 객체 생성 메커니즘
@@ -487,10 +529,10 @@ me.constructor === Person; // true
 
 ### 25.5.3 정적 메서드
 
-- 정적 메서드 : 인스턴스를 생성하지 않아도 호출이 가능함
+- `정적 메서드` : `인스턴스를 생성하지 않아도 호출`이 가능함
 
 - 생성자 함수의 경우 정적 메서드를 생성하기 위해서
-- ┗ 명시적으로 생성자 함수에 메서드를 추가해야 함
+- ┗ `명시적으로 생성자 함수에 메서드를 추가`해야 함
 
 ```js
 // 생성자 함수
@@ -524,13 +566,13 @@ class Person {
 }
 ```
 
-- 정적 메서드 : 클래스에 바인딩된 메서드가 됨
-- ┣ 클래스 : 함수 객체로 평가 → 자신의 프로퍼티/메서드 소유 가능
-- ┣ 클래스 : 클래스 정의(클래스 선언문이나 클래스 표현식)가
+- `정적 메서드` : `클래스에 바인딩된 메서드`가 됨
+- ┣ 클래스 : 함수 객체로 평가 → `자신의 프로퍼티/메서드 소유` 가능
+- ┣ 클래스 : `클래스 정의(클래스 선언문이나 클래스 표현식)`가
 - ┣ 평가되는 시점에 함수 객체가 되므로 인스턴스와 달리
-- ┣ 별다른 생성 과정이 필요 없음
+- ┣ `별다른 생성 과정이 필요 없음`
 - ┣ 고로 : 정적 메서드는 클래스 정의 이후
-- ┗ 인스턴스를 생성하지 않아도 호출 가능
+- ┗ `인스턴스를 생성하지 않아도 호출 가능`
 
 - 정적 메서드 : 프로토타입 메서드처럼 인스턴스로 호출하지 않고
 - ┗ 클래스로 호출함
@@ -681,7 +723,7 @@ console.log(square.area()); // 100
 
 ### 2. 인스턴스 초기화
 
-- constructor 내부 코드가 실행되어
+- `constructor 내부 코드가 실행`되어
 - ┣ this에 바인딩되어 있는 인스턴스를 초기화
 - ┣ 즉 : this에 바인딩되어 있는 인스턴스에
 - ┣ 1. 프로퍼티를 추가
@@ -1231,3 +1273,801 @@ console.log(MyMath.increment()); // 11
 - ┗ `상속`받는 개념
 - ┣ `상속에 의한 클래스 확장` : 기존 클래스를 상속받아 `새로운 클래스`를
 - ┗ `확장(extends)하여 정의`하는 것
+
+- `클래스`와 `생성자 함수` : `인스턴스를 생성하는 함수`라는 점
+- ┣ 유사한 부분임
+- ┣ 클래스 : 상속을 통해 기존 클래스 확장 문법 기본적 제공
+- ┗ 생성자 함수는 그렇지 않음
+
+> 상속에 의한 클래스 확장 : 코드 재사용 관점에서 매우 유용
+
+```js
+class Animal {
+	constructor(age, weight) {
+		this.age = age;
+		this.weight = weight;
+	}
+
+	eat() {
+		return 'eat';
+	}
+
+	move() {
+		return 'move';
+	}
+}
+
+// 상속을 통해 Animal 클래스를 확장한 Bird 클래스
+class Bird extends Animal {
+	fly() {
+		return 'fly';
+	}
+}
+
+const bird = new Bird(1, 5);
+
+console.log(bird); // Bird {age: 1, weight: 5}
+console.log(bird instanceof Bird); // true
+console.log(bird instanceof Animal); // true
+
+console.log(bird.eat()); // eat
+console.log(bird.move()); // move
+console.log(bird.fly()); // fly
+```
+
+- `클래스` : `상속을 통해 다른 클래스를 확장할 수 있는 문법`인
+- ┣ `extends 키워드가 기본적으로 제공`됨
+- ┣ extends 키워드를 사용한 클래스 확장 : 간편하고 직관적
+- ┣ `생성자 함수` : 클래스와 같이 상속을 통해 다른 생성자 확장
+- ┗ `지원하지 않음`
+
+- JS : 클래스 기반 언어가 아니므로 생성자 함수를 이용해서
+- ┣ 클래스 흉내 → 시도는 권장하지 않지만
+- ┣ `의사 클래스 상속(pseudo classical inheritance)`패턴을 사용하여
+- ┣ 상속에 의한 클래스 확장을 흉내 내기도 함
+- ┗ 클래스 등장 : 의사 클래스 상속 패턴은 더 이상 필요하지 않음
+
+```js
+// 의사 클래스 상송(pseudo classical inheritance)패턴
+var Animal (function() {
+	function Animal(age, weight) {
+		this.age = age;
+		this.weight = weight;
+	}
+
+	Animal.prototype.eat = function () {
+		return 'eat';
+	}
+
+	Animal.prototype.move = function () {
+		return 'move';
+	}
+
+	return Animal;
+}());
+
+// Animal 생성자 함수를 상속하여 확장한 Bird 생성자 함수
+var Bird = (function() {
+	function Bird() {
+		// Animal 생성자 함수에게 this와 인수를 전달하면서 호출
+		Animal.apply(this, arguments);
+	}
+	// Bird.prototype을 Animal.prototype을 프로토타입으로 갖는 객체로 교체
+	Bird.prototype = Object.create(Animal.prototype);
+	// Bird.prototype.constructor을 Animal에서 Bird로 교체
+	Bird.prototype.constructor = Bird;
+
+	Bird.prototype.fly = function () {
+		return 'fly';
+	}
+
+	return Bird;
+}());
+
+var bird = new Bird(1, 5);
+console.log(bird); // Bird {age: 1, weight: 5}
+console.log(bird.eat()); // eat
+console.log(bird.move()); // move
+console.log(bird.fly()); // fly
+```
+
+### 25.8.2 extends 키워드
+
+- 상속을 통해 클래스를 확장하기 위해서는
+- ┗ extends 키워드를 사용하여 상속받을 클래스를 정의
+
+```js
+// 수퍼(베이스/부모)클래스
+class Base {}
+
+// 서브(파생/자식)클래스
+class Derived extends Base {}
+```
+
+- 상속을 통해 확장된 클래스 → `서브 클래스`
+- ┣ 서브 클래스에게 상속된 클래스 → `수퍼 클래스`
+- ┣ `서브`를 `파생`, `자식`
+- ┗ `수퍼`를 `베이스`, `부모` 라고도 부름
+
+- `extends 키워드` 역할 : 수퍼 클래스와 서브클래스 간의
+- ┣ `상속 관계를 설정하는 것`
+- ┗ 클래스도 `프로토타입을 통해 상속 관계를 구현`
+
+- 수퍼, 서브 클래스 : `인스턴스의 프로토타입 체인뿐 아닌`
+- ┣ `클래스 간의 프로토타입 체인`도 생성함
+- ┗ 이를 통해 `프로토타입 메서드`, `정적 메서드` `모두 상속 가능`
+
+### 25.8.3 동적 상속
+
+- `extends 키워드` : 클래스뿐만 아닌 생성자 함수를 상속받아
+- ┣ 클래스를 확장이 가능함
+- ┗ 단 : extends 키워드 앞에는 반드시 클래스가 와야함
+
+```js
+// 생성자 함수
+function Base(a) {
+	this.a = a;
+}
+
+// 생성자 함수를 상속받는 서브 클래스
+class Derived extends Base {}
+
+const derived = new Derived(1);
+console.log(derived); // Derived {a: 1}
+```
+
+- extends 키워드 다음 : 클래스뿐만 아닌 [[Construct]] 내부 메서드를
+- ┣ 갖는 함수 객체로 평가될 수 있는 `모든 표현식을 사용가능`
+- ┗ `동적으로 상속받을 대상을 결정 가능`
+
+```js
+function Base1() {}
+
+class Base2 {}
+
+let condition = true;
+
+// 조건에 따라 동적으로 상속 대상을 결정하는 서브 클래스
+class D extends (condition ? Base1 : Base2) {}
+
+const d = new D();
+console.log(d); // D {}
+
+console.log(d instanceof Base1); // true
+console.log(d instanceof Base2); // false
+```
+
+### 25.8.4 서브클래스의 constructor
+
+- 클래스에서 `constructor를 생략`하면
+- ┗ 암묵적으로 `비어있는 constructor가 정의`됨
+
+```js
+constructor() {}
+```
+
+- 서브클래스 : `constructor 생략`하면 클래스에 다음과 같은
+- ┣ `constructor가 암묵적으로 정의`
+- ┣ `args` : `new 연산자와 함께 클래스를 호출할 때 전달`한
+- ┗ 인수의 리스트임
+
+```js
+constructor(...args) {super(...args);};
+```
+
+- `super()` : 수퍼 클래스의 constructor(super-constructor)
+- ┗ 호출하여 `인스턴스를 생성함`
+
+> Rest 파라미터
+
+    매개변수에 `...` 붙이면
+    ┣ Rest 파라미터가 됨
+    ┣ Rest 파라미터 : 함수에 전달한
+    ┗ 인수들의 목록을 배열로 전달받음
+
+```js
+// 수퍼 클래스
+class Base {}
+
+// 서브 클래스
+class Derived extends Base {}
+```
+
+- 클래스 : 다음과 같이 암묵적으로 constructor가 정의됨
+
+```js
+// 수퍼 클래스
+class Base {
+	constructor() {}
+}
+
+// 서브 클래스
+class Derived extends Base {
+	constructor(...args) {
+		super(...args);
+	}
+}
+
+const d = new Derived();
+console.log(derived); // Derived {}
+```
+
+- 위 예제와 같이 수퍼, 서브 모두
+- ┣ `constructor 생략` → `빈 객체가 생성`됨
+- ┣ `프로퍼티를 소유하는 인스턴스를 생성`하기 위해서는
+- ┗ `constructor 내부`에서 `인스턴스`에 `프로퍼티를 추가`
+
+### 25.8.5 super 키워드
+
+- super 키워드 :
+- ┣ 1. 함수처럼 호출 가능
+- ┣ 2. this와 같이 식별자처럼 참조할 수 있음
+- ┗ 특수한 키워드임
+
+1. super를 호출하면 수퍼클래스의 constructor(super-constructor)를 호출
+2. super를 참조하면 수퍼클래스의메서드를 호출 가능
+
+#### super 호출
+
+- super 호출 → 수퍼클래스의 constructor(super-constructor)를 호출
+
+- 다음 예제와 같이 수퍼클래스의 constructor 내부에서 추가한
+- ┣ 프로퍼티를 그대로 갖는 인스턴스를 생성한다면
+- ┣ 서브클래스의 constructor를 생략 가능
+- ┣ 이때 new 연산자와 함께 서브 클라스를 호출하면서
+- ┣ 전달하게된 인수 : 모두 서브클래스에 암묵적으로 정의된
+- ┣ constructor의 super 호출을 통해
+- ┗ → 수퍼클래스의 constructor에 전달
+
+```js
+// 수퍼 클래스
+class Base {
+	constructor(a, b) {
+		this.a = a;
+		this.b = b;
+	}
+}
+
+// 서브 클래스
+class Derived extends Base {
+	// 다음과 같이 암묵적으로 constructor가 정의됨
+	// constructor(...args) { super(...args)}
+}
+
+const derived = new Derived(1, 2);
+console.log(derived); // Derived {a:1, b:2}
+```
+
+- 수퍼클래스에서 `추가한 프로퍼티`, `서브클래스에서 프로퍼티`를
+- ┣ 갖는 인스턴스를 생성 → 서브클래스의 constructor 생략할 수 없음
+- ┣ 이때 new 연산자와 함께 서브클래스를 호출하면서
+- ┣ 전달한 인수 중에는 수퍼클래스의 constructor에 전달할 필요가 있는
+- ┗ 인수 : 서브클래스에서 호출하는 super를 통해 전달
+
+```js
+// 수퍼 클래스
+class Base {
+	constructor(a, b) {
+		// -1-
+		this.a = a;
+		this.b = b;
+	}
+}
+
+// 서브 클래스
+class Derived extends Base {
+	constructor(a, b, c) {
+		// -2-
+		super(a, b); // -3-
+		this.c = c;
+	}
+}
+
+const derived = new Derived(1, 2, 3);
+console.log(derived); // Derived {a:1, b:2, c:3}
+```
+
+- new 연산자와 함께 Derived 클래스 호출(1) 하면서
+- ┣ 전달한 인수 1, 2, 3은 Derived 클래스의
+- ┣ constructor(2)에 전달되고
+- ┣ super 호출(3)을 통해
+- ┗ Base 클래스의 constructor(4)에 일부가 전달
+
+- 이처럼 `인스턴스 초기화를 위해 전달한 인수` :
+- ┣ 수퍼클래스와 서브클래스에 배분되고
+- ┣ 상속관계의 두 클래스는 서로 협력하여
+- ┗ `인스턴스를 생성`
+
+#### super 호출 주의 점
+
+1. 서브 클래스에서 constructor를 생략하지 않는 경우
+   - ┗ 서브클래스의 constructor에서 반드시 super 호출
+
+```js
+class Base {}
+
+class Derived extends Base {
+	constructor() {
+		// Reference Error
+		console.log('c call');
+	}
+}
+
+const d = new Derived();
+```
+
+2. 서브클래스의 constructor에서 super를 호출하기 전에는
+   - ┗ this를 참조할 수 없음
+
+```js
+class Base {}
+
+class Derived extends Base {
+	constructor() {
+		// Reference Error
+		this.a = 1;
+		super();
+	}
+}
+
+const d = new Derived(1);
+```
+
+3. super는 반드시 서브클래스의 constructor에서만 호출됨
+   - ┗ 클래스의 constructor나 함수에서 super를 호출하면 에러가 발생
+
+```js
+class Base {
+	constructor() {
+		super(); // SyntaxError:
+	}
+}
+
+function Foo() {
+	super(); // SyntaxError: 'super'
+}
+```
+
+### super 참조
+
+- `메서드 내`에서 `super를 참조`하면 `수퍼클래스의 메서드를 호출`할 수 있음
+
+1. `서브클래스의 프로토타입 메서드 내`에서
+   - ┗ `super.sayHi`는 `수퍼클래스의 프로토타입 메서드` `sayHi`를 가리킴
+
+```js
+// 수퍼 클래스
+class Base {
+	constructor(name) {
+		this.name = name;
+	}
+
+	sayHi() {
+		return `Hi! ${this.name}`;
+	}
+}
+
+// 서브 클래스
+class Derived extends Base {
+	sayHi() {
+		// super.sayHi는 수퍼클래스의 프로토타입 메서드를 가리킴
+		return `${super.sayHi()}. how are your doing?`;
+	}
+}
+
+const derived = new Derived('Lee');
+console.log(derived.sayHi()); // Hi! ~~
+```
+
+- super 참조를 통해 수퍼클래스의 메서드를 참조하려면
+- ┣ super가 수퍼클래스의 바인딩된 객체
+- ┣ 즉 : 수퍼클래스의 prototype 프로퍼티에
+- ┣ 바인딩된 프로토타입을 참조할 수 있어야 함
+- ┗ 위 예제 : 다음 예제와 동일하게 동작
+
+```js
+// 수퍼클래스
+class Base {
+	constructor(name) {
+		this.name = name;
+	}
+
+	sayHi() {
+		return `Hi ${this.name}`;
+	}
+}
+
+class Derived extends Base {
+	sayHi() {
+		// __super는 Base.prototype을 가리킴
+		const __super = Object.getPrototypeOf(Derived.prototype);
+		return `${__super.sayHi.call(this)} how are you doing?`;
+	}
+}
+```
+
+- `super` : `자신을 참조하고 있는 메서드`(위 예제 : Derived의 SayHi)
+- ┣ `바인딩되어 있는 객체`(위 예제의 경우 Derived.prototype)의
+- ┣ 프토토타입(위 예제의 경우 Base.prototype)을 가리킴
+- ┣ 따라서 super.sayHi는 Base.prototype.sayHi를 가리킴
+- ┣ 단 : super.sayHi.sayHi를 호출할 때
+- ┣ call 메서드를 사용해 this를 전달해야 함
+
+- `call 메서드를 사용해 this 전달 X`
+- ┣ `Base.prototype.sayHi` 메서드 내부 this :
+- ┣ Base.prototype을 가리킴
+- ┣ `Base.prototype.sayHi` 메서드 : `프로토타입 메서드`이기 때문에
+- ┣ 내부의 this : `Base.prototype이 아닌 인스턴스`를 가리켜야 함
+- ┗ name 프로퍼티는 → 인스턴스에 존재
+
+- 이처럼 `super 참조가 동작`하기 위해서는
+- ┣ `super를 참조하고 있는 메서드`(위 예제 : Derived의 sayHi)
+- ┣ 가 `바인딩되어 있는 객체`(Derived.prototype)의
+- ┣ `프로토타입`(Base.prototype)을 찾을 수 있어야 함
+- ┣ 이를 위해 메서드 : 내부 슬롯 [[HomeObject]]를 가지며
+- ┗ 자신을 바인딩하고 있는 객체를 가리킴
+
+```js
+// [[HomeObject]] : 메서드 자신을 바인딩하고 있는 객체를 가리킴
+// [[HomeObject]]를 통해 메서드 자신을 바인딩하고 잇는
+// 객체의 프로토타입을 찾을 수 있음
+// ex : Derived 클래스의 sayHi 메서드 : Derived.prototype에 바인딩
+// Derived 클래스의 sayHi 메서드 [[HomeObject]] : Derived.prototype
+// 이를 통해 Derived 클래스의 sayHi 메서드 → 내부의 super 참조
+// 고로 Base.prototype으로 결정됨
+// 따라서 : super.sayHi는 Base.prototype.sayHi를 가리킴
+
+super = Object.getPrototypeOf([[HomeObject]]);
+```
+
+- 주의할 것 : ES6의 메서드 축약 표현으로 정의된 함수만이
+- ┗ [[HomeObject]]를 가진다는 점
+
+```js
+const obj = {
+	// foo : ES6의 메서드 축약 표현으로 정의한 메서드
+	// 따라서 [[HomeObject]]를 가짐
+	foo() {},
+	// 따라서 [[HomeObject]]를 갖지 않음
+	bar: function () {},
+};
+```
+
+- [[HomeObject]]를 가지는 함수만이 → super를 참조 가능
+- ┣ 따라서 : [[HomeObject]]를 가지는 ES6의 메서드 축약 표현으로
+- ┣ 정의된 함수만이 → super 참조를 가능함
+
+- 단 : `super 참조`는 `수퍼클래스의 메서드를 참조`하기 위해서 사용
+- ┗ `서브클래스의 메서드에서 사용`해야 함
+
+- super 참조 : 클래스의 전유물은 아님
+- ┣ 객체 리터럴 : super 참조를 할 수 있음
+- ┗ 단 : ES6 메서드 `축약 표현으로 정의된 함수만` 가능
+
+```js
+const base = {
+	name: 'Lee',
+	sayHi() {
+		return `Hi! ${this.name}`;
+	},
+};
+
+const derived = {
+	__proto__: base,
+	// ES6 메서드 축약 표현으로 정의한 메서드
+	// 따라서 [[HomeObject]]를 가짐
+	sayHi() {
+		return `${super.sayHi()}. how are you doing?`;
+	},
+};
+
+console.log(derived.sayHi());
+```
+
+2. 서브클래스의 정적 메서드 내에서 super.sayHi는
+   - ┗ 수퍼클래스의 정적 메서드 sayHi를 가리킴
+
+```js
+// 수퍼 클래스
+class Base {
+	static sayHi() {
+		return 'Hi1';
+	}
+}
+
+// 서브 클래스
+class D extends Base {
+	static sayHi() {
+		// super.sayHi는 수퍼클래싀의 정적 메서드를 가리킴
+		return `${super.sayHi()} how are you doing`;
+	}
+}
+console.log(Derived.sayHi()); // Hi! how are you doing?
+```
+
+### 25.8.6 상속 클래스의 인스턴스 생성 과정
+
+- 상속 관계에 있는 두 클래스 : 어떻게 협력하여 인스턴스 생성하는지
+
+- 클래스가 단독으로 인스턴스 생성 보다
+- ┗ 상속관계에 있는 두 클래스 협력 → 인스턴스 생성이 더 복잡
+
+```js
+// super class
+class R {
+	constructor(w, h) {
+		this.w = w;
+		this.h = h;
+	}
+	getArea() {
+		return this.w * this.h;
+	}
+	toString() {
+		return `w = ${this.w}, h = ${this.h}`;
+	}
+}
+
+// subclass
+class ColorRec extends R {
+	constructor(w, h, c) {
+		super(w, h);
+		this.c = c;
+	}
+
+	// 메서드 오버라이딩
+	toString() {
+		return super.toString() + `, color = ${this.color}`;
+	}
+}
+
+const colorRec = new ColorRec(2, 4, 'red');
+
+// 상속을 통해 getArea 메서드를 호출
+console.log(colorRec.getArea()); // 8
+// 오버라이딩된 toString 메서드를 호출
+console.log(colorRec.toString());
+```
+
+> 서브클래스 ColorRec이 new 연산자와 함께 호출되면 다음 과정으로 인스턴스 생성
+
+#### 1. 서브클래스의 super 호출
+
+- JS엔진 : 클래스 평가 → 수퍼, 서브 클래스 구분하기 위해
+- ┣ `"base"`, `derived`를 값으로 가지는
+- ┣ 내부슬롯 : [[ConstructorKind]]를 가짐
+- ┣ 다른 클래스를 상속받지 않는 클래스(그리고 생성자 함수) :
+- ┣ 내부 슬롯 [[ConstructorKind]]의 값이 `"base"로 설정`되지만
+- ┣ 다른 클래스 상속 → 내부 슬롯 값이 `"derived"로 설정`
+- ┣ 이를 통해 `수퍼 클래스와 서브클래스` : `new 연산자와 함께 호출될 때`
+- ┗ 동작이 구분됨
+
+- 다른 `클래스를 상속받지 않는 클래스` :
+- ┣ new 연산자와 함께 호출시 → `암묵적으로 빈 객체`
+- ┣ 즉 : `인스턴스를 생성`하고
+- ┗ 이를 `this에 바인딩`
+
+- 서브클래스 : 자신이 직접 인스턴스를 생성하지 않고
+- ┣ `수퍼클래스에게 인스턴스 생성을 위임`
+- ┗ 이것이 바로 : 서브클래스 `constructor에서 super 호출` 이유
+
+- 서브클래스 : new 연산자와 함께 호출되면
+- ┣ 서브클래스 constructor 내부의 `super 키워드` :
+- ┣ 함수처럼 호출됨
+- ┣ super가 호출되면 수퍼클래스의 `constructor(super-constructor)`
+- ┗ 가 호출됨
+
+> 좀 더 정확히 말하면 수퍼클래스 평가되어 생성된 함수 객체 코드 실행
+
+- 만약 서브클래스 constructor 내부에 `super 호출이 없으면`
+- ┣ `에러가 발생`함
+- ┣ 실제로 인스턴스를 생성하는 주체 : 수퍼 클래스
+- ┣ 수퍼클래스의 `constructor를 호출하는 super가 호출 안되면`
+- ┗ 인스턴스를 생성할 수 없기 때문
+
+#### 2. 수퍼클래스의 인스턴스 생성과 this 바인딩
+
+- 수퍼클래스의 `constructor 내부의 코드가 실행되기 이전`
+- ┣ 암묵적으로 `빈 객체`를 생성
+- ┣ 이 빈 객체가 바로(아직 완성되지는 않았지만)
+- ┣ `클래스가 생성한 인스턴스`임
+- ┣ 암묵적으로 생성된 빈 객체 : 즉 `인스턴스는 this에 바인딩`
+- ┣ 따라서 : `수퍼클래스의 constructor 내부의 this` :
+- ┗ `생성된 인스턴스`를 가리킴
+
+```js
+// 수퍼클래스
+class Rectangle {
+	constructor(w, h) {
+		// 암묵적으로 빈 객체, 즉 : 인스턴스가 생성되고
+		// this에 바인딩 됨
+		console.log(this); // ColorRect
+		// new 연산자와 함께 호출된 함수
+		// 즉 : new.target은 ColorRect
+		console.log(new.target); // ColorRec
+	}
+}
+```
+
+- `인스턴스` : 수퍼클래스가 생성한 것
+- ┣ new 연산자와 함께 호출된 `클래스가 서브클래스라는 점이 중요`
+- ┣ 즉 : new 연산자와 함께 `호출된 함수를 가리키는`
+- ┣ new.target은 서브클래스를 가리킴
+- ┣ 따라서 : `인스턴스` → `new.target이 가리키는 서브클래스`가
+- ┗ 생성한 것으로 처리
+
+- 따라서 : `인스턴스의 프로토타입` : `수퍼클래스의 prototype 프로퍼티`가
+- ┣ `가리키는 객체(Rectangle.prototype)`가 아닌
+- ┣ `new.target` → 즉 : `서브클래스의 prototype 프로퍼티`가 가리키는
+- ┗ 객체(ColorRectangle.prototype)임
+
+> 인스턴스 : new.target이 가리키는 서브클래스가 생성
+> new.target : 서브클래스의 prototype 프로퍼티가 가리키는 객체
+
+#### 3. 수퍼클래스의 인스턴스 초기화
+
+- `수퍼클래스의 constructor가 실행`되어
+- ┣ `this에 바인딩되어 있는 인스턴스를 초기화` 함
+- ┣ 즉 : this에 바인딩 되어 있는 `인스턴스에 프로퍼티를 추가`하고
+- ┣ `constructor가 인수로 전달받은 초기값`으로 인스턴스의
+- ┗ `프로퍼티를 초기화`함
+
+```js
+// 수퍼클래스
+class Rectangle {
+	constructor(w, h) {
+		// 암묵적으로 빈 객체, 즉 : 인스턴스가 생성되고
+		// this에 바인딩됨
+		console.log(this); // ColorRec
+		// new 연산자와 함께 호출된 함수
+		// 즉 : new.target은 ColorRect임
+		console.log(new.target); //ColorRec
+
+		// 생성된 인스턴스의 프로토타입으로
+		// ColorRectangle.prototype이 설정됨
+		console.log(Object.getPrototypeOf(this) === ColorRec.prototype); // true
+		console.log(this instanceof ColorRec); // true
+		console.log(this instanceof Rectangle); // true
+
+		// 인스턴스 초기화
+		this.w = w;
+		this.h = h;
+
+		console.log(this); // ColorRec {w: 2, h: 4}
+	}
+}
+```
+
+#### 4. 서브클래스 constructor로 복귀와 this 바인딩
+
+- `super 호출이 종료`되고 → 제어 흐름이 `서브클래스 constructor로 돌아옴`
+- ┣ 이때 `super가 반환한 인스턴스가 this에 바인딩`됨
+- ┣ `서브클래스` : 별도의 인스턴스를 생성하지 않고
+- ┗ `super가 반환한 인스턴스를 this에 바인딩`하여 그대로 사용
+
+```js
+// subclass
+class ColorRec extends Rectangle {
+	constructor(w, h, c) {
+		super(w, h);
+	}
+	// super가 반환한 인스턴스가 this에 바인딩
+	console.log(this); // ColorRect {w:2, h:4}
+}
+```
+
+- 이처럼 super가 호출되지 않으면 : `인스턴스가 생성되지 않음`
+- ┣ `this 바인딩 또한 할 수 없음`
+- ┣ 서브클래스의 constructor에서 super를 호출하기 전에는
+- ┣ this를 참조할 수 없는 이유가 바로 이 때문
+- ┣ 따라서 : 서브 클래스 `constructor 내부의 인스턴스 초기화`
+- ┗ 반드시 `super 호출 이후에 처리`해야 함
+
+#### 5. 서브클래스의 인스턴스 초기화
+
+- super 호출 이후, 서브클래스의 `constructor에 기술`되어 있는
+- ┣ `인스턴스 초기화`가 실행됨
+- ┣ 즉 : `this에 바인딩되어 있는 인스턴스`에 `프로퍼티를 추가`하고
+- ┣ `constructor가 인수로 전달받은 초기값`으로 인스턴스의
+- ┗ `프로퍼티를 초기화`함
+
+#### 6. 인스턴스 반환
+
+- 클래스의 `모든 처리가 끝나면`
+- ┣ 완성된 인스턴스가 `바인딩된 this`가
+- ┗ `암묵적으로 반환`됨
+
+```js
+// 서브클래스
+class ColorRec extends Rec {
+	constructor(w, h, c) {
+		super(w, h);
+	}
+
+	// super가 반환한 인스턴스가 this에 바인딩
+	console.log(this); // ColorRect {w: 2, h: 4}
+
+	// 인스턴스 초기화
+	this.c = c;
+
+	// 완성된 인스턴가 바인딩된 this가 암묵적으로 반환됨
+	console.log(this); // ColorRec {w: 2, h: 4, c: 'red'}
+}
+```
+
+### 25.8.7 표준 빌트인 생성자 함수 확장
+
+- extends 키워드 다음에는 클래스 뿐만 아닌
+- ┣ [[Construct]] 내부 메서드를 갖는 함수 객체로 평가될 수 있는
+- ┣ 모든 표현식을 사용 가능
+- ┣ String, Number, Array 같은 표준 빌트인 객체도
+- ┣ [[Construct]] 내부 메서드를 갖는 → 생성자 함수임
+- ┗ 고로 : extends 키워드를 사용하여 확장 가능
+
+```js
+// Array 생성자 함수를 상속받아 확장한 MyArray
+class MyArray extends Array {
+	// 중복된 배열 요소를 제거하고 반환함
+	// [1, 1, 2, 3] → [1, 2, 3]
+	uniq() {
+		return this.filter((v, i, self) => self.indexOf(v) === i);
+	}
+
+	// 모든 배열 요소의 평균을 구하기
+	average() {
+		return this.reduce((pre, cur) => pre + cur, 0) / this.length;
+	}
+}
+```
+
+- Array 생성자 함수를 상속받아 확장한 MyArray 클래스가
+- ┣ 생성한 인스턴스 : Array.prototype과 MyArray.prototype의 모든 메서드
+- ┗ 사용이 가능함
+
+> 주의점 : Array.prototype 메서드 중 map,filter의 경우
+> MyArray 클래스의 인스턴스를 반환다는 것
+
+```js
+console.log(myArray.filter((v) => v % 2) instanceof MyArray); // true
+```
+
+- 새로운 배열을 반환하는 메서드가 MyArray 클래스의 인스턴스를 반환하지 않고
+- ┣ `Array` `인스턴스를 반환`하면 MyArray 클래스의 메서드와
+- ┗ `메서드 체이닝이 불가능함`
+
+> 연속해서 만들어진 배열에 대해서 메서드 체이닝이 가능하다.
+
+- 만약 : MyArray 클래스의 uniq 메서드 : MyArray 클래스가 생성한
+- ┣ 인스턴스가 아닌 Array가 생성한 인스턴스를 반환하게 하고 싶다면
+- ┗ `Symbol.species`를 사용하여 정적 접근자 프로퍼티를 추가
+
+```js
+// Array 생성자 함수를 상속받아 확장한 MyArray
+class MyArray extends Array {
+	// 모든 메서드가 Array 타입의 인스턴스를 반환하도록 함
+	static get [Symbol.species]() {
+		return Array;
+	}
+
+	// 중복된 배열 요소를 제거하고 반환함
+	uniq() {
+		return this.filter((v, i, self) => self.indexOf(v) === i);
+	}
+
+	// 모든 배열 요소의 평균을 구함
+	average() {
+		return this.reduce((pre, cur) => pre + cur, 0) / this.length;
+	}
+}
+
+console.log(myArray.uniq() instanceof MyArray); // false
+console.log(myArray.average() instanceof Array); // true
+
+// 메서드 체이닝
+// uniq 메서드 : Array 인스턴스를 반환
+// average 메서드를 호출할 수 없음
+console.log(myArray.uniq().average());
+// TypeError
+```
+
+> 클래스안에서 extends를 이용하여서 표준 빌트인 객체를 사용하면
+> 메서드 체이닝을 이용 가능하다.
