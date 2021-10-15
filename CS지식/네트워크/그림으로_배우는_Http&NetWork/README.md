@@ -19,3 +19,7 @@
 ## 5장. HTTP와 연계하는 웹 서버
 
 - [HTTP와 연계하는 웹 서버](ch05_HTTP와_연계하는_웹_서버/README.md)
+
+## 6장. HTTP 헤더
+
+- [HTTP\_헤더](ch06_HTTP_헤더/README.md)
