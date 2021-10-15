@@ -4,6 +4,61 @@
 - ┣ HTTP request, HTTP response 내용에 반드시
 - ┗ 헤더가 포함되어 있음
 
+## 목차
+
+- [6. HTTP 헤더](#6-http-헤더)
+  - [목차](#목차)
+  - [6.1 HTTP 메시지 헤더](#61-http-메시지-헤더)
+    - [리퀘스트의 HTTP 메시지](#리퀘스트의-http-메시지)
+    - [response의 HTTP 메시지](#response의-http-메시지)
+  - [6.2 HTTP 헤더 필드](#62-http-헤더-필드)
+    - [6.2.1 HTTP 헤더 필드는 중요한 정보를 전달한다](#621-http-헤더-필드는-중요한-정보를-전달한다)
+    - [6.2.2 HTTP 헤더 필드의 구조](#622-http-헤더-필드의-구조)
+    - [6.2.3 4종류의 HTTP 헤더 필드](#623-4종류의-http-헤더-필드)
+    - [6.2.4 HTTP/1.1 헤더 필드 일람](#624-http11-헤더-필드-일람)
+      - [일반 헤더 필드](#일반-헤더-필드)
+      - [리퀘스트 헤더 필드](#리퀘스트-헤더-필드)
+      - [response 헤더 필드](#response-헤더-필드)
+      - [엔티티 헤더 필드](#엔티티-헤더-필드)
+    - [6.2.5 HTTP/1.1 이외의 헤더 필드](#625-http11-이외의-헤더-필드)
+    - [6.2.6 End-to-end 헤더와 Hop-by-hop 헤더](#626-end-to-end-헤더와-hop-by-hop-헤더)
+      - [End-to-end 헤더](#end-to-end-헤더)
+      - [Hop-by-hop 헤더](#hop-by-hop-헤더)
+  - [6.3 HTTP/1.1 일반 헤더 필드](#63-http11-일반-헤더-필드)
+    - [6.3.1 Cache-Control](#631-cache-control)
+      - [Cache-Control 디렉티브 일람](#cache-control-디렉티브-일람)
+      - [캐시가 가능한지 여부를 나타내는 디렉티브](#캐시가-가능한지-여부를-나타내는-디렉티브)
+      - [캐시로 보존 가능한 것을 제어하는 디렉티브](#캐시로-보존-가능한-것을-제어하는-디렉티브)
+      - [캐시 기한이나 검증을 지정하는 디렉티브](#캐시-기한이나-검증을-지정하는-디렉티브)
+      - [Cache-Control 확장](#cache-control-확장)
+    - [6.3.2 Connection](#632-connection)
+    - [6.3.3 Date](#633-date)
+    - [Pragma](#pragma)
+    - [6.3.5 Trailer](#635-trailer)
+    - [6.3.6 Transfer-Encoding](#636-transfer-encoding)
+    - [6.3.7 Upgrade](#637-upgrade)
+    - [6.3.8 Via](#638-via)
+    - [6.3.9 Warning](#639-warning)
+  - [6.4 리퀘스트 헤더 필드](#64-리퀘스트-헤더-필드)
+    - [6.4.1 Accept](#641-accept)
+    - [6.4.2 Accept-Charset](#642-accept-charset)
+    - [6.4.3 Accept-Encoding](#643-accept-encoding)
+    - [6.4.4 Accept-Language](#644-accept-language)
+    - [6.4.5 Authorization](#645-authorization)
+    - [6.4.6 Expect](#646-expect)
+    - [6.4.7 From](#647-from)
+    - [6.4.8 Host](#648-host)
+    - [6.4.9 If-Match](#649-if-match)
+    - [6.4.10 If-Modified-Since](#6410-if-modified-since)
+    - [6.4.12 If-Range](#6412-if-range)
+    - [6.4.13 If-Unmodified-Since](#6413-if-unmodified-since)
+    - [6.4.14 Max-Forwards](#6414-max-forwards)
+    - [6.4.15 Proxy-Authorization](#6415-proxy-authorization)
+    - [6.4.16 Range](#6416-range)
+    - [6.4.17 Refer](#6417-refer)
+    - [6.4.18 TE](#6418-te)
+    - [6.4.19 User-Agent](#6419-user-agent)
+
 ## 6.1 HTTP 메시지 헤더
 
 - HTTP 프로토콜의 request, response
@@ -739,3 +794,180 @@ Transfer-Encoding: chunked
 - ┣ `유저의 메일 주소를 전달`함
 - ┣ 기본적으로 검색 엔진 등의 에이전트 책임자 이메일
 - ┗ 에이전트 사용 → From 헤더 필드를 포함해야 함
+
+### 6.4.8 Host
+
+> Host: www.hackr.jp
+
+- Host 헤더 필드 : request한 리소스의 인터넷 호스트와
+- ┣ `인터넷 호스트와 포트 번호를 전달`함
+- ┣ Host 헤더 필드 : HTTP/1.1에서 유일한 필수 헤더 필드
+- ┣ Host 헤더 필드의 존재 이유 → 1대의 서버에서
+- ┗ 복수의 도메인을 할당할 수 있는 가상 호스트의 구조와 깊은 관계
+
+- request → 서버로부터 오면 : 호스트 명을 IP 주소로 해결해
+- ┣ request가 처리됨
+- ┣ 이 때 같은 IP 주소로 `복수의 도메인이 적용되어 있다고 한다면`
+- ┣ 어느 도메인에 대한 리퀘스트인지 알 수 없음
+- ┣ Host 헤더 필드에 리퀘스트를 받을 호스트명을 명확하게
+- ┗ 해둘 필요성이 존재
+
+- 서버에 호스트 명이 설정되어 있지 않은 경우 :
+- ┗ 아래와 같이 값을 비워서 보내게됨
+
+> Host:
+
+### 6.4.9 If-Match
+
+- `"If-xxx"` 라는 식의 request 헤더 필드 :
+- ┣ 조건부 request라고 부름
+- ┣ 조건부 request를 받은 서버 →
+- ┗ `조건에 맞는 경우에만 request를 받음`
+
+> If-Match: "123456"
+
+- If-Match 헤더 필드 : 조건부 request의 하나로
+- ┣ 서버 상의 리소스를 특정하기 위해서
+- ┣ `엔티티 태그(ETag)` 값을 전달함
+- ┗ `서버는 약한 ETag 값을 사용 불가`
+
+- 서버 : If-Match의 필드 값과<-> 리소스의 ETag
+- ┣ 일치하는 경우에만 리퀘스트를 받아들일 수 있음
+- ┣ 일치하지 않으면 상태 코드 `412 Precondition Failed`
+- ┗ response를 반환함
+
+### 6.4.10 If-Modified-Since
+
+- 서버 : If-Modified-Since의 필드값에 지정된 날짜 이후
+- ┗ `갱신된 리소스라면 request를 받아들임`
+
+> if-Modified-Since: Thu, 15 Apr 2004 00:00:00 GMT
+
+- If-Modified-Since 헤더 필드 :
+- ┣ 조건부 리퀘스트의 하나로 리소스가 갱신 날짜가
+- ┗ `필드 값보다 새롭지 않다면 request를 받아들이겠다는 뜻`을 전달
+- GET, HEAD 메소드에서 `If-None-Match 헤더 필드를 사용`함으로써
+- ┣ 최신의 리소스를 요구하는 것이 되기 때문에
+- ┗ `If-Modified-Since 헤더 필드를 사용 하는 것과 비슷`
+
+### 6.4.12 If-Range
+
+- If-Range 필드 값과 Etag값 혹은 갱신 날짜가 일치하면
+- ┗ Range 리퀘스트로 처리
+
+- 일치하지 않았다면 Range 리퀘스트를 무시하고 리소스 전체를 반환
+
+- If-Range 헤더 필드 : 조건부 리퀘스트의 하나로
+- ┣ If-Range로 지정한 필드값(ETag 값, 혹은 날짜를 지정)
+- ┣ 과 기정한 리소스의 ETag 값, 혹은 날짜 값이 일치하면
+- ┣ : Range 리퀘스트로서 처리하고 싶다는 것을 전달함
+- ┗ `일치하지 않는다면 리소스 전체를 반환`
+
+- If-Range 헤더 필드를 사용하지 않는 request 가정
+- ┣ server측 리소스가 갱신되어 있는 경우
+- ┣ client 측에서 가지고 있는 리소스의 일부분은 무효한 것
+- ┣ `Range 리퀘스트는 당연히 무효`
+- ┣ 서버는 일단 상태 코드 `412 Precondition Failed` 리스폰스를 반환
+- ┣ client에서 다시 request를 보내도록 재촉
+- ┗ `If-Range 헤더 필드를 사용하는 경우와 비교 → 2배의 수고`
+
+### 6.4.13 If-Unmodified-Since
+
+> If-Unmodified-Since: Thu, 03 Jul 2012 00:00:00 GMT
+
+- `If-Unmodified-Since` 헤더 필드 :
+- ┣ `If-Modified-Since` 헤더 필드와 반대로 동작을 함
+- ┣ 지정된 리소스가 필드 값에 지정된 날짜 이후에
+- ┣ `갱신되어 있지 않는 경우에만 request를 받아들이도록 전달`
+- ┣ 지정된 날짜 이후에 갱신된 경우 :
+- ┗ 상태코드 412 Precondition Failed response를 반환
+
+### 6.4.14 Max-Forwards
+
+- 받아넘길 때마다 Max-Forwards 값을 1씩 뺌
+- ┗ 값이 0이 되면 response를 반환
+
+> Max-Forwards: 10
+
+- `Max-Forwards` 헤더 필드 : `TRACE`, `OPTIONS` 메소드에 의해
+- ┣ request 할 때에 `전송해도 좋은 서버 수의 최대치`를
+- ┣ 10진수 정수로 지정함
+- ┣ 서버 : 다음 서버에 request 전송할 때 :
+- ┣ Max-Forwards 값에서 1을 빼서 다시 세트
+- ┣ Max-Forwards 값이 0인 request 받은 경우에는
+- ┗ `전송하지 않고 response를 반환할 필요가 존재`
+
+- HTTP를 사용한 통신 :
+- ┣ request가 프록시 서버 등 여러 대의 서버를 경유 존재
+- ┣ 도중에 프록시 서버에서 무언가의 원인 →
+- ┗ request 전송이 실패 : client에 response 되돌아 오지 않음
+
+- ┣ 이러한 문제가 발생한 경우 원인 조사에
+- ┣ `Max-Forwards` 헤더 필드가 활용
+- ┣ `필드 값이 0이 되었던 서버가 response`
+- ┗ 이를 통해서 `그 서버까지의 상황` 알 수 있음
+
+### 6.4.15 Proxy-Authorization
+
+> Proxy-Authorization: Basic ddaksjfkjfdls
+
+- Proxy-Authorization 헤더 필드 :
+- ┣ 프록시 서버에서의 인증 요구를 받아들인 때
+- ┗ `인증에 필요한 client의 정보를 전달`
+- client와 서버의 HTTP 엑세스 인증과 비슷
+- ┣ 다른 점 : client 프록시 사이에 인증이 이루어짐
+- ┣ `client와 server의 경우 Authorization 헤더 필드와 같은 역할`
+- ┗ HTTP 엑세스 인증 추후에 자세히 설명
+
+### 6.4.16 Range
+
+> Range: bytes=5001-10000
+
+- Range 헤더 필드 : 리소스의 일부분만 취득하는 Range
+- ┣ request를 할 때 지정 범위를 전달
+- ┣ 위에 소개한 예에서는 5001 바이트부터 10000 바이트 까지
+- ┣ 리소스를 요구 중
+- ┣ Range 헤더 필드가 달린 request 받아들인 서버가
+- ┣ request 처리 가능 → 상태 코드 `206 Partial Content response 반환`
+- ┣ Range request를 처리할 수 없는 경우 :
+- ┗ 상태 코드 `200 OK와 함께 전체 리소스 반환`
+
+### 6.4.17 Refer
+
+- `Refer`를 보려면 Request 중의 URI가 어느 웹 페이지로부터
+- ┗ 발행되었는지 알 수 있음
+
+- `Refer` 헤더 필드 :
+- ┣ request가 발생한 본래 리소스의 URI를 전달
+- ┣ 기본적으로 `Refer` 헤더 필드는 보내져야 하지만,
+- ┣ 브라우저의 주소창에 `직접 URI를 입력한 경우 보안상 우려 ?`
+- ┗ 이 경우에는 전달하지 않아도 됨
+
+- 본래 리소스의 URI의 쿼리에 ID 및 패스워드와 비밀 정보 포함인 경우
+- ┣ Refer를 통해서 다른 서버에 노출될 우려가 존재함
+- ┗ 또한 : `Referrer가 맞지만 → 잘못된 철자로 사용 중`
+
+### 6.4.18 TE
+
+> TE: gzip, deflate:q=0.5
+
+- TE 헤더 필드 :
+- ┣ 1. response로 받을 수 있는 전송 코딩 형식
+- ┣ 2. 상대적인 우선 순위를 전달
+- ┣ `Accept-Encoding 헤더 필드`와 `매우 비슷`
+- ┗ 여기선 `전송 코딩이 적용`
+
+- TE 헤더 필드 : 전송 코딩의 지정 이외에
+- ┣ Trailer를 동반하는 청크 전송 인코딩 형식 지정 가능
+- ┗ 이 경우 : `필드 값에 "trailers"라고 기록`
+
+> TE: trailers
+
+### 6.4.19 User-Agent
+
+- `User-Agent` 헤더 필드 : request를 생성한 브라우저와
+- ┣ `유저 에이전트의 이름` 등을 전달하기 위해 사용
+- ┣ 로봇 엔진의 request 경우에는 로봇 엔진의 책임자
+- ┣ 메일 주소가 부가된 것도 있음
+- ┣ 또는 프록시 경유로 리퀘스트의 경우에는
+- ┗ `프록시 서버의 이름 등이 부가된 것`도 있음
