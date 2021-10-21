@@ -58,6 +58,28 @@
     - [6.4.17 Refer](#6417-refer)
     - [6.4.18 TE](#6418-te)
     - [6.4.19 User-Agent](#6419-user-agent)
+  - [6.5 리스폰스 헤더 필드](#65-리스폰스-헤더-필드)
+    - [6.5.1 Accept-Ranges](#651-accept-ranges)
+    - [6.5.2 Age](#652-age)
+    - [6.5.3 ETag](#653-etag)
+      - [강력한 ETag 값과 약한 ETag 값](#강력한-etag-값과-약한-etag-값)
+    - [6.5.4 Location](#654-location)
+    - [6.5.5 Proxy-Authenticate](#655-proxy-authenticate)
+    - [6.5.6 Retry-After](#656-retry-after)
+    - [6.5.7 Server](#657-server)
+    - [6.5.8 Vary](#658-vary)
+    - [6.5.9 WWW-Authenticate](#659-www-authenticate)
+  - [6.6 엔티티 헤더 필드](#66-엔티티-헤더-필드)
+    - [6.6.1 Allow](#661-allow)
+    - [6.6.2 Content-Encoding](#662-content-encoding)
+    - [6.6.3 Content-Language](#663-content-language)
+    - [6.6.4 Content-Length](#664-content-length)
+    - [6.6.5 Content-Location](#665-content-location)
+    - [6.6.6 Content-MD5](#666-content-md5)
+    - [6.6.7 Content-Range](#667-content-range)
+    - [6.6.8 Content-Type](#668-content-type)
+    - [6.6.9 Expires](#669-expires)
+    - [6.6.10 Last-Modified](#6610-last-modified)
 
 ## 6.1 HTTP 메시지 헤더
 
@@ -971,3 +993,340 @@ Transfer-Encoding: chunked
 - ┣ 메일 주소가 부가된 것도 있음
 - ┣ 또는 프록시 경유로 리퀘스트의 경우에는
 - ┗ `프록시 서버의 이름 등이 부가된 것`도 있음
+
+## 6.5 리스폰스 헤더 필드
+
+- response 헤더 필드 : server 측으로부터
+- ┣ client 측으로 송신되는 response 메시지에 적용된 헤더
+- ┣ 1. `response의 부가 정보`
+- ┣ 2. `서버의 정보`
+- ┗ 3. `client에 부가 정보 요구` 등을 나타냄
+
+### 6.5.1 Accept-Ranges
+
+```html
+Accept-Ranges: bytes
+```
+
+- `Accept-Ranges` 헤더 필드 : server가 리소스의 일부분만 지정해서
+- ┣ 취득할 수 있는 Range 리퀘스트를 접수할 수 있는지 여부를 전달
+- ┣ 지정 가능한 필드 값 : 2개이며
+- ┣ `수신 가능`한 경우 : `'bytes'`
+- ┗ `수신 불가능`한 경우에는 : `'none'` 이라고 지정
+
+### 6.5.2 Age
+
+```html
+Age: 600
+```
+
+- Age 헤더 필드 :
+- ┣ `얼마나 오래 전에 오리진 서버`에서
+- ┣ `response가 생성`되었는지를 전달함
+- ┣ 필드 값의 단위 : `초`
+- ┣ response한 서버가 `캐시 서버`라면
+- ┣ 캐시된 `리스폰스가 다시 실증되었던 때`부터
+- ┣ 검증한 시간이 됨
+
+> 민약 프록시가 리스폰스를 생성했다면 → Age 헤더 필드는 필수
+
+### 6.5.3 ETag
+
+```html
+ETag: "293892048klasjdfjk"
+```
+
+- ETag 헤더 필드 :
+- ┣ `엔티티 태그`라고 불리며
+- ┣ 일의적으로 `리소스를 특정하기 위한 문자열 전달`
+- ┗ 서버 : `리소스마다 ETag 값을 할당`
+
+- `리소스가 갱신`되면 `ETag 값도 갱신할 필요`가 존재
+- ┣ ETag 값의 문제에는 `특별히 룰이 정해져 있지 않고`
+- ┗ 서버에 따라 다양한 `ETag 값을 할당`
+
+- 리소스를 캐시할 때는 리소스를 일의적으로 정하고 싶은 순간 존재
+- ┣ ex ) http://www.google.com/ 에 한국어 버전 browser 사용하여 엑세스
+- ┣ 한국어의 리소스가 반환
+- ┣ 반대의 경우 영문 → 영문 리소스가 반환
+- ┣ 둘의 경우 URI는 같지만 → `URI 정보만을 가지고는 리소스 특정은 어려움`
+- ┗ 도중에 다운로드가 끊겨서 다시 하는 경우 → `ETag 값을 참조해서 리소스 특정`
+
+#### 강력한 ETag 값과 약한 ETag 값
+
+- ETag : 강한(strong) ETag, 약한(weak) ETag 값으로 구별되어 있음
+
+1. 강한 ETag 값
+
+- 강한 ETag : 엔티티가 아주 조금 다르더라도 값은 무조건 변경
+
+```html
+ETag: "Usagi-1234"
+```
+
+2. 약한 ETag 값
+
+- 약한 ETag : 리소스가 같다는 것만을 의미
+- ┣ 의미가 다른 리소스로 그 차이가 있는 경우에만
+- ┗ ETag 값이 변화함
+
+```html
+ETag: W/"usagi-1234"
+```
+
+### 6.5.4 Location
+
+```html
+Location: http://www.google.com/sample.html
+```
+
+- Location 헤더 필드 : `response의 수신자`에 대해서
+- ┣ Request-URI 이외의 `리소스 액세스를 유도하는 경우 사용`
+- ┣ 기본적 : "3xx: Redirection" 리스폰스에 대해서
+- ┣ 라디이렉트 처의 URI를 기술함
+- ┣ 대부분의 브라우저 : Location 헤더 필드를 포함한 리스폰스를 받으면
+- ┗ 강제로 리다이렉트 하는 곳의 `리소스에 엑세스를 시도`함
+
+### 6.5.5 Proxy-Authenticate
+
+```json
+Proxy-Authenticate: Basic realm="Jang Auth"
+```
+
+- `Proxy-Authenticate 헤더 필드` :
+- ┣ 프록시 서버에서의 인증 요구를
+- ┣ 클라이언트에 전달함
+- ┣ client, server → HTTP 엑세스 인증과 비슷함
+- ┣ 차이점 : client, `프록시 사이`에서 인증이 이루어짐
+
+- client, server의 경우 `WWW-Authorization 헤더 필드`와 같은
+- ┣ 역할의 하게 됨
+- ┗ HTTP 인증의 경우 추후에 자세하게 설명
+
+### 6.5.6 Retry-After
+
+```json
+Retry-After: 120
+```
+
+- Retry-After 헤더 필드 : client가 일정 시간 후에
+- ┣ request를 다시 시행해야 하는지를 전달함
+- ┣ 주로 상태 코드 `503 Service Unavailable`
+- ┗ `리스폰스나 3xx Redirect 리스폰스와 함께 사용`
+
+- 값으로는 날짜(GMT) 이라든가
+- ┗ `리스폰스 이후의 몇 초를 지정 가능`
+
+### 6.5.7 Server
+
+```json
+Server: Apache/2.2.17(Unix)
+```
+
+- Server 헤더 필드 : 서버에 설치되어 있는
+- ┣ `HTTP 서버의 소프트웨어를 전달`함
+- ┣ 단순히 서버의 소프트웨어 명칭만이 아닌
+- ┗ `버전이나 옵션`에 대해서도 기재하는 경우가 존재
+
+```json
+Server; Apache/2.2.6 (Unix) PHP/5.2.5
+```
+
+### 6.5.8 Vary
+
+```json
+Vary: Accept-Language
+```
+
+- Vary 헤더 필드 : 캐시를 컨트롤 하기 위해서 사용
+- ┣ `오리진 서버` : 프록시 서버에 로컬 캐시를 사용하는 방법에 대한
+- ┣ 지시를 전달함
+- ┣ 오리진 서버로부터 Vary에 지정되었던 리스폰스를 받아들인
+- ┣ 프록시 서버 : 이후 캐시된 때의 `request와 같은 Vary에 지정되어 있는`
+- ┗ 헤더 필드를 가진 request에 대해서만 `캐시를 반환 가능`함
+
+- 같은 리소스에 대한 `request라도 Vary에 지정`되었던
+- ┣ 헤더 필드가 다른 경우에는 `오리진 서버로부터`
+- ┗ `리소스를 취득할 필요가 있음`
+
+### 6.5.9 WWW-Authenticate
+
+```json
+WWW-Authenticate: Basic realm="Jangdesign Auth"
+```
+
+- `WWW-Authenticate` 헤더 필드 :
+- ┣ `HTTP 엑세스 인증`에 사용됨
+- ┣ Request-URI애 지정했던 `리소스에 적용할 수 있는`
+- ┣ `인중 스키마("Basic" 혹은 "Digest")`와 파라미터를
+- ┗ 나타내는 `challenge를 전달`함
+
+- WWW-Authenticate 헤더 필드 : 상태 코드
+- ┣ `401 Unauthorized response`에 반드시 포함됨
+- ┣ 이 예에서 `realm은 Request-URI에 지정된 보호`되어있던
+- ┗ `리소스를 식별하기 위한 문자열임`
+
+## 6.6 엔티티 헤더 필드
+
+- `엔티티 헤더 필드` : `request 메시지와 response 메시지`에
+- ┣ 포함된 `엔티티에 사용되는 헤더`로
+- ┗ 콘텐츠의 `갱신 시간` 같은 엔티티에 관한 정보를 포함
+
+### 6.6.1 Allow
+
+```json
+Allow: GET, HEAD
+```
+
+- Allow 헤더 필드 : Request-URI에 지정된 리소스가 제공하는
+- ┣ `메소드의 일람을 전달`함
+- ┣ 서버가 받을 수 없는 메소드를 수신한 경우
+- ┣ 상태 코드 : 405 Method Not Allowed 리스폰스와 함께
+- ┗ 수신 가능한 메소드의 일람을 기술한 `Allow 헤더 필드를 반환`
+
+### 6.6.2 Content-Encoding
+
+```json
+Content-Encoding: gzip
+```
+
+- Content-Encoding 헤더 필드 :
+- ┣ 서버가 엔티티 바디에 대해서
+- ┣ 실시한 `content 코딩 형식을 전달`
+
+> content-coding : 엔티티의 정보가 누락되지 않도록 압축 지시
+
+- 주로 4가지의 코딩 형식이 사용
+  1. Gzip
+  2. Compress
+  3. Deflate
+  4. Identity
+
+### 6.6.3 Content-Language
+
+```json
+Content-Language: en
+```
+
+- `Content-Language: en` 헤더 필드 :
+- ┗ 엔티티 바디에 사용된 `자연어(한국어 영어)를 전달`
+
+### 6.6.4 Content-Length
+
+```json
+Content-Length: 15000
+```
+
+- Content-Length 헤더 필드 :
+- ┣ 엔티티 바디의 크기(단위 : byte)를 전달함
+- ┣ `엔티티 바디에 전송 코딩이 실시된 경우`
+- ┣ `Content-Length 헤더 필드`는 `사용해서는 안됨`
+- ┗ 엔티티 바디의 크기를 산출하는 방법에 대한 내용은 복잡
+
+> RFC2616 4.4 Content len 산출 방법
+
+### 6.6.5 Content-Location
+
+```json
+Content-Location: http://google.com/index-ko/html
+```
+
+- `Content-Location 헤더 필드` :
+- ┣ 메시지 바디에 대응하는 `URI를 전달`함
+- ┣ `Location 헤더 필드와 달리`
+- ┣ `Content-Location`은 `메시지 바디로 반환`된
+- ┗ `리소스의 URI`를 나타냄
+
+- ex ) Accept-Language 헤더 필드를 사용한
+- ┣ 서버 구동형 리퀘스트 :
+- ┣ 실제로 요구된 오브젝트와는 `다른 페이지가`
+- ┣ `반환된 경우` → Content-Location 헤더 필드에
+- ┗ URI를 포함함
+
+### 6.6.6 Content-MD5
+
+```json
+Content-MD5: OGasldkfjlskdafjklsdjflajdf==
+```
+
+- Content-MD5 헤더 필드 :
+- ┣ 메시지 바디가 변경되지 않고 도착했는지 확인하기 위해
+- ┣ MD5 알고리즘에 의해서 생성된 값을 전달함
+- ┣ 메시지 바디에 `MD5 알고리즘을 적용해서 얻은 `
+- ┣ `128비트 바이너리 값`에 `Base64 인코딩`을 한 결과를
+- ┣ 필드 값에 기록함
+- ┣ HTTP 헤더 : 바이너리 값을 기록하는 것이 불가능
+- ┗ `Base64로 인코딩`하고 있음
+
+- 유효성을 확인하기 위해서 : `수신한 client 측`에서
+- ┣ 메시지 바디에 같은 MD5 알고리즘을 실행함
+- ┣ 이렇게 해서 도출한 값과 필드 값에 값을 비교하며
+- ┗ 메시지 바디가 올바른지 여부를 확인 가능
+
+> 임베디드 페리티 체크와 비슷
+
+- 이 경우 우발적 컨텐츠 변경은 잡을 수 있지만
+- ┣ 악의적으로 변경한 경우 모름
+- ┣ client 수신 단계에서도 메시지 바디도
+- ┗ `Content-MD5 변조된 상태` → 발견 불가
+
+### 6.6.7 Content-Range
+
+```json
+Content-Range: bytes 5001-1000/10000
+```
+
+- `Content-Range 헤더 필드` :
+- ┣ 범위를 지정해서 일부분만을 request하는
+- ┣ `Range 리퀘스트에 대해서 리스폰스를 할 때에 사용`
+- ┣ `response로 보낸 엔티티`가 어느 부분에
+- ┣ 해당하는가를 전달함
+- ┣ 필드 값에는 `현재 보내고 있는 곳을 바이트`로
+- ┗ `지정한 범위`와 `전체 사이즈를 기록`함
+
+### 6.6.8 Content-Type
+
+```json
+Content-Type: text/html: charset=UTF-8
+```
+
+- `Content-Type 헤더 필드` : 엔티티 바디에 포함되는
+- ┣ 오브젝트의 미디어 타입을 전달함
+- ┣ Accept 헤더 필드와 같이
+- ┣ 필드 값 : `"타입/서브 타입"으로 기록`함
+- ┣ Charset 파라미터 : "iso-8859-1"과 "enu-kr"등의
+- ┗ `문자셋을 지정`함
+
+### 6.6.9 Expires
+
+```json
+Expires: Wed, 04 Jul 2012 08:26:05 GMT
+```
+
+- Expires 헤더 필드 : 리소스의 유효 기간 날짜를 전달
+- ┣ 캐시 서버가 Expires 헤더 필드를 포함한
+- ┣ 리소스를 수신한 경우 필드 값으로 지정된 날짜까지
+- ┗ response의 복사본을 유지하고 request에는 캐시로 응답함
+
+- 지정 날짜가 지난 경우 → 리퀘스트가 온 단계에서 오리진 서버에
+- ┗ 리소르를 얻으러 감
+
+- 오리진 서버가 캐시 서버에 캐시되는 것을
+- ┣ 원하지 않을 경우에는 `Date 헤더 필드의 필드값`과
+- ┣ `같은 날짜로 해두는 것이 바람직`함
+- ┣ 다만 `Cache-Control 헤더 필드`에
+- ┣ `max-age 디렉티브`가 지정되어 있는 경우 :
+- ┗ `Expires 헤더 필드보다 max-age 디렉티브의 지정이 우선`
+
+### 6.6.10 Last-Modified
+
+```json
+Last-Modified: wed, 23 May 2021 10:10:10 GMT
+```
+
+- Last-Modified 헤더 필드 : 리소스가 마지막으로
+- ┣ `갱신되었던 날짜 정보를 전달`함
+- ┣ 기본적으로는 Request-URI가 지정된 리소스가 갱신되었던
+- ┣ 날짜가 되지만
+- ┣ GGI 등의 스크립트로 동적인 데이터를 다룰 경우
+- ┗ 그 데이터의 최종 갱신 날짜가 되는 경우도 존재
