@@ -1760,3 +1760,724 @@ console.log(todos);
     ┣ 고로 불안정함
     ┣ ES10(ECMAScript 2019) 에서는
     ┗ timsort 알고리즘의 사용으로 변경
+
+### 27.9.2 Array.prototype.forEach
+
+- 함수형 프로그래밍 :
+- ┣ 1. 순수 함수
+- ┣ 2. 보조 함수의 조합
+- ┣ 로직 내에 존재하는 조건문, 반복문 제거 목적
+- ┗ 변수의 사용을 억제
+
+- 조건문, 반복문 이해를 어렵게 함
+- ┣ 특히 : for문의 경우 변수를 선언해야 하며
+- ┣ 조건식과 증감식으로 이루어져 있음
+- ┗ `함수형 프로그래밍을 추구하는 바와 맞지 않음`
+
+```js
+const numbers = [1, 2, 3];
+const pows = [];
+
+// for문을 이용한 배열 순회
+for (let i = 0; i < number.length; i++) {
+	pows.push(numbers[i] ** 2);
+}
+
+console.log(numbers); // [1, 4, 9]
+```
+
+- forEach 메서드 : for문을 대체할 수 있는 `고차함수`임
+- ┣ `forEach` 메서드는 `자신의 내부에서 반복문을 실행`
+- ┣ forEach 메서드 : `반복문을 추상화한 고차 함수`로서
+- ┣ 내부에서 반복문을 통해 `자신을 호출한 배열을 순회`하며
+- ┣ 수행해야할 처리 → `콜백 함수로 전달 받아서 반복 호출`
+- ┗ for 문으로 구현된 위 예제를 forEach로 처리해 보기
+
+```js
+const numbers = [1, 2, 3];
+const pows = [];
+
+// forEach 메서드 : numbers 배열의 모든 요소를 순회하면서
+// 콜백 함수를 반복 호출하게 됨
+numbers.forEach((item) => pows.push(items ** 2));
+console.log(pows); // [1, 4, 9]
+```
+
+- 위 예제의 경우 forEach 메서드 :
+- ┣ numbers 배열의 모든 요소를 순회하여
+- ┣ 콜백 함수를 반복 호출함
+- ┣ numbers 배열의 요소가 3개이므로
+- ┣ → 콜백 함수도 3번이 호출되게 됨
+- ┣ 이때 `콜백 함수를 호출하는 forEach 메서드` :
+- ┗ `콜백 함수에 인수를 전달`할 수 있음
+
+- forEach 메서드의 콜백 함수 :
+- ┣ forEach 메서드를 호출한
+- ┣ 1. `배열의 요소값`
+- ┣ 2. `인덱스`
+- ┣ 3. `호출한 배열 자체 → this`
+- ┗ 고로 3개의 인수 순차적으로 전달 가능
+
+```js
+// for Each 메서드 : 콜백 함수를 호출하면서
+// 3개 (요소값, 인덱스, this)를 인수로 전달
+[1, 2, 3].forEach((item, index, arr) => {
+	console.log(`요소값 : ${item}, 인덱스: ${index}, this:${Json.stringfy(arr)}`);
+});
+```
+
+> Json.stringfy 메서드
+
+    Json.stringfy 메서드 :
+    ┣ 객체를 JSON 포맷의 문자열로 변환하게됨
+    ┣ 위 예제에서는 객체인 arr 배열을 문자열로
+    ┗ 출력하기 위해 사용
+
+- forEach 메서드 : 원본 배열(this 배열)을
+- ┣ `변경하지 않는다는 것`이 `특징`
+- ┣ 하지만 → 콜백함수를 통해서
+- ┗ 원본배열의 변경 또한 가능함
+
+```js
+const numbers = [1, 2, 3];
+
+// forEach 메서드 : 원본 배열을 변경하지 않지만
+// 콜백 함수를 통해 원본 배열을 변경 가능함
+// 콜백 함수의 세 번째 매개변수
+// arr → 원본 배열 numbers를 가리키게 됨
+// 따라서 콜백 함수의 세 번째 매개변수
+// arr을 직접 변경하면 원본 배열 numbers가 변경됨
+numbers.forEach((item, index, arr) => {
+	arr[index] = item ** 2;
+});
+```
+
+> forEach 메서드의 반환값 : 언제나 undefined
+
+```js
+const result = [1, 2, 3].forEach(console.log);
+console.log(result); // undefined;
+```
+
+- forEach 메서드의 두번째 인수로
+- ┣ forEach 메서드의 콜백 함수 내부에서
+- ┗ `this로 사용할 객체를 전달`이 `가능함`
+
+```js
+class Numbers {
+	numberArray = [];
+	multiply(arr) {
+		arr.forEach(function (item) {
+			// TypeError: cannot read property
+			this.numberArray.push(item * item);
+		});
+	}
+}
+
+const numbers = new Numbers();
+numbers.multiply[(1, 2, 3)];
+```
+
+- forEach 메서드의 콜백 함수 :
+- ┣ `일반 함수로 호출`되므로
+- ┣ `콜백 함수의 내부의 this`는 → `undefined를 가리킴`
+- ┣ this가 전역 객체가 아닌
+- ┣ `undefined를 가리키는 이유`는
+- ┣ 클래스 내부의 모든 코드에는 `암묵적`으로
+- ┣ `strict mode`가 적용되기 때문
+
+> class 내부에서는 암묵적으로
+
+    strict mode가 적용됨을 기억
+
+- forEach 메서드의 콜백 함수 내부의 this와
+- ┣ multiply 메서드의 this를 일치시키 위해서는
+- ┣ forEach 메서드의 두번째 인수로
+- ┗ `this로 사용할 객체를 전달`하면 됨
+
+> 두 번째 인수로 this로 사용할 객체 전달하기
+
+```js
+class Numbers {
+	numberArray = [];
+
+	multiply(arr) {
+		arr.forEach(function (item) {
+			this.numberArray.push(item * item);
+		}, this); // forEach 메서드의 콜백 함수 내부에서
+		// this로 사용할 객체를 전달
+	}
+}
+
+const numbers = new Numbers();
+numbers.multiply([1, 2, 3]);
+console.log(numbers); // [1, 4, 9]
+```
+
+- 더 나은 방법 : `ES6의 화살표 함수 사용`
+- ┣ 화살표 함수의 경우 함수 자체의
+- ┣ `this 바인딩`을 `가지지 않음`
+- ┣ 따라서 → 화살표 함수 내부에서 this를 참조하면
+- ┣ `상위 스코프의 this`를 즉 : `multiply 메서드 내부`의
+- ┗ `this를 그대로 참조`하게 됨
+
+```js
+class Numbers {
+	numberArray = [];
+
+	multiply(arr) {
+		// 화살표 함수 내부에서 this를 참조하게 되면
+		// 상위 스코프의 this를 그대로 참조하게 됨
+		arr.forEach((item) => this.numberArray.push(item * item));
+	}
+}
+const numbers = new Numbers();
+numbers.multiply([1, 2, 3]);
+console.log(numbers.numberArray);
+```
+
+- forEach 메서드의 동작을 이해하기 위해서
+- ┗ forEach `메서드의 폴리필`을 학습
+
+```js
+// 만약 Array.prototype에 forEach 메서드가 존재하지 않으면
+// 폴리필을 추가함
+if (!Array.prototype.forEach) {
+	Array.prototype.forEach = function (callback, thisArg) {
+		// 첫 번째 인수가 함수가 아니면 TypeError 발생
+		if (typeof callback !== 'function') {
+			throw new TypeError(callback + 'is not a function');
+		}
+
+		// this로 사용할 두 번째 인수를 전달받지 못하면
+		// 전역 객체를 this로 사용함
+		thisArg = thisArg || window;
+	};
+
+	// for문으로 배열을 순회하면서 콜백 함수를 호출함
+	for (var i = 0; i < this.length; i++) {
+		// call 메서드를 통해 thisArg를 전달하면서
+		// 콜백 함수를 호출함
+		// 이때 콜백 함수의 인수로
+		// 1. 배열 요소, 2. 인덱스, 3. 배열 자신 전달
+		callback.call(thisArg, this[i], i, this);
+	}
+}
+```
+
+- 이처럼 forEach 메서드도 내부에서는 반복문 (for문)을 통해
+- ┣ `배열을 순회할 수 밖에 없는 구조`를 가지고 있음
+- ┣ 단 : 반복문을 `메서드 내부로 은닉`하여서
+- ┗ `흐름을 이해하기 쉽게` 하고, `복잡성을 해결`함
+
+- forEach 메서드 : for문과 달리
+- ┣ 1. `break`, 2. `continue` 문을 `사용 불가`
+- ┣ 다시 말해 배열 순회의 중간 탈출이 불가
+- ┗ 모든 요소를 빠짐없이 순회 해야함
+
+```js
+[1, 2, 3].forEach(item => {
+    console.log(item);
+    if (item > 1) break; // SyntaxError
+})
+```
+
+- 희소 배열읠 경우 존재하지 않는 요소
+- ┣ 순회 대상에서 제외됨
+- ┣ 이는 앞으로 살펴볼 배열을 순회하는
+- ┣ 1. `map`, 2. `filter`, 3. `reduce` 에서도
+- ┗ `동일한 특징`을 가지고 있음
+
+```js
+// 희소 배열
+const arr = [1, , 3];
+
+// for문을 이용한 희소 배열 순회
+for (let i = 0; i < arr.length; i++) {
+	console.log(arr[i]); // 1, undefined, 3
+}
+
+// forEach문을 이용한 희소 배열 순회
+arr.forEach((item) => console.log(v));
+```
+
+- forEach 메서드 : `for문에 비해 성능이 떨어짐`
+- ┣ 그러나 `가독성이 좋은` `장점`을 가지고 있음
+- ┣ 따라서 요소의 배열의 `요소개수가 많거나`
+- ┣ `성능 개선`, `복잡한 코드`를 제외하고서는
+- ┗ forEach 문을 사용하는 것을 추천
+
+### 27.9.3 Array.prototype.map
+
+- `map` 메서드 : 자신을 호출한 배열의 `모든 요소를 순회`
+- ┣ 인수로 전달받은 콜백 함수를 반복 호출함
+- ┣ 그리고 : 콜백 함수의 반환값들로 구성된
+- ┣ `새로운 배열을 반환함`
+- ┗ 원본 배열의 경우 → 변경되지 않음
+
+```js
+const numbers = [1, 4, 9];
+
+// map 메서드 : numbers 배열의 모든 요소들을 순회하며
+// 콜백 함수를 반복적으로 호출하게 됨
+// 그리고 콜백 함수의 반환값들로 구성된
+// 새로운 배열을 만들어냄
+const roots = numbers.map((item) => Math.sqrt(item));
+
+// 위 코드는 다음과 같음
+// const roots = numbers.map(Math.sqrt);
+```
+
+- forEach, map의 공통점 :
+- ┣ 모든 요소를 순회하면서
+- ┣ 인수로 전달받은 `콜백함수를 실행` 한다는 점
+- ┣ 하지만 forEach 메서드 : 언제나 `undefined를 반환`
+- ┣ map 메서드 : 콜백 함수의 반환값들로 구성된
+- ┗ `새로운 배열을 반환 한다는 점`이 차이점임
+
+- forEach 메서드 : 단순히 반복문을 대처하기 위한
+- ┗ `고차 함수`임
+
+- map 메서드 : 요소값을 다른 값으로
+- ┣ `매핑(mapping)`한 새로운 배열을 반환하기 위한
+- ┗ `고차 함수`임
+- map 메서드가 생성하여 반환하는 새로운 배열의
+- ┣ length 프로퍼티 값은 map 메서드를 호출한 배열의
+- ┣ `length 프로퍼티 값과 반드시 일치함`
+- ┣ 즉 : map 메서드를 호출한 배열과
+- ┗ 반환한 배열의 경우 `1 : 1`을 매핑 한다고 보면됨
+
+- forEach 메서드와 마찬가지로
+- ┣ map 메서드의 경우도
+- ┣ 1. 배열의 요소 값
+- ┣ 2. 인덱스
+- ┗ 3. 배열 자신(this)를 전달받음
+
+```js
+// map 메서드 : 콜백 함수를 호출하면서 인덱스 3개 넘겨줄 수 있음
+[1, 2, 3].map((item, index, arr) => {
+	console.log(
+		`요소값 : ${item}, 인덱스 : ${index} this: ${JSON.stringfy(arr)}}`
+	);
+	return item;
+});
+```
+
+- forEach 메서드와 마찬가지로
+- ┣ map 메서드의 두 번째 인수로 map 메서드의
+- ┣ 콜백 함수 내부에서 this로 사용할 객체를
+- ┗ 전달이 가능함
+
+```js
+class Prefixer {
+	constructor(prefix) {
+		this.prefix = prefix;
+	}
+	add(arr) {
+		// 화살표 함수 내부에서 this를 참조하면
+		// 상위 스코픠의 this를 그대로 참조함
+		return arr.map((item) => this.prefix + item);
+	}
+}
+
+const prefixer = new Prefixer('-webkit-');
+console.log(prefixer.add(['transition', 'user-select']));
+```
+
+### 27.9.4 Array.prototype.filter
+
+- filter 메서드 : 자신을 호출한 배열의 모든 요소를
+- ┣ 순회하면서 인수로 전달받은 콜백 함수를 `반복 호출`
+- ┣ 콜백 함수의 반환값이 → `true인 요소로만 구성`된
+- ┣ `새로운 배열을 반환`함
+- ┗ `원본 배열` : `변경되지 않음`
+
+```js
+const numbers = [1, 2, 3, 4, 5];
+
+// filter 메서드 : numbers 배열의 모든 요소를 순회하며
+// 콜백 함수를 반복 호출함
+// 콜백 함수의 반환값이 true인 요소로만 구성된
+// 새로운 배열을 반환함
+// 다음의 경우 numbers 배열에서 홀수인 요소만 필터링 함
+// 1의 경우 → true로 평가
+const odds = numbers.filter((item) => item % 2);
+console.log(odds); // [1, 3, 5]
+```
+
+- forEach, map 메서드와 마찬가지로
+- ┣ filter 메서드 : 자신을 호출한 배열의
+- ┣ 모든 요소를 `순회하면서 전달받은 콜백 함수`를
+- ┗ `반복적으로 호출`하게됨
+
+- forEach : 언제나 `undefined를 반환`하고
+- map : 콜백 함수의 반환값으로 구성된 `새로운 배열 반환`
+- filter : 콜백 함수의 `반환값 → true로 이루어진 배열 반환`
+
+- filter 메서드 : `자신을 호출한 배열`에서
+- ┣ 필터링 조건을 만족하는 `특정 요소만 추출하여`
+- ┣ 새로운 배열을 만들고 싶을 때 사용함
+- ┣ 위 예제에서 filter 메서드의 콜백 함수 요소값을
+- ┗ 2로 나눈 나머지를 반환함
+
+- 따라서 : filter 메서드가 생성하여
+- ┣ 반환한 새로운 배열의 length 프로퍼티 값은
+- ┣ filter 메서드를 `호출한 배열의 length`
+- ┗ 프로퍼티 `값과 같거나 적다는 것을 알 수 있음`
+
+- forEach, map 메서드와 마찬가지로
+- ┣ filter 메서드의 콜백 함수 :
+- ┣ 3개의 인수
+- ┣ 1. `배열 요소`
+- ┣ 2. `인덱스`
+- ┣ 3. 배열 자체 `this`
+- ┗ 전달 받을 수 있음
+
+> class 내부에서 화살표 함수 사용
+
+```js
+const Users {
+    constructor() {
+        this.users = {
+            {id: 1, name: 'Lee'},
+            {id: 2, name: 'Kim'}
+        }
+    }
+}
+// 요소 추출
+findById(id) {
+    // id가 일치하는 사용자만 반환함
+    return this.users.filter(user => user.id === id);
+}
+
+// 요소 제거
+remove(id) {
+    // 일치하지 않는 사용자를 제거
+    this.users = this.users.filter(user => user.id !== id);
+}
+
+const users = new Users();
+
+let user = users.findById(1);
+
+users.remove(1);
+```
+
+- filter 메서드를 사용해 특정 요소를 제거할 경우
+- ┣ 특정 요소가 중복되어 있다면 → `중복된 요소를 모두`
+- ┣ 제거하게 됨
+- ┣ 특정 요소 `하나만을 제거`하려면 →
+- ┣ 특정 요소의 `인덱스를 확인`하고
+- ┗ `splice 메서드`를 사용하는 것을 추천
+
+### 27.9.5 Array.prototype.reduce
+
+- reduce 메서드 : 자신을 호출한 배열의 모든 요소를
+- ┣ 순회하면서 전달받은 `콜백 함수를 반복 호출`함
+- ┣ 콜백 함수의 `반환값을 다음 순회 시`에
+- ┣ 콜백 함수의 `첫 번째 인수로 전달`하면서
+- ┣ `콜백 함수를 호출`하여
+- ┣ `하나의 결과값을 만들어 반환`하게 됨
+- ┗ 원본 배열 → `변경되지 않음`
+
+- reduce 메서드 :
+- ┣ 1. 콜백 함수
+- ┗ 2. 초기값 전달 받음
+
+- reduce 콜백 함수 :
+- ┣ 1. `초기값` 또는 `콜백 함수의 이전 반환값`
+- ┣ 2. reduce 메서드를 호출한 `배열의 요소값`
+- ┣ 3. `인덱스`
+- ┗ 4. `배열 자체` → `this` 인자로 가질 수 있음
+
+> EX) 2개의 인수 즉 콜백 함수와 초기값 0을 전달 받음
+
+```js
+// 1부터 4까지 누적을 구함
+const sum = [1, 2, 3, 4].reduce((acc, cur, index, array) => acc + cur, 0);
+console.log(sum); // 10
+```
+
+- reduce 메서드의 콜백 함수 :
+- ┣ `4개의 인수를 전달받아`
+- ┣ `배열의 length 만큼` 총 4회 호출되게 됨
+- ┣ 이때 콜백 함수로 전달되는 인수와 반환값은
+- ┗ 다음과 같음
+
+| 구분    | accumulator | currentValue | index | array        | 콜백 함수의 반환값 |
+| ------- | ----------- | ------------ | ----- | ------------ | ------------------ |
+| 첫 번째 | 0 (초기값)  | 1            | 0     | [1, 2, 3, 4] | 1 (acc + cur)      |
+| 두 번째 | 1 (초기값)  | 2            | 1     | [1, 2, 3, 4] | 3 (acc + cur)      |
+| 세 번째 | 3 (초기값)  | 3            | 2     | [1, 2, 3, 4] | 6 (acc + cur)      |
+| 네 번째 | 6 (초기값)  | 4            | 3     | [1, 2, 3, 4] | 10 (acc + cur)     |
+
+- 이처럼 reduce 메서드 :
+- ┣ 1. `초기값`과 배열의 2. `첫 번째 요소값`을
+- ┣ `콜백 함수에게 인수로 전달`하면서
+- ┣ 다음 순회에는 1. `콜백 함수의 반환값`과
+- ┣ 2. `두 번째 요소값`을 콜백 함수의 인수로 전달하면서
+- ┗ 호출 하게됨, 이 과정 반복 → 하나의 결과값을 반환
+
+- `reduce 메서드` : 자신을 호출한
+- ┣ 배열의 `모든 요소들을 순회`하며
+- ┣ `하나의 결과값을 구해야 하는 경우`에
+- ┗ 사용을 하게됨
+
+#### 평균 구하기
+
+```js
+const values = [1, 2, 3, 4, 5, 6];
+
+const avg = values.reduce((acc, cur, i, { length }) => {
+	// 마지막 순회가 아니면 누적값을 반환하고
+	// 마지막 순회면 누적값으로 평균을 구해 반환
+	return i === length - 1 ? (acc + cur) / length : acc + cur;
+}, 0);
+
+console.log(avg); //3.5
+```
+
+#### 최대값 구하기
+
+```js
+const values = [1, 2, 3, 4, 5];
+
+const max = values.reduce((acc, cur) => (acc > cur ? acc : cur), 0);
+```
+
+> 최대값의 경우 reduce 사용보다 Math.max를 사용하는 것이 직관적임
+
+```js
+const values = [1, 2, 3, 4, 5];
+
+const max = Math.math(...values);
+// var max = Math.math.apply(null, values);
+console.log(max); // 5
+```
+
+#### 요소의 중복 횟수 구하기
+
+```js
+const fruits = ['banana', 'apple', 'orange', 'orange', 'apple'];
+
+const count = fruits.reduce((acc, cur) => {
+	// 첫 번째 순회 시 acc :
+	// 초기값인 {}이고 cur :
+	// 첫 번째 요소인 banana임
+	// 초기값으로 전달받은 빈 객체의 요소값인 cur을
+	// 프로퍼티 키로, 요소의 개수를 프로퍼티 값으로 할당
+	// 만약 프로퍼티 값이 undefined인 경우
+	// 프로퍼티 값을 1로 초기화
+	acc[cur] = (acc[cur] || 0) + 1;
+	return acc;
+}, {});
+```
+
+#### 중첩 배열 평탄화
+
+```js
+const values = [1, [2, 3], 4, [5, 6]];
+
+const flatten = values.reduce((acc, cur) => acc.concat(cur), []);
+
+console.log(values); // [1, 2, 3, 4, 5, 6]
+```
+
+> 중첩 배열의 평탄화의 경우
+
+    ES10 → ECMAScript 2019 도입된
+    ┣ Array.prototype.flat 메서드 사용이
+    ┗ 좀 더 직관적임
+
+```js
+[1, [2, 3]].flat(); // [1, 2, 3];
+```
+
+- 인자값의 경우 평탄화를 위한 깊이 값임을 기억
+
+#### 중복 요소 제거
+
+```js
+const values = [1, 2, 1, 3, 5, 4, 5, 3, 4, 4];
+
+const result = values.reduce((acc, cur, i, arr) => {
+	// 순회 중인 요소의 인덱스가
+	// 자신의 인덱스라면 처음 순회 하는 요소임
+	// 이 요소만 초기값으로 전달받은
+	// 배열에 담아서 반환을 하게됨
+	// 순회 중인 요소의 인덱스가
+	// 자신의 인덱스가 아니라면 중복된 요소임
+	if (arr.indexOf[cur] === i) acc.push(cur);
+	return acc;
+}, []);
+
+console.log(result);
+```
+
+- 중복 요소를 제거할 때는
+- ┣ reduce 메서드보다 filter 메서드를 사용하는 방법이
+- ┗ 더 직관적임
+
+```js
+const values = [1, 2, 1, 3, 5, 4, 5, 3, 4, 4];
+
+// 순회 중인 요소의 인덱스 → 자신의 인덱스
+// 처음 순회하는 요소
+// 이 요소만 필터링
+const result = values.filter((v, i, arr) => arr.indexOf(v) === i);
+console.log(result); // [1, 2, 3, 5, 4]
+```
+
+> 또한 : 중복되지 않는 유일한 Set 사용 가능
+
+    중복 요소 제거할 때 이 방법 추천
+
+```js
+const values = [1, 2, 1, 3, 5, 4, 5, 3, 4, 4];
+
+// 중복을 허용하지 않는 Set 객체의 특성을 활용하여
+// 배열에서 중복된 요소를 제거 가능함
+const result = [...new Set(values)];
+console.log(result);
+```
+
+- 이처럼 : map, filter, some, every, find 등의
+- ┣ 모든 배열의 고차 함수 → reduce 메서드로 구현 가능
+- ┣ reduce 메서드의 두 번째 인수로 전달하는 초기값 :
+- ┗ `첫 번째 순회에 콜백 함수의 첫 번째 인수로 전달`됨
+
+> 주의점 :
+
+    두 번째 인수로 전달하는
+    ┗ 초기값은 생략이 가능함
+
+```js
+// reduce 메서드의 두 번째 인수
+// 즉 : 초기값을 생략했음
+const sum = [1, 2, 3, 4].reduce((acc, cur) => acc + cur);
+console.log(sum); // 10
+```
+
+> 그러나 reduce를 호출할 때는 언제나 초기값 전달이 안전함
+
+```js
+const sum = [].reduce((acc, cur) => acc + cur);
+// TypeError: Reduce of array with no initial value
+```
+
+> 초기값 전달 시 에러가 나지 않음
+
+```js
+const sum = [].reduce((acc, cur) => acc + cur, 0);
+console.log(sum); // 0
+```
+
+```js
+const products = [
+    {id : 1, price: 100}
+    {id : 2, price: 200},
+    {id : 3, price: 300},
+]
+
+
+// 1번째 순회 시 acc : {id: 1, price: 100}
+// cur : {id:2, price: 200} 이지만
+// 2번째 순회를 하면
+// acc : 300, cur : {id:3, price: 300}임
+// 2번째 순회 시 acc에 객체가 아닌 숫자값이 전달
+const priceSum = products.reduce((acc, cur) => acc.price + cur.price);
+
+console.log(priceSum); // NaN
+```
+
+- 이처럼 객체의 특정 프로퍼티 값을 합상하는 경우 초기값 전달
+
+```js
+const products = [
+    {id : 1, price: 100}
+    {id : 2, price: 200},
+    {id : 3, price: 300},
+]
+
+
+const priceSum = products.reduce((acc, cur) => acc.price + cur.price, 0);
+console.log(priceSum); // 600
+```
+
+### 27.9.6 Array.prototype.some
+
+- some 메서드 : 자신을 호출한 배열의 요소를 순회하면서
+- ┣ 인수로 전달된 콜백 함수를 호출함
+- ┣ 이때 some 메서드 : 콜백 함수의 반환값이
+- ┣ 단 한번이라도 참이면 → true
+- ┣ 모두 거짓이면 → false 반환함
+- ┣ 조건을 만족하는 요소가 1개 이상 존재하는지 확인하여
+- ┣ 그 결과를 불리언 타입으로 반환함
+- ┣ 단 : some 메서드를 호출한 배열이
+- ┗ 빈 배열인 경우 false를 반환하므로 주의
+
+- forEach, map, filter와 마찬가지로
+- ┣ some 메서드의 콜백 함수도
+- ┣ 1. 호출한 요소값
+- ┣ 2. 인덱스
+- ┗ 3. 배열 자체 → this를 전달 받을 수 있음
+
+```js
+[5, 10, 15].some((item) => item < 0); //false
+[5, 10, 15].some((item) => item > 0); //true
+```
+
+### 27.9.7 Array.prototype.every
+
+- every 메서드 : 자신을 호출한 배열의 요소를 순회하며
+- ┣ 인수로 전달된 콜백 함수를 호출함
+- ┣ every 메서드 : 콜백 함수의 반환값이
+- ┣ 모두 참이면 true,
+- ┗ 단 한번이라도 거짓이면 : false 반환
+
+> 빈 배열의 경우 false 반환
+
+- 이외의 것들은 some과 동일함
+
+### 27.9.8 Array.prototype.find
+
+- ES6에서 도입된 find 메서드는
+- ┣ `자신을 호출한 배열 요소를 순회` 하면서
+- ┣ 인수로 `전달된 콜백 함수를 호출`하여
+- ┣ 반환값이 `true인 첫 번째 요소를 반환`함
+- ┣ 콜백 함수의 반환값이 true인 요소가 존재하지 않으면
+- ┗ `undefined를 반환`함
+
+- forEach, map, filter 메서드와 동일하게
+- ┗ 3개의 인자값 받을 수 있음
+
+```js
+const users = [
+    {id: 1, name: 'Lee'}
+    {id: 2, name: 'Kim'}
+    {id: 3, name: 'Choi'}
+    {id: 4, name: 'Park'}
+]
+
+const users.find(user => user.id === 2); // {id:2, name:'Kim'}
+```
+
+- filter 메서드의 경우 콜백 함수의 호출 결과가
+- ┣ true인 요소만 추출한 새로운 배열을 반환함
+- ┣ 따라서 `filter 메서드`의 반환값은 → `언제나 배열`임
+- ┣ 하지만 find 메서드는 `반환값이 true인 `
+- ┣ 첫 번째 `요소를 반환`하기 때문에
+- ┗ 배열이 아닌 `요소임`
+
+```js
+// filter 메서드 : 배열을 반환함
+[1, 2, 2, 3].filter((item) => item === 2); // [2, 2];
+
+// find 메서드는 요소를 반환함
+[1, 2, 2, 3].find((item) => item === 2); //2
+```
+
+- forEach, map, filter와 마찬가지로
+- ┣ find 메서드의 두 번째 인수로
+- ┣ find 내부의 this로 사용할 객체 전달 가능
+- ┗ 화살표 함수 사용이 좀 더 좋음
