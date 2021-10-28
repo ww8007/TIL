@@ -1,5 +1,54 @@
 # 27. 배열
 
+## 목차
+
+- [27. 배열](#27-배열)
+  - [목차](#목차)
+  - [27.1 배열이란?](#271-배열이란)
+  - [27.2 자바스크립트 배열은 배열이 아니다](#272-자바스크립트-배열은-배열이-아니다)
+    - [일반적인 배열과 JS 배열 비교 장/단점](#일반적인-배열과-js-배열-비교-장단점)
+  - [27.3 length 프로퍼티와 희소 배열](#273-length-프로퍼티와-희소-배열)
+  - [27.4 배열 생성](#274-배열-생성)
+    - [27.4.1 배열 리터럴](#2741-배열-리터럴)
+    - [27.4.2 Array 생성자 함수](#2742-array-생성자-함수)
+    - [27.4.3 Array.of](#2743-arrayof)
+    - [27.4.4. Array.from](#2744-arrayfrom)
+      - [유사 배열 객체와 이터러블 객체](#유사-배열-객체와-이터러블-객체)
+  - [27.5 배열 요소의 참조](#275-배열-요소의-참조)
+  - [27.6 배열 요소의 추가와 갱신](#276-배열-요소의-추가와-갱신)
+  - [27.7 배열 요소의 삭제](#277-배열-요소의-삭제)
+  - [27.8 배열 메서드](#278-배열-메서드)
+    - [27.8.1 Array.isArray](#2781-arrayisarray)
+    - [27.8.2 Array.prototype.indexOf](#2782-arrayprototypeindexof)
+    - [27.8.3 Array.prototype.push](#2783-arrayprototypepush)
+    - [27.8.4 Array.prototype.pop](#2784-arrayprototypepop)
+    - [27.8.5 Array.prototype.unShift](#2785-arrayprototypeunshift)
+    - [27.8.6 Array.prototype.shift](#2786-arrayprototypeshift)
+    - [27.8.7 Array.prototype.concat](#2787-arrayprototypeconcat)
+    - [27.8.8 Array.prototype.splice](#2788-arrayprototypesplice)
+    - [27.8.9 Array.prototype.slice](#2789-arrayprototypeslice)
+    - [27.8.10 Array.prototype.join](#27810-arrayprototypejoin)
+    - [27.8.11 Array.prototype.reverse](#27811-arrayprototypereverse)
+    - [Array.prototype.fill](#arrayprototypefill)
+    - [27.8.13 Array.prototype.includes](#27813-arrayprototypeincludes)
+    - [27.8.14 Array.prototype.flat](#27814-arrayprototypeflat)
+  - [27.9 배열 고차 함수](#279-배열-고차-함수)
+    - [27.9.1 Array.prototype.sort](#2791-arrayprototypesort)
+    - [27.9.2 Array.prototype.forEach](#2792-arrayprototypeforeach)
+    - [27.9.3 Array.prototype.map](#2793-arrayprototypemap)
+    - [27.9.4 Array.prototype.filter](#2794-arrayprototypefilter)
+    - [27.9.5 Array.prototype.reduce](#2795-arrayprototypereduce)
+      - [평균 구하기](#평균-구하기)
+      - [최대값 구하기](#최대값-구하기)
+      - [요소의 중복 횟수 구하기](#요소의-중복-횟수-구하기)
+      - [중첩 배열 평탄화](#중첩-배열-평탄화)
+      - [중복 요소 제거](#중복-요소-제거)
+    - [27.9.6 Array.prototype.some](#2796-arrayprototypesome)
+    - [27.9.7 Array.prototype.every](#2797-arrayprototypeevery)
+    - [27.9.8 Array.prototype.find](#2798-arrayprototypefind)
+    - [27.9.9 Array.prototype.findIndex](#2799-arrayprototypefindindex)
+    - [27.9.10 Array.prototype.flatMap](#27910-arrayprototypeflatmap)
+
 ## 27.1 배열이란?
 
 - 배열(array) : 여러 개의 값을 순차적으로 나열한 자료구조
@@ -2481,3 +2530,80 @@ const users.find(user => user.id === 2); // {id:2, name:'Kim'}
 - ┣ find 메서드의 두 번째 인수로
 - ┣ find 내부의 this로 사용할 객체 전달 가능
 - ┗ 화살표 함수 사용이 좀 더 좋음
+
+### 27.9.9 Array.prototype.findIndex
+
+- ES6에서 도입된 `findIndex 메서드` :
+- ┣ 자신을 호출한 배열의 요소를 순회하면서
+- ┣ 인수로 전돨된 `콜백 함수를 호출`하여
+- ┣ 변환값이 `true인 첫 요소의 인덱스를 반환`함
+- ┣ 콜백 함수의 변환값이 true인 요소가 `존재하지 않으면`
+- ┗ `-1을 반환`하게 됨
+
+> forEach, map, filter와 전달 인자 동일
+
+```js
+const users = [
+    {id: 1, name: 'Lee'}
+    {id: 2, name: 'Kim'}
+    {id: 3, name: 'Choi'}
+    {id: 4, name: 'Park'}
+]
+
+// id가 2인 요소의 인덱스를 구함
+user.findIndex(user => user.id === 2);
+
+// 위와 같이 프로퍼티 키와 프로퍼티 값으로
+// 인덱스를 구하는 경우
+// 다음과 같이 콜백 함수를 추상화 가능
+function predicate(key, value) {
+    // key와 value를 기억하는 클로저 반환
+    return item => item[key] === value;
+}
+
+// id가 2인 요소의 인덱스를 구함
+user.findIndex(predicate('id', 2));
+```
+
+> forEach, map, filter 메서드와 마찬가지로
+
+    findIndex 메서드의 두 번째 인수로
+    ┣ findIndex 메서드의 콜백
+    ┗ 함수 내부에서 this로 사용할 객체를 전달 가능
+
+### 27.9.10 Array.prototype.flatMap
+
+- ES10(ECMAScript 2019) 에서 도입된
+- ┣ flatMap 메서드 :
+- ┣ map 메서드를 통해 생성된 새로운 배열을
+- ┣ 평탄화 함
+- ┣ 즉 : map 메서드와 `flat 메서드를 순차적`으로
+- ┗ `실행하는 효과가 있음`
+
+```js
+const arr = ['hello', 'world'];
+
+// map과 flat을 순차적으로 실행
+arr.map((x) => x.split('')).flat();
+// ['h', 'e', 'l' , ...]
+
+// flatMap은 map을 통해 생성된 새로운 배열을 평탄화함
+arr.flatMap((x) => x.split(''));
+// 위와 동일
+```
+
+- 단 : flatMap 메서드는
+- ┣ flat 메서드처럼 인수를 전달하여
+- ┣ `평탄화 깊이를 지정이 불가능`함
+- ┗ 1단계만 평탄화 할 수 있다는 점이 단점
+
+```js
+const arr = ['hello', 'world'];
+
+// flatMap은 1단계만 평탄화 함
+arr.flatMap((str, index) => [index, [str, str.length]]);
+// [[0, ['hello', 5]], [1, ['world', 5]]] → [0, ['hello', 5], 1, ['world', 5]]
+
+// 평탄화 깊이를 지정해야 하면 flatMap 메서드를 사용하는 것이 아닌
+// map 메서드와 flat 메서드를 각각 호출해야함
+```
