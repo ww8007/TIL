@@ -112,3 +112,7 @@
 27. 배열
 
 - [배열](ch27_배열/README.md)
+
+28. Number
+
+- [Number](ch28_Number/README.md)
