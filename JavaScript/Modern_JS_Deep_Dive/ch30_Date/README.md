@@ -51,6 +51,7 @@
     - [30.2.24 Date.prototype.toISOString](#30224-dateprototypetoisostring)
     - [30.2.25 Date.prototype.toLocaleString](#30225-dateprototypetolocalestring)
     - [30.2.26 Date.prototype.toLocaleTimeString](#30226-dateprototypetolocaletimestring)
+    - [30.3 Date를 활용한 시계 예제](#303-date를-활용한-시계-예제)
 
 ## 30.1 Date 생성자 함수
 
@@ -448,3 +449,40 @@ today.toLocaleString('ja-JP'); // 2020/7/24 12:30:00
 - ┣ `Date 객체의 시간을 표현한 문자열을 반환함`
 - ┣ 인수를 생략한 경우 브라우저가
 - ┗ 동작 중인 시스템의 로캘을 적용
+
+### 30.3 Date를 활용한 시계 예제
+
+```js
+(function printNow(){
+    const today = new Date();
+
+    const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+
+    // getDay 메서드 해당 요일을 나타내는 정수를 반환함
+    const day = dayNames[today.getDay()];
+
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const date = today.getDate();
+    let hour = today.getHours();
+    let minute = today.getMinutes();
+    let second = today.getSeconds();
+
+    const ampm = hour ?= 12 'PM' : 'AM';
+
+    // 12시간제로 변경
+    hour %= 12;
+    hour = hour || 12; // hour가 0이면 12를 재할당
+
+    // 10 미만인 분과 초를 2자리로 변경
+    minute = minute < 10 ? '0' + minute : minute;
+    second = second < 10 ? '0' + second : second;
+
+    const now = `${year} ${month} ${date} ${hour}시 ${minute}분 ${second}초`
+
+    console.log(now);
+
+    // 1초마다 printNow 함수를 재귀 호출 함
+    setTimeout(printNow, 1000);
+}());
+```
