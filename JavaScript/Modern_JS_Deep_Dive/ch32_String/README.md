@@ -3,6 +3,28 @@
 - 표준 빌트인 객체인 String : 원시 타입인 문자열을 다룰 때
 - ┗ 유용한 프로퍼티와 메서드를 제공함
 
+## 목차
+
+- [32. String](#32-string)
+  - [목차](#목차)
+  - [32.1 String 생성자 함수](#321-string-생성자-함수)
+  - [32.2 length 프로퍼티](#322-length-프로퍼티)
+  - [32.3 String 메서드](#323-string-메서드)
+    - [32.3.1 String.prototype.indexOf](#3231-stringprototypeindexof)
+    - [32.3.2 String.prototype.search](#3232-stringprototypesearch)
+    - [32.3.3 String.prototype.includes](#3233-stringprototypeincludes)
+    - [32.3.4 String.prototype.startsWith](#3234-stringprototypestartswith)
+    - [32.3.5 String.prototype.endsWith](#3235-stringprototypeendswith)
+    - [32.3.6 String.prototype.charAt](#3236-stringprototypecharat)
+    - [32.3.7 String.prototype.substring](#3237-stringprototypesubstring)
+    - [32.3.8 String.prototype.slice](#3238-stringprototypeslice)
+    - [32.3.9 String.prototype.toUpperCase](#3239-stringprototypetouppercase)
+    - [32.3.10 String.prototype.toLowerCase](#32310-stringprototypetolowercase)
+    - [32.3.11 String.prototype.trim](#32311-stringprototypetrim)
+    - [32.3.12 String.prototype.repeat](#32312-stringprototyperepeat)
+    - [32.3.13 String.prototype.replace](#32313-stringprototypereplace)
+    - [32.3.14 String.prototype.split](#32314-stringprototypesplit)
+
 ## 32.1 String 생성자 함수
 
 - `표준 빌트인 객체`인 `String 객체는`
@@ -399,4 +421,137 @@ str.repeat(1); // 'abc'
 str.repeat(2); // 'abcbac'
 str.repeat(2.5); // 'abcabc' 2.5 → 2
 str.repeat(-1); // RagneError
+```
+
+### 32.3.13 String.prototype.replace
+
+- replace 메서드 : `대상 문자열에서 첫 번째로 인수로`
+- ┣ 전달받은 `문자열 또는 정규 표현식을 검색하여`
+- ┗ 두 번재 인수로 전달한 `문자열로 치환한 문자열 반환`
+
+```js
+const str = 'Hello world';
+
+// str에서 첫 번째 인수 'world'를 검색하여
+// 두 번째 인수 'Lee'로 치환함
+str.replace('world', 'Lee'); // 'Hello Lee'
+```
+
+- 검색된 문자열이 여럿 존재할 경우
+- ┗ `첫 번째 검색된 문자열만 치환`
+
+```js
+const str = 'Hello world world';
+
+str.replace('world', 'Lee'); //"Hello Lee world";
+```
+
+- 특수한 교체 패턴을 사용할 수 있음
+- ┣ 에를 들어 `$&` : 검색된 문자열을 의미함
+- ┣ 교체 패턴에 대한 자세한 내용의 경우
+- ┗ `MDN의 함수 설명을 참조`
+
+```js
+const str = 'Hello world';
+
+// 특수한 교체 패턴을 사용할 수 있음
+str.replace('world', '<strong>$&</strong>');
+```
+
+- replace 메서드의 첫 번째 인수로 정규 표현식을 전달 가능
+
+```js
+const str = 'Hello Hello';
+
+// 'hello'를 대소문자를 구별하지 않고 전역 검색함
+str.replace(/hello/gi, 'Lee'); // Lee Lee
+```
+
+- replace 메서드의 두 번째 인수로 치환 함수를 전달 가능
+- ┣ replace 메서드 : 첫 번째 인수로 전달한
+- ┣ 문자열 또는 정규 표현식에 배치한 결과를
+- ┣ 두 번째 인수로 전달한 치환 함수의 인수로 전달하면서
+- ┗ 호출하고, 함수가 반환한 결과와 매치 결과를 치환함
+
+- 예를 들어 카멜 케이스를 스케이크 케이스로
+- ┗ 스네이크 케이스 → 카멜 케이스로 변경하는 함수
+
+```js
+// 카멜 케이스를 스네이크 케이스로 변환하는 함수
+function camelToSnake(camelCase) {
+	// /.[A-Z]/g : 임의의 한 문자와 대문자로 이루어진 문자열에 매치
+	// 치환 함수의 인수로 매치 결과가 전달되고
+	// 치환 함수가 반환한 결과와 매치 결과를 치환함
+	return camelCase.replace(/.[A-Z]/g, (match) => {
+		console.log(match); //
+		return match[0] + '_' + match[1].toLowerCase();
+	});
+}
+
+const camelCase = 'helloWorld';
+camelCaseToSnake(camelCase); // 'hello_world';
+
+// 스네이크 케이스를 카멜 케이스로 변환하는 함수
+function snakeToCamel(snakeCase) {
+	// _[a-z]/g는 _와 소문자로 이루어진 문자열에 배치함
+	// 치환 함수의 인수로 매치 결과가 전달되고
+	// 치환 함수가 반환한 결과에
+	// 매치 결과를 치환함
+	return snakeCase.replace(/_[a-z]/g, (match) => {
+		console.log(match); // '_w'
+		return match[1].toUpperCase();
+	});
+}
+const snakeCase = 'hello_world';
+snakeToCamel(snakeCase); // helloWorld
+```
+
+### 32.3.14 String.prototype.split
+
+- split 메서드 : 대상 문자열에서 첫 번째 인수로
+- ┣ 전달한 `문자열 또는 정규 표현식을 검색하여`
+- ┣ 문자열을 구분한 후 각 문자열로 이루어진 배열을 반환함
+- ┣ 1. 인수로 빈 문자열을 전달 : `각 문자를 모두 분리하고`
+- ┣ 2. 인수를 생략 : `문자열 전체를`
+- ┗ `단일 요소로 하는 배열을 반환함`
+
+```js
+const str = 'How are you doing';
+
+// 공백으로 구분(단어로 구분)하여 배열로 반환함
+str.split(' '); // ["How", "are", "you", "doing"]
+
+// \s는 여러 가지 공백 문자(스페이스, 탭 등)을 의미함
+str.split(/\s/); // ["How", "are", "you", "doing"]
+
+// 인수로 빈 문자열을 전달하면 각 문자를 모두 분리함
+str.split('');
+
+// 인수를 생략하면 대상 문자열 전체를
+// 단일 요소로 하는 배열을 반환함
+str.split(); // ["How are you doing"]
+```
+
+- 두 번째 인수로 배열의 길이를 지정할 수 있음
+
+```js
+// 공백으로 구분하여 배열로 반환함
+// 단 배열의 길이는 3임
+str.split(' ', 3); // ["How", "are", "you"]
+```
+
+- `split 메서드` : 배열을 반환함
+- ┣ `Array.prototype.reverse`
+- ┣ `Array.prototype.join `
+- ┣ 메서드와 함께 사용하면
+- ┗ `문자열을 역순으로 뒤집을 수 있음`
+
+```js
+// 인수로 전달받은 문자열을
+// 역순으로 뒤집음
+function reverseString(str) {
+	return str.split('').reverse().join('');
+}
+
+reverseString('Hello world!');
 ```
