@@ -1,5 +1,20 @@
 # 33. 7번째 데이터 타입 Symbol
 
+## 목차
+
+- [33. 7번째 데이터 타입 Symbol](#33-7번째-데이터-타입-symbol)
+	- [목차](#목차)
+	- [33.1 심벌이란?](#331-심벌이란)
+	- [33.2 심벌 값의 생성](#332-심벌-값의-생성)
+		- [33.2.1 Symbol 함수](#3321-symbol-함수)
+		- [33.2.2 Symbol.for / Symbol.keyFor 메서드](#3322-symbolfor--symbolkeyfor-메서드)
+	- [33.3 심벌과 상수](#333-심벌과-상수)
+		- [enum](#enum)
+	- [33.4 심벌과 프로퍼티 키](#334-심벌과-프로퍼티-키)
+	- [33.5 심벌과 프로퍼티 은닉](#335-심벌과-프로퍼티-은닉)
+	- [33.6 심벌과 표준 빌트인 객체 확장](#336-심벌과-표준-빌트인-객체-확장)
+	- [33.7 Well-known Symbol](#337-well-known-symbol)
+
 ## 33.1 심벌이란?
 
 - 97년 JS가 ECMAScript로 표준화된 이래로
@@ -311,4 +326,66 @@ Array.prototype[Symbol.for('sum')] = function () {
 ## 33.7 Well-known Symbol
 
 - JS가 기본 제공하는 빌트인 심벌 값이 존재함
--
+- ┣ 빌트인 심벌 값의 경우 :
+- ┗ `Symbol 함수의 프로퍼티에 할당되어 있음`
+
+- JS가 기본 제공하는 빌트인 심벌 값을
+- ┣ ECMAScript 사양에서는
+- ┣ `Well-known-Symbol 이라 부름`
+- ┗ 이는 `JS 엔진의 내부 알고리즘에 사용`
+
+- `Array, String, Map, Set, TypedArray`
+- ┣ `arguments, NodeList, HTMLCollection`
+- ┣ 과 같이 `for...of`문으로 순회 가능한
+- ┣ `빌트인 이터러블`의 경우
+- ┣ Well-known Symbol인 `Symbol.iterator를 키로 갖는`
+- ┣ 메서드를 가지게 되며
+- ┣ `Symbol.iterator 메서드를 호출하면`
+- ┗ `이터레이터를 반환하도록` ECMAScript 사양에 규정 되어있음
+
+> 고로 빌트인 이터러블 → 이터레이션 프로토콜을 준수함
+
+- 만약 : 빌트인 이터러블이 아닌 일반 객체를
+- ┣ 이터러블처럼 동작하도록 구현하고 싶다면
+- ┣ 이터레이션 프로토콜을 따르면 됨
+
+- ┣ ECMAScript 사양에 규정되어 있는 대로
+- ┣ Well-known Symbol인 1. `Symbol.iterator를`
+- ┣ `키로 갖는 메서드를 객체에 추가 하고`
+- ┗ 2. `이터레이터를 반환하도록 구현`
+
+```js
+// 1 ~ 5 범위의 정수로 이루어진 이터러블
+
+const iterable = {
+	// Symbol.iterator 메서드를 구현하여
+	// 이터러블 프로토콜을 준수
+	[Symbol.iterator]() {
+		let cur = 1;
+		const max = 5;
+		// Symbol.iterator 메서드는
+		// next 메서드를 소유한 이터레이터를 반환
+		return {
+			next() {
+				return { value: cur++, done: cur > max + 1 };
+			},
+		};
+	},
+};
+
+for (const num of iterable) {
+	console.log(num); // 1 2 3 4 5
+}
+```
+
+- 이때 : 이터레이션 프로토콜을 준수하기 위해
+- ┣ 일반 객체에 추가해야 하는 메서드의 키
+- ┣ `Symbol.iterator`는 기존 프로퍼티 키 또는
+- ┗ 미래에 추가될 프로퍼티 키와 절대로 중복되지 않음
+
+> 심벌의 사용 이유
+
+    1. 중복되지 않는 상수 값 생성
+    2. 기존에 작성된 코드에 영향을
+    ┣ 주지 않고 새로운 프로퍼티 추가
+    ┗ 즉 : 하위 호완성을 보장하기 위해
