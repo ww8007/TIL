@@ -23,3 +23,7 @@
 ## 6장. HTTP 헤더
 
 - [HTTP\_헤더](ch06_HTTP_헤더/README.md)
+
+## 7장. 웹을 안전하게 지켜주는 HTTPS
+
+-[웹을 안전하게 지켜주는 HTTPS](ch07_웹을_안전하게_지켜주는_HTTPS/README.md)
