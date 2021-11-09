@@ -104,3 +104,39 @@
 25. 클래스
 
 - [클래스](ch25_클래스/README.md)
+
+26. ES6 함수의 추가 기능
+
+- [ES6 함수의 추가 기능](ch26_ES6_함수의_추가_기능/README.md)
+
+27. 배열
+
+- [배열](ch27_배열/README.md)
+
+28. Number
+
+- [Number](ch28_Number/README.md)
+
+29. Math
+
+- [Math](ch29_Math/README.md)
+
+30. Date
+
+- [Date](ch30_Date/README.md)
+
+31. RegExp
+
+- [RegExp](ch31_RegExp/README.md)
+
+32. String
+
+- [String](ch32_String/README.md)
+
+33. 7번째 데이터 타입 Symbol
+
+- [7번쩨 데이터 타입 Symbol](ch33_7번째_데이터_타입_Symbol/README.md)
+
+34. 이터러블
+
+- [이터러블](ch34_이터러블/README.md)
