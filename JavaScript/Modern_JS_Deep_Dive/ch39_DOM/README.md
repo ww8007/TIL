@@ -764,3 +764,221 @@ const { childNodes } = $fruits;
 	$fruits.removeChild(childNode);
 });
 ```
+
+## 39.3 노드 탐색
+
+- 요소 노드를 취득한 다음
+- ┣ `취득한 요소 노드를 기점으로`
+- ┣ DOM 트리의 노드를 옮겨 다니며
+- ┣ 부모, 형제, 자식 노드 등을 탐색해야
+- ┗ `(traversing node walking)` 해야 할 때가 있음
+
+```html
+<ul id="fruits">
+	<li class="apple">Apple</li>
+	<li class="banana">Banana</li>
+	<li class="orange">Orange</li>
+</ul>
+```
+
+- `ul#fruits` 요소 :
+- ┣ 3개의 자식 요소를 가짐
+- ┣ 이때 먼저 ul#fruits 요소 노드를 취득한 다음
+- ┣ 자식 노드를 모두 탐색하거나
+- ┣ 자식 노드 중 하나만 탐색이 가능함
+- ┣ `li.banana1` 요소 : 1. `2개의 형제 요소`와
+- ┣ 2. `부모 요소를 갖는다.`
+- ┣ `li.banana 요소 노드를 취득한 다음`
+
+- ┣ 형제 노드나 부모 노드를 탐색이 가능함
+- ┣ 이처럼 DOM 트리 상의 노드를 탐색할 수 있도록
+- ┣ `Node, Element 인터페이스는`
+- ┗ `트리 탐색 프로퍼티를 제공함`
+
+- parentNode, previousSibling, firstChild
+- ┣ 프로퍼티 : Node.prototype이 제공
+- ┣ 프로퍼티 키에 Element가 포함된
+- ┣ 1. `previousElementSibling`
+- ┣ 2. `next ElementsSibling`
+- ┣ 3. `children 프로퍼티` :
+- ┗ `Element.prototype이 제공함`
+
+- `노드 탐색 프로퍼티` :
+- ┣ `모두 접근자 프로퍼티임`
+- ┣ 단 : 노드 탐색 프로퍼티는
+- ┣ setter 없이 getter만 존재하여
+- ┣ 참조만 가능한 읽기 전용 접근자 프로퍼티임
+- ┗ `읽기 전용 값 할당 → 에러 없이 무시됨`
+
+### 39.3.1 공백 텍스트 노드
+
+- 지금까지 언급하지 않았지만 HTML 요소 사이의
+- ┣ `스페이스`, `탭`, `줄바꿈(개행)`등의 `공백`
+- ┣ `(white space)` 문자는
+- ┣ 텍스트 노드를 생성함
+- ┗ 이를 공백 텍스트 노드라고 함
+
+- 텍스트 에디터에서 HTML 문서에
+- ┣ 1. 스페이스
+- ┣ 2. 탭
+- ┣ 3. 엔터 키 등을 입력하면
+- ┗ `공백 문자가 추가됨`
+- 이처럼 HTML 문서의 공백 문자는
+- ┣ 공백 텍스트 노드를 생성함
+- ┣ 따라서 `노드를 탐색할 때는`
+- ┣ `공백 문자가 생성한 공백 텍스트 노드에`
+- ┣ `주의를 해야함`
+- ┣ 다음과 같이 인위적으로 HTML 문서의
+- ┣ 공백 문자를 제거하면
+- ┣ 공백 텍스트 노드를 생성하지 않음
+- ┗ `하지만 가독성이 좋지 않으므로 권장 X`
+
+### 39.3.2 자식 노드 탐색
+
+- 자식 노드를 탐색하기 위해서는
+- ┗ 다음과 같은 `노드 탐색 프로퍼티를 사용함`
+
+| 프로퍼티                             | 설명                                                                                                                                                                                |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Node.prototype.childNodes`          | 자식 노드를 모두 탐색하여 DOM 컬렉션 객체인 NodeList에 담아 <br /> 반환함. childNodes 프로퍼티가 반환한 NodeList에는 요소 <br/> 노드뿐만 아니라 텍스트 노드도 포함되어 있을 수 있음 |
+| `Element.prototype.children`         | 자식 노드 중에서 요소 노드만 모두 탐색하여 DOM 컬렉션 객체인 <br/> HTMLCollection에 담아 반환함 children 프로퍼티가 반환한 <br/> HTMLCollection에는 텍스트 노드가 포함되지 않음     |
+| `Node.prototype.firstChild`          | 첫 번째 자식 노드를 반환함. firstChild 프로퍼티가 반환한 노드는 <br/> 텍스트 노드이거나 요소 노드임                                                                                 |
+| `Node.prototype.lastChild`           | 마지막 자식 노드를 반환함. lastChild 프로퍼티가 반환한 노드는 <br/> 텍스트 노드이거나 요소 노드임                                                                                   |
+| `Element.prototype.firstElement`     | 첫 번째 자식 요소 노드를 반환함. firstElementChild 프로퍼티는 <br/> 요소 노드만 반환함                                                                                              |
+| `Element.prototype.lastElementChild` | 마지막 자식 요소 노드를 반환함. lastElementChildChild 프로퍼티는 <br/> 요소 노드만 반환함                                                                                           |
+
+### 39.3.3 자식 노드 존재 확인
+
+- 자식 노드가 존재하는지 확인하려면
+- ┣ `Node.prototype.hasChildNodes 메서드`를 이용함
+- ┣ hasChildNodes 메서드 : 자식 노드가 존재하면
+- ┣ true를 반환하고 아니면 false를 반환함
+- ┣ 단 : childNodes 프로퍼티와 마찬가지로
+- ┗ `텍스트 노드를 포함하여 자식 노드의 존재를 확인함`
+
+- 자식 노드 중에 텍스트 노드가 아닌 요소 노드가
+- ┣ 존재하는지 확인하려면
+- ┣ hasChildNodes 메서드 대신
+- ┣ 1. `children.length 또는`
+- ┣ 2. `Element 인터페이스`의
+- ┗ `childElementCount 프로퍼티를 사용`
+
+### 39.3.4 요소 노드의 텍스트 노드 탐색
+
+- `요소 노드의 텍스트 노드` :
+- ┣ `요소 노드의 자식 노드임`
+- ┣ 따라서 → 요소 노드의 텍스트 노드 :
+- ┣ `firstChild 프로퍼티로 접근이 가능함`
+- ┣ firstChild 프로퍼티는 첫 번째 자식 노드를 반환함
+- ┣ firstChild 프로퍼티가 반환한 노드는
+- ┗ `텍스트 노드이거나 요소 노드임`
+
+```html
+<body>
+	<div id="foo">Hello</div>
+	<script>
+		// 요소 노드의 텍스트 노드는
+		// firstChild 프로퍼티로 접근이 가능함
+		console.log(document.getElementById('foo').firstChild); // #text
+	</script>
+</body>
+```
+
+### 39.3.5 부모 노드 탐색
+
+- 부모 노드를 탐색하려면
+- ┣ `Node.prototype.parentNode` 프로퍼티를 사용함
+- ┣ `텍스트 노드` :
+- ┣ `DOM 트리의 최종단 노드인 leaf Node 이므로`
+- ┗ `부모 노드가 텍스트 노드인 경우는 없음`
+
+### 39.3.6 형제 노드 탐색
+
+- 부모 노드가 같은 형제 노드를 탐색하려면
+- ┣ 다음과 같은 `노드 탐색 프로퍼티를 사용함`
+- ┣ 단 : `어트리뷰트 노드는 요소 노드와 연결되어 있지만`
+- ┣ 부모 노드가 같은 형제 노드가 아니기 때문에
+- ┣ `반환되지 않음`
+- ┗ 즉 : `아래 프로퍼티는 텍스트 노드 또는 요소 노드만 반환함`
+
+| 프로퍼티 | 설명 |
+| `Node.property.previousSibling` | 부모 노드가 같은 형제 노드 중에서 자신의 이전 형제 노드를 <br/> 탐색하여 반환함. previousSibling 프로퍼티가 반환하는 형제 <br/> 노드는 요소 노드 뿐만 아니라 텍스트 노드일 수도 있음 |
+| `Node.property.nextSibling` | 부모 노드가 같은 형제 노드 중에서 자신의 다음 형제 노드를 <br/> 탐색하여 반환함. previousSibling 프로퍼티가 반환하는 형제 <br/> 노드는 요소 노드 뿐만 아니라 텍스트 노드일 수도 있음 |
+| `Element.property.nextElementSibling` | 부모 노드가 같은 형제 노드 중에서 자신의 이전 형제 노드를 <br/> 탐색하여 반환함. nextElementSibling 프로퍼티가 반환하는 형제 <br/> 프로퍼티는 요소 노드만 반환함 |
+| `Element.property.nextElementSibling` | 부모 노드가 같은 형제 노드 중에서 자신의 다음 형제 노드를 <br/> 탐색하여 반환함. previousElementSibling 프로퍼티가 반환하는 형제 <br/> 프로퍼티는 요소 노드만 반환함 |
+
+## 39.4 노드 정보 취득
+
+- 노드 객체에 대한 정보를 취득하려면
+- ┗ `다음과 같은 노드 정보 프로퍼티를 사용함`
+
+| 프로퍼티                | 설명                                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| Node.prototype.nodeType | 노드 객체의 종류, 즉 : 노드 타입을 나타내는 상수를 반환함 <br/> 노드 타입 상수 : Node에 정의되어 있음 |
+|                         | Node.ELEMENT_NODE: 요소 노드 타입을 나타내는 상수 1을 반환                                            |
+|                         | Node.TEXT_NODE: 텍스트 노드 타입을 나타내는 상수 3을 반환                                             |
+|                         | Node.DOCUMENT_NODE:문서 노드 타입을 나타내는 상수 9을 반환                                            |
+| Node.prototype.nodeName | 노드의 이름을 문자열로 반환함                                                                         |
+|                         | 요소 노드 : 대문자 문자열로 태그 이름("UL, LI")반환                                                   |
+|                         | 텍스트 노드 : 문자열 "#text"를 반환                                                                   |
+|                         | 문서 노드 : 문자열 "#document"를 반환                                                                 |
+
+## 39.5 요소 노드의 텍스트 조작
+
+### 39.5.1 nodeValue
+
+- 지금까지 살펴본 노드 탐색, 노드 정보 프로퍼티 :
+- ┣ 모두 읽기 전용 접근자 프로퍼티임
+- ┣ 지금부터 살펴볼 `Node.prototype.nodeValue 프로퍼티`
+- ┣ 모두 setter, getter 모두 존재하는
+- ┣ `접근자 프로퍼티임`
+- ┗ `따라서 nodeValue 프로퍼티는 참조와 할당이 모두 가능함`
+
+- 노드 객체의 nodeValue 프로퍼티를
+- ┣ 참조하면 노드 객체의 값을 반환함
+- ┣ 노드 객체의 값이란 :
+- ┣ `텍스트 노드의 텍스트임`
+- ┣ 따라서 텍스트 노드가 아닌 노드,
+- ┣ 즉 : `문서 노드나 요소 노드의 `
+- ┣ `nodeValue 프로퍼티를 참조하면`
+- ┗ `null을 반환함`
+
+```html
+<html>
+	<body>
+		<div id="foo">Hello</div>
+	</body>
+	<script>
+		// 문서 노드의 nodeValue 프로퍼티를 참조함
+		console.log(document.nodeValue); // null
+
+		// 요소 노드의 nodeValue 프로퍼티를 참조함
+		const $foo = document.getElementById('foo');
+		console.log($foo.nodeValue); // null
+
+		// 텍스트 노드의 nodeValue 프로퍼티를 참조함
+		const $textNode = $foo.firstChild;
+		console.log($textNode.nodeValue); // Hello
+	</script>
+</html>
+```
+
+- 텍스트 노드의 nodeValue 프로퍼티에
+- ┣ 값을 할당하면 텍스트 노드의 값
+- ┣ 즉 : 텍스트를 변경할 수 있음
+- ┣ `따라서 → 요소 노드의 텍스트를 변경하라면`
+- ┗ `다음과 같은 순서의 처리가 필요함`
+
+1. 텍스트를 변경할 요소 노드를 취득한 다음
+
+- ┣ 취득한 요소 노드의 텍스트 노드를 탐색함
+- ┣ `텍스트 노드는 요소 노드의 자식 노드 이므로`
+- ┗ `firstChild 프로퍼티를 사용하여 탐색함`
+
+2. 탐색한 텍스트 노드의 `nodeValue 프로퍼티를 사용하여`
+
+- ┗ `텍스트 노드의 값을 변경함`
+
+```js
+$textNode.nodeValue = 'world';
+```
