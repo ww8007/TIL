@@ -982,3 +982,752 @@ const { childNodes } = $fruits;
 ```js
 $textNode.nodeValue = 'world';
 ```
+
+### 39.5.2 textContent
+
+- `Node.prototype.textContent` 프로퍼티 :
+- ┣ setter, getter 모두 존재하는
+- ┣ `접근자 프로퍼티로서`
+- ┣ 요소 노드의 텍스트와 모든 자손 노드의
+- ┗ `텍스트를 모두 취득하거나 변경함`
+
+- 요소 노드의 textContent 프로퍼티를 참조하면
+- ┣ `요소 노드의 콘텐츠 영역(시작 태그와 종료 태그 사이)`
+- ┣ 내의 `텍스트를 모두 반환함`
+- ┣ 다시 말해 요소 노드의
+- ┣ `childNodes 프로퍼티가 반환한`
+- ┣ 모든 노드들의 텍스트의 값
+- ┣ 즉 : `텍스트를 모두 반환함`
+- ┗ `이때 HTML 마크업은 무시됨`
+
+```html
+<body>
+	<div id="foo">Hello<span>world</span></div>
+</body>
+```
+
+- 앞서 살펴본 `nodeValue 프로퍼티를 참조하여도`
+- ┣ `텍스트를 취득이 가능함`
+- ┣ 단 : 텍스트 노드가 아닌 노드의 nodeValue 프로퍼티는
+- ┣ null을 반환하므로 의미가 없고
+- ┣ 텍스트 노드만 의미가 존재함
+- ┗ `코드가 더 복잡함`
+
+```html
+<body>
+	<div id="foo">Hello<span>world</span></div>
+</body>
+<script>
+	// #foo 요소 노드는 텍스트 노드가 아님
+	console.log(document.getElementById('foo').nodeValue); // null
+	// #foo 요소 노드의 자식 노드인 텍스트 노드의 값을 취득함
+	console.log(document.getElementById('foo').firstChild.nodeValue); // Hello
+	// #foo 요소 노드dml 자식 노드인 텍스트 노드의 값을 취득함
+	console.log(document.getElementById('foo').lastChild.firstChild.nodeValue); // world!
+</script>
+```
+
+- 만약 요소 노드의 콘텐츠 영역에
+- ┣ 자식 요소 노드가 없고
+- ┣ 텍스트만 존재한다면
+- ┣ `firstChild.nodeValue와 textContent 프로퍼티`
+- ┣ 같은 결과를 반환하게 됨
+- ┗ `이 경우 textContent 사용 하는 편이 코드가 간단함`
+
+- `요소 노드의 textContent 프로퍼티에`
+- ┣ `문자열을 할당하면` → 요소 노드의
+- ┣ 1. `모든 자식 노드가 제거되고`
+- ┣ 2. `할당한 문자열 텍스트로 추가됨`
+- ┣ 이때 할당한 문자열에 HTML 마크업이
+- ┣ 포함되어 있어도 문자열 그대로 인식됨
+- ┗ `즉 : HTML 마크업이 파싱되지 않음`
+
+```html
+<body>
+	<div id="foo">Hello<span>world</span></div>
+</body>
+<script>
+	// #foo 요소 노드의 모든 자식 노드가 제거되고
+	// 할당한 문자열이 텍스트로 추가됨
+	// 이때 HTML 마크업이 파싱되지 않음
+	document.getElementById('foo').textContent = 'Hi!<span>there!</span>';
+</script>
+```
+
+- 참고 :
+- ┣ textContent와 유사 동작을 하는
+- ┣ innerText 프로퍼티가 존재함
+- ┗ `innerText 프로퍼티 사용 안하는게 좋음`
+
+1. innerText 프로퍼티 : CSS에 순종적
+
+- ┣ `CSS에 비표시(visibility: hidden;)`
+- ┗ 로 지정된 요소 노드의 텍스트를 반환하지 않음
+
+2. innerText 프로퍼티 :
+
+- ┗ `CSS 고려하므로 textContent 프로퍼티보다 느림`
+
+## 39.6 DOM 조작
+
+- `DOM 조작(DOM manipulation)` :
+- ┣ 새로운 노드를 생성하여 DOM에 추가하거나
+- ┣ `기존 노드를 삭제 또는 교체하는 것을 말함`
+- ┣ DOM 조작에 의해 DOM에 새로운 노드가
+- ┣ 추가되거나 삭제되면
+- ┣ 1. `리플로우`, 2. `리페인트`가 발생함
+- ┣ → 성능에 영향을 줌
+- ┗ `복잡한 콘텐츠를 다루는 DOM 조작은 주의해야 함`
+
+### 39.6.1 innerHTML
+
+- `Element.prototype.innerHTML` 프로퍼티 :
+- ┣ `setter, getter가 모두 존재하는`
+- ┣ `접근자 프로퍼티`로서
+- ┣ 요소 노드의 HTML 마크업을 취득하거나
+- ┣ 변경을 진행함
+- ┣ 요소 노드의 innerHTML 프로퍼티 참조 →
+- ┣ 요소 노드의 콘텐츠 영역(시작 태그 종료 태그 사이)
+- ┗ `내에 포함된 모든 HTML 마크업을 문자열로 반환함`
+
+> 앞의 textContent
+
+    HTML 마크업 무시
+    ┣ innerHTML :
+    ┗ HTML 마크업이 포함된 문자열
+
+```html
+<html>
+	<body>
+		<div id="foo">Hello <span>world!</span></div>
+	</body>
+	<script>
+		console.log(document.getElementById('foo').innerHTML);
+		// "Hello <span>world!</span>"
+	</script>
+</html>
+```
+
+- 요소 노드의 `innerHTML 프로퍼티`에
+- ┣ `문자열을 할당하면`
+- ┣ 요소 노드의 모든 자식 노드가 제거되고
+- ┣ 할당한 문자열에 포함되어 있는
+- ┣ `HTML 마크업이 파싱되어`
+- ┗ `요소 노드의 자식 노드로 DOM에 반영됨`
+
+- innerHTML 프로퍼티를 사용하면
+- ┗ `HTML 마크업 문자열로 DOM 조작이 가능함`
+
+```html
+<body>
+	<ul id="fruits">
+		<li class="apple">Apple</li>
+	</ul>
+</body>
+<script>
+	const $fruits = document.getElementById('fruits');
+	$fruits.innerHTML += '<li class="banana">Banana</li>';
+	// 노드 교체
+	$fruits.innerHTML = '<li class="banana">Orange</li>';
+	// 노드 삭제
+	$fruits.innerHTML = '';
+</script>
+```
+
+- `사용자가 입력받은 데이터(unTrusted input data)`
+- ┣ 그대로 innerHTML 프로퍼티에 할당하는 것
+- ┣ `크로스 사이트 스크립팅 공격(XSS: Cross-Site Scripting Attacks)에`
+- ┣ 취약하기 때문에 위험함
+- ┣ `HTML5` :
+- ┣ 프로퍼티로 삽입된 script 요소 내의
+- ┣ JS 코드를 실행하지 않음
+- ┣ 따라서 `HTML5`를 지원하는 브라우저에서
+- ┣ JS 코드를 실행하는 것은 동작하지 않음
+- ┣ `하지만 script 요소 없이도 크로스 사이트 스크립팅 공격`
+- ┗ `가능함`
+
+```html
+<script>
+	// 에러 이벤트를 강제로 발생시켜서
+	// 자바스크립트 코드가 실행되도록 함
+	document.getElementById('foo').innerHTML =
+		'<img src="x" onerror="alert(document.cookie)">';
+</script>
+```
+
+- 이처럼 innerHTML 프로퍼티를 사용한 DOM 조작은
+- ┣ 구현이 간단하고 직관적이라는 장점이 있지만
+- ┗ `크로스 사이트 스크립팅 공격에 취약한 단점이 존재함`
+
+> HTML 새니티제이션(Sanitization)
+
+    사용자로부터 입력받은
+    ┣ 데이터에 의해 발생할 수 있는
+    ┣ 크로스 사이트 스크립팅 공격을
+    ┣ 예방하기 위해 잠재적 위험을
+    ┣ 제거하는 것을 의미함
+    ┣ 직접 사용하는 것 보다
+    ┗ DOMPurify 라이브러리 사용 권장
+
+```js
+DOMPurify.sanitize('<img src="x" onerror="alert(document.cooke)">');
+// → <img src="x">
+```
+
+- innerHTML의 또 다른 단점 :
+- ┣ 요소 노드의 innerHTML 프로퍼티에
+- ┣ `HTML 마크업 문자열을 할당하는 경우` :
+- ┣ 요소 노드의 1. `모든 자식 노드를 제거`하고
+- ┣ 할당한 HTML 마크업 문자열을 파싱하여
+- ┗ 2. `DOM을 변경한다는 것임`
+
+- '+='을 사용하면
+- ┣ 모든 자식 노드를 제거하고
+- ┗ `새롭게 요소 노드를 생성하여 자식 요소로 추가함`
+
+```js
+$fruits.innerHTML += '<li class="banana">Banana</li>';
+```
+
+- 위 코드는 아래 코드의 축약 표현임
+
+```js
+$fruits.innerHTML = $fruits.innerHTML + '<li class="banana">Banana</li>';
+```
+
+- 이처럼 innerHTML 프로퍼티에
+- ┣ HTML 마크업 문자열 할당하면
+- ┣ 유지되어도 좋은 기존 자식 노드까지
+- ┣ 모두 제거하고 새롭게 생성하는 방식
+- ┗ `이는 효율적이지 못함`
+
+- innerHTML의 또 다른 단점 :
+- ┣ 새로운 요소를 삽입할 때
+- ┗ `삽입될 위치를 지정불가함`
+
+> innerHTML 단점
+
+    1. 크로스 사이트 스크립팅
+    2. 모두 제거 → 새로 생성하여 추가
+    3. 삽입 위치 지정 불가
+
+### 39.6.2 insertAdjacentHTML 메서드
+
+- `Element.prototype.insertAdjacentHTML(position, DOMString)`
+- ┣ 메서드 : 기존 요소를 제거하지 않으면서
+- ┗ `위치를 지정해 새로운 요소를 삽입함`
+
+- insertAdjacentHTML 메서드 :
+- ┣ 두 번째 인수로 전달한
+- ┣ HTML 마크업 문자열(DOMString)을 파싱하고
+- ┣ 그 결과로 생성된 노드를
+- ┣ 첫 번째 인수로 `전달한 위치(position)`에
+- ┗ 삽입하여 `DOM에 반영하게 됨`
+
+> 첫 번째 인수 전달 가능 문자열
+
+    1. beforebegin
+    2. afterbegin
+    3. beforeend
+    4. aftereend
+
+```html
+/beforebegin/
+<div id="foo">/afterbegin/text/beforeeend/</div>
+/afterend/
+```
+
+- 기존 요소에 영향을 주지않고
+- ┣ 새롭게 삽입될 요소만 파싱하여
+- ┣ 자식 요소로 추가하므로
+- ┣ innerHTML 보다
+- ┗ `효율적이고 빠름`
+
+- 단 : 크로스 사이트 스크립팅 공격 취약 동일
+
+### 39.6.3 노드 생성과 추가
+
+- 지금까지 살펴본 `innerHTML` `프로퍼티`와
+- ┣ `insertAdjacentHTML` `메서드` :
+- ┣ HTML 마크업 문자열을 파싱하여
+- ┣ 1. `노드를 생성하고`
+- ┣ 2. `DOM에 반영함`
+- ┣ DOM : 노드를 직접
+- ┗ `생성/삽입/삭제/치환` `메서드 제공`
+
+#### 요소 노드 생성
+
+- `Document.prototype.createElement(tagName)` 메서드 :
+- ┣ 요소 노드를 생성하여 반환함
+- ┣ `createElement 메서드 매개변수`
+- ┣ tagName : 태그 이름을 나타내는 문자열을
+- ┗ 인수로 전달함
+
+```js
+// 1. 요소 노드 생성
+const $li = document.createElement('li');
+```
+
+- `createElement 메서드`로 생성한
+- ┣ 요소 노드 :
+- ┣ 기존 DOM에 추가되는 것이 아닌
+- ┣ 홀로 존재하는 상태임
+- ┣ `이후 생성된 요소 노드를 DOM에`
+- ┗ `추가하는 처리가 필요함`
+
+- c`reateElement 메서드로 생성한 요소 노드` :
+- ┣ 아무런 자식 노드도 가지고 있지 않음
+- ┣ 따라서 : 요소 노드의 자식 노드인
+- ┗ `텍스트 노드도 없는 상태`
+
+```js
+// 1. 요소 노드 생성
+const $li = document.createElement('li');
+// 생성된 요소 노드는 아무런 자식 노드가 없음
+console.log($li.childNodes); // NodeList []
+```
+
+#### 텍스트 노드 생성
+
+- `Document.prototype.createTextNode(text)` `메서드` :
+- ┣ 텍스트 노드를 생성하여 반환함
+- ┣ `text` : 텍스트 노드의 값으로 사용한
+- ┗ `문자열을 인수로 전달함`
+
+```js
+// 2. 텍스트 노드 생성
+const textNode = document.createTextNode('Banana');
+```
+
+- 텍스트 노드 :
+- ┣ 요소 노드의 자식 노드임
+- ┣ `createTextNode 메서드로 생성한 텍스트 노드`
+- ┣ 홀로 존재하는 상태임
+- ┗ `추후 처리가 필요함`
+
+#### 텍스트 노드를 요소 노드의 자식 노드로 추가
+
+- `Node.prototype.appendChild(childNode)` 메서드 :
+- ┣ 매개변수 childNode에게 :
+- ┣ 인수로 전달한 노드를 `appendChild 메서드를 호출한`
+- ┗ `노드의 마지막 자식 노드로 추가함`
+
+- `appendChild 메서드의 인수`로
+- ┣ createTextNode 메서드로 생성한
+- ┣ `텍스트 노드를 전달하면`
+- ┣ appendChild 메서드를 호출한
+- ┣ `노드의 마지막 자식 노드로`
+- ┗ `텍스트 노드가 추가됨`
+
+```js
+// 3. 텍스트 노드를 $li 요소 노드의 자식 노드로 추가
+$li.appendChild(textNode);
+```
+
+- 여기까지는 appendChild 메서드를 통해
+- ┣ 요소 노드와 텍스트 노드가 분자 관계로
+- ┣ 연결이 되어 있긴 하지만
+- ┗ `아직 기존 DOM에 추가되지는 않은 상태임`
+
+- 위 예제처럼 요소 노드에 자식 노드가 하나도
+- ┣ 없는 경우에는
+- ┗ `textContent 프로퍼티를 사용하는 편이 더욱 간편`
+
+```js
+// 요소 노드에 자식 노드가 하나도 없는 경우
+// 이렇게 하는 편이 더 간편함
+$li.textContent = 'Banana';
+```
+
+- 단 : 요소 노드에
+- ┣ 자식 노드가 있는 경우
+- ┣ textContent 프로퍼티를 사용할 경우
+- ┣ `요소 노드의 모든 자식 노드가 제거 되므로`
+- ┗ `주의가 필요함`
+
+#### 요소 노드를 DOM에 추가
+
+- `Node.prototype.appendChild` `메서드`를 사용하여
+- ┣ 텍스트 노드와 부자 관계로 연결한 노드를
+- ┣ `#fruits 요소 노드의 마지막 자식 요소`로
+- ┗ 추가하면 됨
+
+```js
+// 4. $li 요소 노드를 #fruits 요소 노드의
+// 마지막 자식 노드로 추가
+$fruits.appendChild($li);
+```
+
+- 이 과정에서 비로소 새롭게 생성한
+- ┣ 요소 노드가 DOM에 추가됨
+- ┣ `기존의 DOM에 요소 노드를 추가하는`
+- ┣ `처리는 이 과정뿐임`
+- ┣ 위 예제는 단 하나의 요소 노드를 생성, 추가
+- ┣ DOM은 한 번 변경됨
+- ┗ `이때 리플로우, 리페인트 실행됨`
+
+### 39.6.4 복수의 노드 생성과 추가
+
+- 기존 DOM에 요소 노드를 반복하여 추가하는 것은
+- ┗ 비효율적임
+
+- 이처럼 DOM을 여러 번 변경하는 문제를
+- ┣ 회피하기 위해 컨테이너 요소를 사용
+- ┣ 1. `컨테이너 요소를 미리 생성한 다음`
+- ┣ 2. DOM에 추가해야 할 노드를
+- ┣ `컨테이너 요소에 자식 노드로 추가`
+- ┣ 3. 컨테이너 요소를 #fruits 요소에
+- ┗ `자식 노드로 추가하면 한 번만 변경됨`
+
+```html
+<script>
+	const $fruits = document.getElementById('fruits');
+
+	// 컨테이너 요소 노드 생성
+	const $container = document.createElement('div');
+
+	['Apple', 'Banana', 'Orange'].forEach((text) => {
+		// 1. 요소 노드 생성
+		const $li = document.createElement('li');
+
+		// 2. 텍스트 노드 생성
+		const textNode = document.createTextNode(text);
+
+		// 3. 텍스트 노드를 $li 요소 노드의 자식 노드로 추가
+		$li.appendChild(textNode);
+
+		// 4. $li 요소 노드를 컨테이너 요소의
+		// 마지막 자식 노드로 추가
+		$container.appendChild($li);
+	});
+	// 5. 컨테이너 요소 노드를 #fruits 요소 노드의
+	// 마지막 자식 노드로 추가
+	$fruits.appendChild($container);
+</script>
+```
+
+- 위 예는 DOM을 한 번만 변경하므로
+- ┣ 성능에 유리하기 하지만
+- ┣ `불필요한 컨테이너 요소(div)가`
+- ┣ `DOM에 추가되는 부작용이 존재함`
+- ┗ 이는 바람직하지 않음
+
+- 이러한 문제는 `DocumentFragment`를 통해
+- ┣ 해결이 가능함
+- ┣ DocumentFragment : `문서`, `요소`, `어트리뷰트`,
+- ┣ `텍스트 노드`와 같은 `노드 객체의 일종으로`
+- ┣ `부모 노드가 없어서 기존 DOM과는 별도로 존재한다는`
+- ┗ 특징이 존재함
+
+- 자식 노드들의 부모 노드로서
+- ┣ `별도의 서브 DOM을 구성하여`
+- ┗ `기존 DOM에 추가하기 위한 용도로 사용함`
+
+- DocumentFragment 노드 : 기존 DOM과는 별도로
+- ┣ 존재하므로 DocumentFragment 노드에
+- ┣ `자식 노드를 추가하여도 기존 DOM에는`
+- ┣ `어떤 변경도 발생하지 않음`
+- ┣ 또한 DocumentFragment 노드를
+- ┣ DOM에 추가하면 자신은 제거되고
+- ┗ `자신의 자식 노드만 DOM에 추가됨`
+
+- `Document.prototype.createDocumentFragment` 메서드:
+- ┗ 비어 있는 `DocumentFragment` 노드를 생성하여 반환함
+
+```html
+<script>
+	const $fruits = document.getElementById('fruits');
+
+	// DocumentFragment 노드 생성
+	const $fragment = document.createDocumentFragment();
+
+	['Apple', 'Banana', 'Orange'].forEach((text) => {
+		// 1. 요소 노드 생성
+		const $li = document.createElement('li');
+
+		// 2. 텍스트 노드 생성
+		const textNode = document.createTextNode(text);
+
+		// 3. 텍스트 노드를 $li 요소 노드의 자식 노드로 추가
+		$li.appendChild(textNode);
+
+		// 4. $li 요소 노드를 DocumentFragment 노드의
+		// 마지막 자식 노드로 추가
+		$fragment.appendChild($li);
+	});
+	// 5. DocumentFragment 노드를 #fruits 요소 노드의
+	// 마지막 자식 노드로 추가
+	$fruits.appendChild($fragment);
+</script>
+```
+
+- 따라서 : 여러 개의 요소 노드를
+- ┣ DOM에 추가하는 경우
+- ┣ `DocumentFragment 노드를 사용하는 것이`
+- ┗ 더 효율적임
+
+### 39.6.5 노드 삽입
+
+#### 마지막 노드로 추가
+
+- `Node.prototype.appendChild` 메서드 :
+- ┣ 인수로 전달받은 노드를 자신을 호출한
+- ┣ 마지막 자식 노드로 DOM에 추가함
+- ┣ 이때 추가할 위치 지정 불가하고
+- ┗ `언제나 마지막 자식 노드로 추가함`
+
+```html
+<script>
+	const $li = document.createElement('li');
+
+	// 텍스트 노드를 $li 요소 노드의 마지막 자식 노드로 추가함
+	$li.appendChild(document.createTextNode('Orange'));
+
+	// $li 요소 노드를 #fruits 요소 노드의
+	// 마지막 자식 노드로 추가함
+	document.getElementById('#fruits').appendChild($li);
+</script>
+```
+
+#### 지정한 위치에 노드 삽입
+
+- `Node.prototype.insertBefore(newNode, childNode)`
+- ┣ 첫 번째 `인수로 전달받은 노드를`
+- ┗ 두 번째 `인수로 전달받은 노드 앞에 삽입함`
+
+```html
+<script>
+	const $li = document.createElement('li');
+
+	// 텍스트 노드를 $li 요소 노드의 마지막 자식 노드로 추가함
+	$li.appendChild(document.createTextNode('Orange'));
+
+	// $li 요소 노드를 #fruits 요소 노드의
+	// 마지막 자식 노드 앞에 추가함
+	document
+		.getElementById('#fruits')
+		.insertBefore($li, $fruits.lastElementChild);
+	// Apple
+	// Orange
+	// Banana
+</script>
+```
+
+- 두 번째 인수로 전달받은 노드는
+- ┣ 반드시 insertBefore 메서드를 호출한
+- ┣ 노드의 자식 노드이어야 함
+- ┗ `그렇지 않으면 DOMException 에러가 발생함`
+
+- 두 번째 인수로 전달받은 노드가
+- ┣ null인 경우
+- ┣ 첫 번째 인수로 전달받은 노드를
+- ┣ `insertBefore 메서드를 호출한`
+- ┣ `노드의 마지막 자식 노드로 추가됨`
+- ┗ `즉 : appendChild 메서드처럼 동작함`
+
+### 39.6.6 노드 이동
+
+- DOM에 이미 존재하는 노드를
+- ┣ `appendChild 또는 insertBefore 메서드를 사용`하여
+- ┣ DOM에 다시 추가하면
+- ┣ `현재 위치에서 노드를 제거하고`
+- ┣ `새로운 위치에 노드를 추가함`
+- ┗ 즉 : 노드가 이동함
+
+```html
+<script>
+	const $fruits = document.getElementById('fruits');
+
+	// 이미 존재하는 요소 노드를 취득
+	const [$apple, $banana] = $fruits.children;
+
+	// 이미 존재하는 요소 노드를 #fruits
+	// 요소 노드의 마지막 노드로 이동
+	$fruits.appendChild($apple); // Banana - Orange - Apple
+
+	// 이미 존재하는 $banana 노드를
+	// #fruits 요소의 마지막 자식 노드 앞으로 이동
+	$fruits.insertBefore($banana, $fruits.lastElementChild);
+	// Orange - Banana - Apple
+</script>
+```
+
+### 39.6.7 노드 복사
+
+- `Node.prototype.cloneNode([deep:true | false])`
+- ┣ 노드의 사본을 생성하여 반환함
+- ┣ 매개변수 deep : `true를 인수로 전달하면`
+- ┣ `노드를 깊은 복사(deep copy)`하여
+- ┣ `모든 자손 노드가 포함된 사본을 생성하고`
+- ┣ 1. `생략`, 또는 2. `false를 전달`하면
+- ┣ 얕은 복사(shallow copy)하여
+- ┣ 노드 자신만의 사본을 생성함
+- ┣ `얕은 복사로 생성된 요소 노드는`
+- ┣ 자손 노드를 복사하지 않으므로
+- ┗ `텍스트 노드도 없음`
+
+```html
+<body>
+	<ul id="fruits">
+		<li>Apple</li>
+	</ul>
+</body>
+<script>
+	const $fruits = document.getElementById('fruits');
+	const $apple = $fruits.firstElementChild;
+
+	// $apple 요소를 얕은 복사하여
+	// 사본을 생성함
+	// 텍스트 노드가 없는 사본이 생성됨
+	const $shallowClone = $apple.cloneNode();
+	// 사본 요소 노드에 텍스트 추가
+	$shallowClone.textContent = 'Banana';
+	// 사본 요소 노드를 #fruits 노드의 마지막 노드로 추가
+	$fruits.appendChild($shallowClone);
+
+	// $fruits 요소를 깊은 복사하여
+	// 모든 자손 노드가 포함된 사본을 생성
+	const deepClone = $fruits.cloneNode(true);
+	// 사본 요소 노드를 #fruits 노드의
+	// 마지막 노드로 추가
+	$fruits.appendChild($deepClone);
+	// Apple
+	// Banana
+	// - Apple
+	// - Banana
+</script>
+```
+
+### 39.6.8 노드 교체
+
+- `Node.prototype.replaceChild(newChild, oldChild)` 메서드
+- ┣ 자신을 호출한 노드의 자식 노드를
+- ┣ 다른 노드로 교체함
+- ┣ `첫 번째 매개변수 newChild` :
+- ┣ 교체할 새로운 노드를 인수로 전달하고
+- ┣ `두 번째 매개변수 oldChild` :
+- ┣ 이미 존재하는 교체될 노드를 인수로 전달함
+- ┣ oldChild 매개변수에 인수로 전달한 노드는
+- ┗ `replaceChild 메서드를 호출한 노드의 자식 노드이어야 함`
+
+- 즉 : replaceChild 메서드 :
+- ┣ 자신을 호출한 노드의 자식 노드인
+- ┣ `oldChild 노드를 newChild 노드로 교체함`
+- ┗ `이때 oldChild 노드는 DOM에서 제거됨`
+
+```js
+$fruits.replaceChild($newChild, $fruits.firstElementChild);
+```
+
+### 39.6.9 노드 삭제
+
+- `Node.prototype.removeChild(child)` 메서드 :
+- ┣ `child 매개변수에 인수로 전달한 노드를 `
+- ┣ `DOM에서 삭제하게 됨`
+- ┣ 단 : 인수 전달 노드는 removeChild 메서드를
+- ┗ 호출한 노드의 자식 노드이어야 함
+
+```js
+$fruits.removeChild($fruits.lastElementChild);
+```
+
+## 39.7 어트리뷰트
+
+### 39.7.1 어트리뷰트 노드와 attributes 프로퍼티
+
+- HTML 문서의 구성 요소인
+- ┣ HTML 요소는 여러 개의 `어트리뷰트(속성)`을 가질 수 있음
+- ┣ HTML 요소의 동작을 제어하기 위한 추가적인 정보를
+- ┗ 제공하는 어트리뷰트는 다음과 같은 형식으로 사용됨
+
+```html
+<input id="user" type="text" value="" ungmo2 />
+```
+
+- 글로벌 어트리뷰트
+- ┣ 1. `id`
+- ┣ 2. `class`
+- ┣ 3. `style`
+- ┣ 4. `title`
+- ┣ 5. `lang`
+- ┣ 6. `tabindex`
+- ┣ 7. `draggable`
+- ┗ 8. `hidden`
+
+- 이벤트 핸들러 어트리뷰트
+- ┣ 1. `onclick`
+- ┣ 2. `onchange`
+- ┣ 3. `onblur`
+- ┣ 4. `oninput`
+- ┣ 5. `onkeypress`
+- ┣ 6. `onmouseover`
+- ┣ 7. `onsubmit`
+- ┗ 8. `onload`
+
+- 위의 것들은 모든 HTML 요소에 공통적으로
+- ┣ 사용이 가능하지만
+- ┣ `특정 HTML 요소에만 한정적으로 사용 가능한`
+- ┗ 어트리뷰트도 존재함
+
+- HTML 문서가 파싱될 때
+- ┣ HTML 요소의 어트리뷰트(이하 HTML 어트리뷰트)
+- ┣ `어트리뷰트 노드로 변환되어`
+- ┣ `요소 노드와 연결됨`
+- ┣ 이때 : `HTML 어트리뷰트 하나당 하나의`
+- ┗ `어트리뷰트 노드가 생성됨`
+
+- 이때 모든 어트리뷰트 노드의 참조 :
+- ┣ `유사 배열 객체`이자 `이터러블인`
+- ┣ `NamedNodeMap` 객체에 담겨서 요소 노드의
+- ┗ `attributes 프로퍼티에 저장됨`
+
+- `Element.prototype.attributes` 프로퍼티로
+- ┣ 요소 노드의 모든 어트리뷰트 노드를 취득이 가능함
+- ┣ attributes 프로퍼티 : getter만 존재하는
+- ┣ 읽기 전용 `접근자 프로퍼티`이며
+- ┣ 요소 노드의 모든 어트리뷰트 노드에 참조가 담긴
+- ┗ `NamedNodeMap 객체를 반환함`
+
+### 39.7.2 HTML 어트리뷰트 조작
+
+- 요소 노드의 attributes 프로퍼티는
+- ┣ `getter만 존재하는 읽기 전용 접근자 프로퍼티`
+- ┣ 이므로 HTML 어트리뷰트 값을 취득할 수 있지만
+- ┣ 변경할 수 없음
+- ┣ 또한 `attributes.id.value`와 같이
+- ┣ attributes 프로퍼티를 통해야만
+- ┣ HTML 어트리뷰트 값을 취득할 수 있기 때문에
+- ┗ `불편함이 존재함`
+
+- `Element.prototype.getAttribute/setAttribute` 메서드를
+- ┣ 사용하면 attributes 프로퍼티를 통하지 않고
+- ┣ `요소 노드에서 메서드를 통해 직접`
+- ┣ `HTML 어트리뷰트 값을 취득하거나 변경할 수 있어서`
+- ┗ 편리함
+
+```html
+<body>
+	<input id="user" type="text" value="hi" />
+</body>
+<script>
+	const $input = document.getElementById('user');
+
+	// value 어트리뷰트 값을 취득
+	const inputValue = $input.getAttribute('value');
+	console.log(inputValue); // hi
+
+	// value 어트리뷰트 값을 변경
+	$input.setAttribute('value', 'foo');
+	console.log($input.getAttribute('value')); // foo
+</script>
+```
+
+- 특정 어트리뷰트가 존재하는지 확인하려면
+- ┣ `Element.prototype.hasAttribute(attributeName)`
+- ┣ 메서드를 사용하고
+- ┣ 삭제 :
+- ┗ `Element.prototype.removeAttribute(attributeName)` 사용
+
+### 39.7.3 HTML 어트리뷰트 vs DOM 프로퍼티
+
+- 요소 노드 객체에는
