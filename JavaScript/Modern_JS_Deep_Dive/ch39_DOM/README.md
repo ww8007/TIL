@@ -1730,4 +1730,285 @@ $fruits.removeChild($fruits.lastElementChild);
 
 ### 39.7.3 HTML 어트리뷰트 vs DOM 프로퍼티
 
-- 요소 노드 객체에는
+- 요소 노드 객체에는 HTML 어트리뷰트에 대응하는
+- ┣ 프로퍼티(이하 DOM 프로퍼티)가 존재함
+- ┣ 이 `DOM 프로퍼티들은 HTML 어트리뷰트 값을`
+- ┗ `초기값으로 가지고 있음`
+
+- DOM 프로퍼티 : setter, getter 모두 존재하는
+- ┣ 접근자 프로퍼티임
+- ┗ `따라서 DOM 프로퍼티 : 참조와 변경이 가능함`
+
+```html
+<body>
+	<input id="user" type="text" value="foo" />
+	<script>
+		const $input = document.getElementById('user');
+
+		// 요소 노드의 value 프로퍼티 값을 변경
+		$input.value = 'foo';
+
+		// 요소 노드의 value 프로퍼티 값을 참조
+		console.log($input.value); // foo
+	</script>
+</body>
+```
+
+- 이처럼 HTML 어트리뷰트 :
+- ┗ 다음과 같이 `DOM에서 중복 관리되고 있는 것 처럼 보임`
+
+1. 요소 노드의 attributes 프로퍼티에서 관리하는
+
+- ┗ 어트리뷰트 노드
+
+2. HTML 어트리뷰트에 대응하는 요소 노드의 프로퍼티
+
+- ┗ (DOM 프로퍼티)
+
+- HTML 어트리뷰트 : DOM 에서 중복관리 되는게 아님
+- ┣ 역할 : HTML 요소의 초기 상태를 지정하는 것
+- ┣ 즉 → HTML 어트리뷰트 값은 HTML 요소의 초기 상태를
+- ┗ 의미하며 이는 변하지않음
+
+- input 요소의 value 어트리뷰트 :
+- ┣ 노드로 변환되어 요소 노드의
+- ┣ attributes 프로퍼티에 저장됨
+- ┣ 이와는 별도로 value 어트리뷰트 값은
+- ┣ 요소 노드의 value 프로퍼티에 할당됨
+- ┣ 따라서 input 요소의 요소 노드가 생성되어
+- ┣ `첫 렌더링이 끝난 시점까지`
+- ┣ 어트리뷰트 노드의 어트리뷰트 값과
+- ┣ value 프로퍼티에 할당된 값은
+- ┗ `HTML 어트리뷰트 값과 동일함`
+
+- 하지만 첫 렌더링 이후 사용자가
+- ┣ `input 요소에 무언가를 입력하면`
+- ┗ 상황은 달라지게됨
+
+- 고로 요소 노드 :
+- ┣ 2개의 상태를 관리함
+- ┣ 즉 : 1. 초기 상태, 2. 최신 상태
+- ┣ 요소 노드의 `초기 상태` :
+- ┣ `어트리뷰트 노드`가 관리
+- ┣ 요소 노드의 `최신 상태` :
+- ┗ `DOM 프로퍼티`가 관리
+
+#### 어트리뷰트 노드
+
+- HTML 어트리뷰트로 지정한
+- ┣ HTML 요소의 초기 상태 :
+- ┣ `어트리뷰트 노드에서 관리함`
+- ┣ 사용자의 입력에 대해서
+- ┣ 변경되어도 변하지 않고
+- ┗ `초기 상태를 유지함`
+
+- 어트리뷰트 노드가 관리하는
+- ┣ 초기 상태 값을 취득하거나
+- ┣ 변경하려면
+- ┣ `getAttribute/setAttribute`
+- ┣ 메서드를 사용함
+
+- ┣ getAttribute 메서드로 취득한 값 :
+- ┣ 어트리뷰트 노드에서 관리하는
+- ┗ `HTML 어트리뷰트 값 → 즉 : 초기 상태 값임`
+
+> HTML 요소에 지정한 어트리뷰트 값
+
+    사용자 입력에 의해
+    ┣ 변하지 않으므로
+    ┗ 언제나 동일함
+
+```js
+// attributes 프로퍼티에 저장된
+// value 어트리뷰트 값을 취득함
+// 결과는 언제나 동일함
+document.getElementById('user').getAttribute('value'); // foo
+```
+
+- `setAttribute` 메서드 :
+- ┣ 어트리뷰트 노드에서 관리하는
+- ┣ HTML 요소에 지정한 어트리뷰트 값
+- ┗ `즉 : 초기 상태 값을 변경함`
+
+```js
+// attributes 프로퍼티에 저장된
+// value 어트리뷰트 값을 변경함
+// 즉 : 초기 상태 값을 변경함
+document.getElementById('user').setAttribute('value', 'hi');
+```
+
+#### DOM 프로퍼티
+
+- 사용자가 입력한 최신 상태 :
+- ┣ HTML 어트리뷰트에 대응하는
+- ┣ 요소 노드의 DOM 프로퍼티가 관리함
+- ┣ DOM 프로퍼티 :
+- ┣ `사용자의 입력에 의한 상태 변화에 반응하여`
+- ┗ `언제나 최신 상태를 유지함`
+
+- `DOM 프로퍼티로 취득한 값` :
+- ┣ HTML 요소의 `최신 상태 값`을 의미함
+- ┣ 이 최신 상태 값은 사용자 입력에 의해
+- ┣ 언제든지 동적으로 변경되며
+- ┣ `최신 상태를 유지함`
+- ┣ 이에 반해 `getAttribute : 언제나 초기 상태 값`
+- ┗ `변하지 않음`
+
+```html
+<html>
+	<input id="user" type="text" value="foo" />
+	<script>
+		const $input = document.getElementById('user');
+
+		// 사용자가 input 요소의 입력 필드에
+		// 값을 입력할 때마다 input 요소 노드의
+		// value 프로퍼티 값
+		// 즉 : 최신 상태 값을 취득함
+		$input.oninput = () => {
+			console.log('value 프로퍼티의 값', $input.value);
+		};
+		//getAttribute 메서드로 취득한 HTML 어트리뷰트 값
+		// 즉 : 초기 상태 값은 변하지 않고 유지됨
+		console.log('value 어트리뷰트 값', $input.getAttribute('value'));
+	</script>
+</html>
+```
+
+- `DOM 프로퍼티에 값을 할당하는 것` :
+- ┣ HTML 요소의 최신 상태 값을 변경하는 것을
+- ┣ 의미함
+- ┗ 즉 : `사용자가 상태를 변경하는 행위와 같음`
+
+- 이처럼 `HTML 어트리뷰트` :
+- ┣ `HTML 요소의 초기 상태 값을 관리하고`
+- ┣ `DOM 프로퍼티` :
+- ┣ `사용자의 입력에 의해 변경되는`
+- ┣ 최신 상태를 관리함
+- ┣ 단 : `모든 DOM 프로퍼티가 `
+- ┣ 사용자 입력에 의해 변경되 `최신 상태를`
+- ┗ `유지하게 되는 것은 아님`
+
+- Ex )
+- ┣ 1. input 요소의 사용자 입력에 의한
+- ┣ 상태 변화 : value 프로퍼티
+- ┣ 2. checkbox 요소의 사용자 입력에 의한
+- ┣ 상태 변화 : checked 프포러티
+- ┣ 3. id 어트리뷰트에 대응하는
+- ┗ id 프로퍼티 : 사용자 입력과 무관
+
+- 따라서 : 사용자 입력에 의한
+- ┣ 상태 변화와 관계없는 id 어트리뷰트와
+- ┣ `id 프로퍼티 : 사용자 입력과 관계 없이`
+- ┗ `항상 동일한 값을 유지함`
+
+- 이처럼 사용자 입력에 의한 상태 변화와 관계있는
+- ┣ DOM 프로퍼티만 최신 상태 값을 관리함
+- ┣ 그 외의 사용자 입력에 의한
+- ┣ `상태 변화와 관계없는 어트리뷰트와`
+- ┗ `DOM 프로퍼티는 항상 동일한 값으로 연동함`
+
+#### HTML 어트뷰와 DOM 프로퍼티의 대응 관계
+
+- 대부분의 HTML 어트리뷰트 HTML 어트리뷰트 이름과
+- ┣ `동일한 DOM 프로퍼티와 1 : 1로 대응함`
+- ┣ 단 : 다음과 같이 HTML 어트리뷰트와
+- ┣ `DOM 프로퍼티가 언제나 1 : 1 로 대응하는 것은 아니며`
+- ┣ HTML 어트리뷰트 이름과 DOM 프러퍼티 키가 반드시
+- ┗ `일치하는 것도 아님`
+
+1. id 어트리뷰트와 id 프로퍼티 :
+
+- ┗ 1 : 1 대응하며, 동일한 값으로 연동함
+
+2. input 요소의 value 어트리뷰트는 value 프로퍼티와
+
+- ┣ 1 : 1 대응함
+- ┣ 하지만 : `value 어트리뷰트 : 초기 상태를`
+- ┗ `value 프로퍼티 : 최신 상태`를 가짐
+
+3. `class 어트리뷰트` : className, classList 프로퍼티와 대응함
+
+4. `for 어트리뷰트` : htmlFor 프로퍼티와 1 : 1 대응함
+
+5. `td 요소의 colspan 어트리뷰트` :
+
+- ┗ 대응하는 프로퍼티가 존재하지 않음
+
+6. `textContent 프로퍼티` : 대응하는 어트리뷰트가 존재하지 않음
+
+7. `어트리뷰트 이름` : 대소문자를 구별하지 않지만
+
+- ┗ 대응하는 프로퍼티 키 : 카멜 케이스를 따름
+
+#### DOM 프로퍼티 값의 타입
+
+- `getAttribute 메서드`로 취득한
+- ┣ 어트리뷰트 값은 `언제나 문자열`
+- ┣ 하지만 : `DOM 프로퍼티로 취득한 최신 상태 값 :`
+- ┣ 문자열이 아닐 수도 있음
+- ┣ 예를 들어 : checkbox 요소의 checked 어트리뷰트 값을
+- ┗ `문자열이지만 checked 프로퍼티 값은 불리언 타입임`
+
+```html
+<script>
+	const $checkbox = document.querySelector('input[type=checkbox]');
+
+	// getAttribute 메서드로 취득한 어트리뷰트 값은 언제나 문자열임
+	console.log($checkbox.getAttribute('checked')); // ''
+
+	// DOM 프로퍼티로 취득한 최신 상태 값 :
+	// 문자열이 아닐 수도 있음
+	console.log($checkbox.checked); // true
+</script>
+```
+
+### 39.7.4 data 어트리뷰트와 dataset 프로퍼티
+
+- data 어트리뷰트와 dataset 프로퍼티를 사용하면
+- ┣ HTML 요소에 정의한 사용자 정의 어트리뷰트와
+- ┣ `자바스크립트 간에 데이터를 교환이 가능함`
+- ┣ data 어트리뷰트 : `data-user-id`, `data-role`
+- ┗ 같이 `data- 접두사 다음에 임의의 이름을 붙여 사용함`
+
+```html
+<li id="1" data-user-id="7621" data-role="admin">Lee</li>
+```
+
+- data 어트리뷰트의 값 :
+- ┣ HTMLElement.dataset 프로퍼티로 취득이 가능함
+- ┣ dataset 프로퍼티 : HTML 요소의 모든 어트리뷰트 정보를 제공하는
+- ┣ `DOMStringMap 객체를 제공함`
+- ┣ `DOMStringMap 객체 : `
+- ┣ data 어트리뷰트의 data-접두사 다음에
+- ┣ 붙인 이름을 `카멜 케이스로 변환한 프로퍼티를 가지고 있음`
+- ┗ 이 `프로퍼티로 data 어트리뷰트의 값을 취득, 변경 가능`
+
+```html
+<script>
+	const users = [...document.querySelector('.users').children];
+
+	// user-id가 '7621'인 요소 노드를 취득함
+	const user = users.find((user) => user.dataset.userId === '7621');
+
+	// user-id가 7621인 요소 노드의 data-role 값을 변경함
+	user.dataset.role = 'subscriber';
+</script>
+```
+
+- data 어트리뷰트의 data- 접두사 다음에 존재하지 않는
+- ┣ 이름을 키로 사용하여 dataset 프로퍼티에 할당하면
+- ┣ HTML 요소에 data 어트리뷰트가 추가됨
+- ┣ 이때 dataset 프로퍼티에 추가한
+- ┣ `카멜케이스(fooBar) 프로퍼티 키는`
+- ┣ data 어트리뷰트의 data- 접두사 다음에
+- ┗ `케밥케이스로로 자동 변경되어 추가됨`
+
+```html
+<script>
+	const user = users.find(user => user.dataset.userId==='7621');
+
+	// user-id가 7621인 요소 노드에 새로운 data 어트리뷰트를 추가함
+	user-dataset.role = 'admin';
+	console.log(user.dataset);
+</script>
+```
