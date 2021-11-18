@@ -2012,3 +2012,271 @@ document.getElementById('user').setAttribute('value', 'hi');
 	console.log(user.dataset);
 </script>
 ```
+
+## 39.8 스타일
+
+### 39.8.1 인라인 스타일 조작
+
+- `HTMLElement.prototype.style` 프로퍼티 :
+- ┣ setter, getter 모두 존재하는 접근자 프로퍼티
+- ┣ 요소 노드의 `인라인 스타일(inline style)`을
+- ┗ 취득, 추가, 변경함
+
+```html
+<script>
+	const $div = document.querySelector('div');
+
+	// 인라인 스타일 취득
+	console.log($div.style);
+
+	// 인라인 스타일 변경
+	$div.style.color = 'blue';
+
+	// 인라인 스타일 추가
+	$div.style.width = '100px';
+	$div.style.height = '100px';
+</script>
+```
+
+- 스타일 프로퍼티를 참조하면
+- ┣ CSSStyleDeclaration 타입의
+- ┣ 객체를 반환함
+- ┣ CSSStyleDeclaration 객체 :
+- ┣ `다양한 CSS 프로퍼티에 대응하는 프로퍼티를`
+- ┣ 가지고 있으며
+- ┣ 이 프로퍼티에 값을 할당하면 해당 CSS 프로퍼티가
+- ┗ `인라인 스타일로 HTML 요소에 추가되거나 변경됨`
+
+```js
+$div.style.backgroundColor = 'yellow';
+```
+
+> 케밥 케이스 CSS 프로퍼티 사용
+
+    객체의 마침표 표기법 대신
+    ┗ 대괄호 표기법을 사용함
+
+```js
+$div.style['background-color'] = 'yellow';
+```
+
+- 단위 지정이 필요한 CSS 프로퍼티의 값은
+- ┗ `반드시 단위를 지정해야 함`
+
+```js
+$div.style.width = '100px';
+```
+
+### 39.8.2 클래스 조작
+
+- .으로 시작하는 클래스 선택자를
+- ┣ 사용하여 `CSS class`를 `미리 정의한 다음`
+- ┣ HTML 요소의 class 어트리뷰트 값을
+- ┗ `변경하여 HTML 요소의 스타일을 변경이 가능함`
+
+- 이때 HTML 요소의 class 조작하면
+- ┣ class 어트리뷰트에 대응하는
+- ┗ `요소 노드의 DOM 프로퍼티를 사용함`
+
+- 단 : class 어트리뷰트에 대응하는
+- ┣ DOM 프로퍼티 : class가 아닌
+- ┣ `className과 classList임`
+- ┗ `JS에서 class는 예약어임`
+
+#### className
+
+- `Element.prototype.className` 프로퍼티
+- ┣ setter, getter 모두 존재하는 `접근자 프로퍼티로서`
+- ┣ HTML 요소의 class 어트리뷰트 값을 취득하거나
+- ┗ 변경함
+
+- 요소 노드의 `className 프로퍼티를 참조하면`
+- ┣ class 어트리뷰트 값을 문자열로 반환하고
+- ┣ 요소 노드의 className 프로퍼티에 문자열을 할당하면
+- ┗ `class 어트리뷰트 값을 할당한 문자열 변경함`
+
+```html
+<script>
+	const $box = document.querySelector('.box');
+
+	// .box 요소의 class 어트리뷰트 값을 취득
+	console.log($box.className); // 'box red'
+
+	// .box 요소의 class 어트리뷰트 값 중에서
+	// 'red'만 'blue'로 변경
+	$box.className = $box.className.replace('red', 'blue');
+</script>
+```
+
+- className 프로퍼티 :
+- ┣ 문자열을 반환하므로
+- ┣ `공백으로 구분된 여러 개 클래스`
+- ┗ `반환하는 경우 다루기 불편`
+
+#### classList
+
+- `Element.prototype.classList 프로퍼티` :
+- ┣ class 어트리뷰트 정보를 담은
+- ┗ `DOMTokenList 객체를 반환함`
+
+- `DOMTokenList 객체` :
+- ┣ class 어트리뷰트의 정보를 나타내는
+- ┣ 컬렉션 객체로서
+- ┣ 1. `유사 배열 객체`
+- ┣ 2. `이터러블임`
+- ┣ DOMTokenList 객체 :
+- ┗ 다음과 같은 `유용한 메서드 제공`
+
+##### add(...className)
+
+- `add` 메서드 : 인수로 전달한
+- ┣ 1개 이상의 문자열을
+- ┗ `class 어트리뷰트 값으로 추가함`
+
+```js
+$box.classList.add('foo'); // class="box red foo"
+$box.classList.add('bar', 'baz'); // class="box red foo bar baz"
+```
+
+##### remove(...className)
+
+- `remove` 메서드 :
+- ┣ 인수로 전달한 문자열과 일치하는
+- ┣ `클래스를 class 어트리뷰트에서 삭제함`
+- ┣ 일치하는 클래스가 없으면 :
+- ┗ `에러 없이 무시됨`
+
+```js
+$box.classList.remove('foo');
+```
+
+##### item(index)
+
+- item 메서드 :
+- ┣ 인수로 전달한 `index에 해당하는`
+- ┗ `클래스를 class 어트리뷰트에서 반환함`
+
+```js
+$box.classList.item(0);
+```
+
+##### contains(className)
+
+- contains 메서드 :
+- ┣ 인수로 전달한 문자열과 일치하는
+- ┣ 클래스가 class 어트리뷰트에
+- ┗ 포함되어 있는지 확인함
+
+```js
+$box.classList.contains('box'); // true
+```
+
+##### replace(className, newClassName)
+
+- replace 메서드 :
+- ┣ class 어트리뷰트에서
+- ┣ `첫 번째 인수로 전달한 문자열을`
+- ┗ `두 번째 인수로 전달한 문자열로 변경함`
+
+```js
+$box.classList.replace('red', 'blue'); // class "box blue"
+```
+
+##### toggle(className[, force])
+
+- toggle 메서드 :
+- ┣ class 어트리뷰트에 인수로 전달한
+- ┣ `문자열과 일치하는 클래스가 존재하면` :
+- ┣ `제거하고`
+- ┗ `존재하지 않으면 : 추가함`
+
+```js
+$box.classList.toggle('foo'); // class = "box blue foo"
+```
+
+- 두 번째 인수로 불리언 값으로
+- ┣ 평가되는 조건식을 전달이 가능함
+- ┣ 이때 조건식의 평가 결과가
+- ┣ `true` 이면 : class 어트리뷰트에
+- ┣ 강제로 첫 번째 인수로 전달받은 문자열을
+- ┣ `추가하고`
+- ┗ `false` 이면 : 강제로 `제거함`
+
+```js
+$box.classList.toggle('foo', false); // class = "box blue"
+```
+
+### 39.8.3 요소에 적용되어 있는 CSS 스타일 참조
+
+- style 프로퍼티 :
+- ┣ `인라인 스타일`만 반환함
+- ┣ 따라서 1. `클래스를 적용한 스타일`이나
+- ┣ 2. `상속을 통해서 적용된 스타일` :
+- ┗ `style 프로퍼티로 참조가 불가능함`
+
+- HTML 요소에 적용되어 있는
+- ┣ 모든 CSS 스타일을 참조하려면
+- ┗ `getComputedStyle 메서드를 사용함`
+
+- `window.getComputedStyle(element, [, pseudo])` 메서드 :
+- ┣ 첫 번째 인수 : element로 전달한 요소 노드에
+- ┣ 적용되어 있는 평가된 스타일을
+- ┣ `CSSStyleDeclaration 객체에 담아 반환함`
+- ┣ 평가된 스타일(computed style) :
+- ┣ 요소 노드에 적용되어 있는 모든 스타일
+- ┣ 즉 : 1. `링크 스타일`, 2. `임베딩 스타일`,
+- ┣ 3. `인라인 스타일`, 4. `JS에서 적용된 스타일`
+- ┣ 5. `상속된 스타일`, 5. `기본(user agent) 스타일`
+- ┣ 모든 스타일이 조합되어 `최종적으로 적용된`
+- ┗ 스타일을 의미함
+
+- getComputedStyle 메서드 두 번째 인수
+- ┣ `pseudo로 :after, :before`와 같은 의사 요소를
+- ┣ 지정하는 문자열을 전달이 가능함
+- ┣ `의사 요소가 아닌 일반 요소의 경우`
+- ┗ `두 번째 인수는 생략함`
+
+```html
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			.box:after {
+				content: 'Hello';
+			}
+		</style>
+	</head>
+	<body>
+		<div class="box">Box</div>
+		<script>
+			const $box = document.querySelector('.box');
+
+			// 의사 요소 : before의 스타일을 취득함
+			const computedStyle = window.getComputedStyle($box, ':before');
+			console.log(computedStyle.content); // "Hello"
+		</script>
+	</body>
+</html>
+```
+
+## 39.9 DOM 표준
+
+- HTML과 DOM 표준 :
+- ┣ `W3C(World Wide Consortium)`
+- ┣ `WHATWG(Web HyperText Application Technology)`
+- ┗ 이라는 두 단체가 나름대로 협력하면서 공통된 표준
+
+- 18년 4월부터 구글, 애플,
+- ┣ MS, 모질라로 구성된
+- ┣ 4개의 주류 브라우저 벤더사가 주도하는
+- ┣ `WHATWG이 단일 표준을 내놓기로`
+- ┗ `두 단체가 합의`
+
+> DOM의 버전
+
+| 레벨        |
+| ----------- |
+| DOM Level 1 |
+| DOM Level 2 |
+| DOM Level 3 |
+| DOM Level 4 |
