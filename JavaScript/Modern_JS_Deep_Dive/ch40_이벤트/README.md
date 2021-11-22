@@ -743,3 +743,413 @@ $checkbox.onchange = (e) => {
 - ┣ target 프로퍼티와 currentTarget 프로퍼티 :
 - ┣ `동일한 DOM 요소를 가리키지만`
 - ┗ `나중에 살펴본 이벤트 위임에서는 이는 달라질 수 있음`
+
+### 40.5.3 마우스 정보 취득
+
+- click, dbclick, mosedown, mouseup, mousemove
+- ┣ mouseenter, mouseleave 이벤트가 발생하면
+- ┣ `생성되는 MouseEvent 타입의 이벤트 객체는`
+- ┗ `다음과 같은 고유의 프로퍼티를 가짐`
+
+- 마우스 포인터의 좌표를 나타내는 프로퍼티
+- ┣ `screenX/screenY`, `clientX/clientY`, `pageX/pageY`
+- ┗ `offsetX/offsetY`
+
+- 버튼 정보를 나타내는 프로퍼티
+- ┗ `altKey, ctrlKey, shiftKey, button`
+
+- Ex) DOM 요소를 드래그하여 이동하는 예제
+- ┣ 드래그 마우스 버튼을 누른 상태,
+- ┣ 1. 마우스를 이동하는 것으로 시작하고
+- ┣ 2. 마우스 버튼을 때면 종료함
+- ┣ 따라서 드래그는 mousedown 이벤트가 발생한
+- ┣ 1. 상태에서 `mousedown 이벤트가 발생한 시점에 시작`하고
+- ┗ 2. `mouseup 이벤트가 발생한 시점에 종료`함
+
+- 드래그가 시작되면 드래그 시작 시점
+- ┣ 즉 : mousedown 이벤트가 발생했을 때의
+- ┣ `마우스 포인터 좌표와 드래그를 하고 있는 시점`
+- ┣ 즉 : mousedown 이벤트가 발생 할때마다의
+- ┣ `마우스 포인터 좌표를 비교하여`
+- ┗ `드래그 대상의 이동 거리를 계산함`
+
+- mouseup : 이벤트 발생하면
+- ┣ 드래그가 종료한 것임
+- ┣ 이때 드래그 대상 요소를 이동시키는
+- ┣ `이벤트 핸들러를 제거하여`
+- ┗ `이동을 멈추게 됨`
+
+- clientX/clientY :
+- ┣ 뷰포트(viewport)
+- ┣ 즉 : `웹페이지의 가시 영역을 기준으로`
+- ┗ `마우스 포인터 좌표를 나타냄`
+
+```js
+// 드래그 대상 요소
+const $box = document.querySelector('.box');
+
+// 드래그 시작 시점의 마우스 포인터 위치
+const initialMousePos = { x: 0, y: 0 };
+// 오프셋: 이동할 거리
+const offset = { x: 0, y: 0 };
+
+// mousemove 이벤트 핸들러
+const move = (e) => {
+	// 오프셋 = 현재(드래그 하고 있는 시점)
+	// ┣ 마우스 포인터 좌표 - 드래그 시작 시점의
+	// ┣ 마우스 포인터 좌료
+	offset.x = e.clientX - initialMousePos.x;
+	offset.y = e.clientY - initialMousePos.y;
+
+	// translate3d : GPU를 사용하므로
+	// absolute의 top, left를 사용하는 것보다 빠름
+	// top, left는 레이아웃의 영향을 줌
+	$box.style.transform = `translate3d(${offset.x}px, ${offset.y}px, 0)`;
+};
+
+// mousedown 이벤트가 발생하면
+// 드래그 시작 시점의 마우스 포인터 좌표를 지정함
+$box.addEventListener('mousedown', (e) => {
+	// 이동 거리를 계산하기 위해
+	// mousedown 이벤트가 발생(드래그 시작)하면
+	// 드래그 시작 시점의 마우스 포인터 좌표 :
+	// 뷰포트 상에서 현재 마우스 포인터 좌표를 기억해둠
+	// 한 번 이상 드래그로 이동한 경우 move에서
+	// translate3d로 이동한 상태이므로
+	// offset.x와 offset.y를 빼주어야함
+	initialMousePos.x = e.clientX - offset.x;
+	initialMousePos.y = e.clientY - offset.y;
+
+	// mousedown 이벤트가 발생한 상태에서
+	// mousemove 이벤트가 발생하면
+	// box 요소를 이동시킴
+	document.addEventListener('mousemove', move);
+});
+
+// mouseup 이벤트가 발생하면
+// mousemove 이벤트를 제거해 이동을 멈춤
+document.addEventListener('mouseup', () => {
+	document.removeEventListener('mousemove', move);
+});
+```
+
+### 40.5.4 키보드 정보 취득
+
+- `keydown, keyup, kepress` 이벤트가 발생하면
+- ┣ 생성되는 `keyboardEvent` 타입의 이벤트 객체는
+- ┣ `altKey, ctrlKey, shiftKey, metaKey,`
+- ┗ `key, keyCode` 같은 고유의 프로퍼티를 가짐
+
+```js
+const $input = document.querySelector('input[type=text]');
+const $msg = document.querySelector('.message');
+
+$input.onkeyup = (e) => {
+	// e.key : 입력한 키 값을 문자열로 반환
+	// 입력한 키가 'Enter' 즉 엔터 키가 아니면
+	// 무시함
+	if (e.key !== 'Enter') return;
+
+	// 엔터키가 입력되면 입력 필드에 입력된
+	// 값을 출력함
+	$msg.textContent = e.target.value;
+	e.target.value = '';
+};
+```
+
+- keyup 이벤트가 발생하면
+- ┣ 생성되는 keyboardEvent 타입의 객체는
+- ┣ 입력한 키 값을 문자열로 반환하는
+- ┗ key 프로퍼티를 제공함
+
+> input 요소 입력 필드 한글
+
+    keyup 엔터 두 번 호출
+    ┣ 이를 방지하기 위해서
+    ┗ keydown 이벤트를 캐치함
+
+## 40.6 이벤트 전파
+
+- `DOM 트리 상에 존재하는 DOM 요소 노드에서`
+- ┣ 발생한 이벤트 : DOM 트리를 통해 전파됨
+- ┗ 이를 `이벤트 전파(event propagation)`라고 함
+
+```html
+<ul>
+	<li id="apple">Apple</li>
+	<li id="banana">banana</li>
+	<li id="orange">orange</li>
+</ul>
+```
+
+- ul 요소의 두 번째 자식 요소인
+- ┣ li 요소를 클릭하면 클릭 이벤트가 발생함
+- ┣ 이때 생성된 이벤트 객체 : 이벤트를 발생시킨
+- ┣ `DOM 요소인 이벤트 타깃(event target)` 중심으로
+- ┗ `DOM 트리를 통해 전파됨`
+
+- 이벤트 전파 : 이벤트 객체가 전파되는
+- ┗ `방향에 따라 다음과 같이 3단계로 구분 가능`
+
+1. 캡처링 단계 : capturing phase
+
+- ┣ 이벤트가 `상위 요소에서`
+- ┗ `하위 요소 방향으로 전달`
+
+2. 타깃 단계 : target phase
+
+- ┣ 이벤트가 `이벤트 타깃에`
+- ┗ `도달`
+
+3. 버블링 단계 : bubbling phase
+
+- ┣ 이벤트가 `하위 요소에서`
+- ┗ `상위 요소 방향으로 전파`
+
+- 다음과 같이 ul 요소에 이벤트 핸들러를
+- ┣ 바인딩하고 ul 요소의 하위 요소인
+- ┣ li 요소를 클릭하여
+- ┣ 이벤트를 발생
+- ┣ 이때 `이벤트 타깃 : li 요소`
+- ┗ `커런트 타깃 : ul 요소`
+
+```html
+<body>
+	<ul id="fruits">
+		<li id="apple">Apple</li>
+		<li id="banana">Banana</li>
+		<li id="orange">Orange</li>
+	</ul>
+	<script>
+		const $fruits = document.getElementById('fruits');
+
+		// #fruits 요소의 하위 요소인 li 요소를 클릭한 경우
+		$fruits.addEventListener('click', (e) => {
+			console.log(`이벤트 단계: ${e.eventPhase}`); // 3: 버블링 단계
+			console.log(`이벤트 타깃: ${e.target}`); // [object HTMLElement]
+			console.log(`커런트 타깃: ${e.currentTarget}`); // [object HTMLListElement]
+		});
+	</script>
+</body>
+```
+
+- `li 요소를 클릭`하면 :
+- ┣ `클릭 이벤트가 발생`하여 →
+- ┣ `클릭 이벤트 객체가 생성`되고
+- ┗ `li 요소가 이벤트 타깃이 됨`
+
+- 이때 클릭 이벤트 객체 : `window 에서 시작되어`
+- ┣ `이벤트 타깃 방향으로 전파됨`
+- ┣ 이것이 `캡쳐링 단계`
+
+- ┣ 이후 이벤트 객체는
+- ┣ `이벤트를 발생시킨 이벤트 타깃에 도달함`
+- ┣ 이것이 `타겟 단계`
+
+- ┣ 이후 이벤트 객체 : `이벤트 타깃에서 시작해서`
+- ┣ `window 방향으로 전파됨`
+- ┗ 이것이 `버블링 단계`
+
+- `이벤트 핸들러 어트리뷰트/프로퍼티 방식`으로
+- ┣ 등록한 이벤트 핸들러 :
+- ┣ `1. 타깃 단계와 2. 버블링 단계의 이벤트만`
+- ┣ 캐치가 가능함
+- ┣ 하지만 `addEventListener 메서드 방식`으로
+- ┣ 등록한 이벤트 핸들러 :
+- ┣ `1. 타깃 단계와 2. 버블링 단계 뿐만 아니라`
+- ┣ `3. 캡처링 단계의 이벤트도 선별적으로 캐치 가능`
+- ┣ 캡처링 단계 이벤트 캐치 : `메서드 3번째 인수로`
+- ┣ `true를 전달해야 함`
+- ┣ 생략, false : 타깃 단계와 버블링 단계의 이벤트만
+- ┗ 캐치가 가능함
+
+- 위 예제 : 이벤트 핸들러
+- ┣ 버블링 단계의 이벤트를 캐치함
+- ┣ 만약 이벤트 핸들러가
+- ┣ 캡처링 단계의 이벤트를 캐치하도록
+- ┣ 설정되어 있디면
+- ┣ 이벤트 핸들러 : window에서 시작해서
+- ┣ `이벤트 타깃 바향으로 전파되는 이벤트 객체를 캐치하고`
+- ┣ 이벤트를 발생시킨 이벤트 타깃과
+- ┣ `이벤트 핸들러가 바인딩된 타깃이 같은 DOM 요소라면`
+- ┗ `이벤트 핸들러는 타깃 단계의 이벤트 객체를 캐치함`
+
+```html
+<body>
+	<ul id="fruits">
+		<li id="apple">Apple</li>
+		<li id="banana">Banana</li>
+		<li id="orange">Orange</li>
+	</ul>
+	<script>
+		const $fruits = document.getElementById('fruits');
+		const $banana = document.getElementById('banana');
+		// #fruits 요소의 하위 요소인 li 요소를 클릭한 경우
+		// 캡처링 단계의 이벤트를 캐치함
+		$fruits.addEventListener('click', (e) => {
+			console.log(`이벤트 단계: ${e.eventPhase}`); // 1: 캡처링 단계
+			console.log(`이벤트 타깃: ${e.target}`); // [object HTMLElement]
+			console.log(`커런트 타깃: ${e.currentTarget}`); // [object HTMLListElement]
+		});
+
+		// 타깃 단계의 이벤트를 캐치함
+		$banana.addEventListener('click', (e) => {
+			console.log(`이벤트 단계: ${e.eventPhase}`); // 2: 타깃 단계
+			console.log(`이벤트 타깃: ${e.target}`); // [object HTMLElement]
+			console.log(`커런트 타깃: ${e.currentTarget}`); // [object HTMLListElement]
+		});
+
+		// 버블링 단계의 이벤트를 캐치함
+		$fruits.addEventListener('click', (e) => {
+			console.log(`이벤트 단계: ${e.eventPhase}`); // 3: 버블링 단계
+			console.log(`이벤트 타깃: ${e.target}`); // [object HTMLElement]
+			console.log(`커런트 타깃: ${e.currentTarget}`); // [object HTMLListElement]
+		});
+	</script>
+</body>
+```
+
+- 이처럼 이벤트 : 이벤트를 발생시킨
+- ┣ 이벤트 타깃은 물론 상위 DOM 요소에서도
+- ┣ 캐치가 가능함
+- ┣ 즉 : `DOM 트리를 통해 전파되는 이벤트` :
+- ┣ `이벤트 패스(이벤트가 통과하는 DOM 트리 상의 경로)`
+- ┣ `Event.prototype.composePath` 메서드로
+- ┣ 확인이 가능함)
+- ┗ 에 위치한 `모든 DOM 요소에서 캐치가 가능함`
+
+- 대부분의 이벤트 : 캡처링과 버블링을 통해 전파
+- ┣ 하지만 `다음 이벤트는 버블링을 통해 전파 X`
+- ┣ 이 이벤트 들은 버블링을 통해 이벤트를 전파하는지
+- ┣ 여부를 나타내는 이벤트 객체의 공통 프로퍼티
+- ┗ `event.bubbles`의 값이 `모두 false임`
+
+1. 포커스 이벤트 : `focus/blur`
+
+2. 리소스 이벤트 : `load/unload/abort/error`
+
+3. 마우스 이벤트 : `mouseenter/mouseleave`
+
+- 위 이벤트들은 버블링되지 않으므로 이벤트 타깃의
+- ┣ 상위 요소에서 위 이벤트를 캐치하려면
+- ┣ 캡처링 단계의 이벤트를 캐치해야함
+- ┣ 하지만 위 이벤트를 상위 요소에서
+- ┣ 캐치해야 할 겨우는 그리 많지 않지만
+- ┣ 반드시 위 이벤트를 상위 요소에서 캐치해야
+- ┗ 하는 경우 : `대체 가능한 이벤트가 존재함`
+
+- `focusin/focusout, mouseover/mouseout` :
+- ┣ 버블링을 통해 전파됨
+- ┣ 따라서 캡처링 단계에서
+- ┗ `이벤트를 캐치해야 할 경우는 거의 없음`
+
+```html
+<body>
+	<p>버블링과 캡처링 이벤트 <button>버튼</button></p>
+	<script>
+		// 버블링 단계의 이벤트를 캐치
+		document.body.addEventListener('click', () => {
+			console.log('Handler for body');
+		});
+
+		// 캡처링 단계의 이벤트를 캐치
+		document.querySelector('p').addEventListener(
+			'click',
+			() => {
+				console.log('Handler fo paragraph');
+			},
+			true
+		);
+
+		// 버블링 단계의 이벤트를 캐치
+		document.querySelector('button').addEventListener('click', () => {
+			console.log('Handler for button');
+		});
+	</script>
+</body>
+```
+
+- 위 예제 : `body, button 요소는`
+- ┣ `버블링 단계의 이벤트만 캐치하고`
+- ┣ `p 요소 : 캡처링 단계의 이벤트만 캡쳐함`
+- ┣ 이벤트 : `캡처링 - 타깃 - 버블링 단계로`
+- ┣ 전파되므로
+- ┣ 만약 버튼 요소에서 클릭 이벤트가 발생하면
+- ┣ 먼저 캡처링 단계를 캐치하는 p 요소의 이벤트 핸들러 호출
+- ┣ 그후 버블링 단계의 이벤트를 캐치하는 button, body 요소의
+- ┣ 이벤트 핸들러가 순차적으로 호출됨
+- ┗ 다음과 같이 출력
+
+1. paragraph
+2. button
+3. body
+
+- 만약 p 요소에서 클릭 이벤트가 발생하면
+- ┣ 캡처링 단계를 캐치하는 `p 요소의 이벤트 `
+- ┣ 핸들러가 호출되고 버블링 단계를 캐치하는
+- ┣ `body 요소의 이벤트 핸들러가 순차적으로`
+- ┗ 호출됨
+
+1. paragraph
+2. body
+
+## 40.7 이벤트 위임
+
+- 사용자가 내비게이션 아이템
+- ┣ li 요소를 클릭하여 선택하면
+- ┣ 현재 선택된 내비게이션 아이템에
+- ┣ active 클래스를 추가하고
+- ┣ 그 외의 모든 네비게이션 아이템의
+- ┗ active 클래스는 제거하는 예제
+
+```html
+<html>
+	<head>
+		<style>
+			#fruits {
+				display: flex;
+				list-style-type: none;
+				padding: 0;
+			}
+			#fruits li {
+				width: 100px;
+				cursor: pointer;
+			}
+			#fruits .active {
+				color: red;
+				text-decoration: underline;
+			}
+		</style>
+	</head>
+	<body>
+		<nav>
+			<ul id="fruits">
+				<li id="apple">Apple</li>
+				<li id="banana">Banana</li>
+				<li id="orange">Orange</li>
+			</ul>
+		</nav>
+		<div>선택된 내비게이션 아이템: <em class="msg">apple</em></div>
+		<script>
+			const $fruits = document.getElementById('fruits');
+			const $msg = document.querySelector('.msg');
+
+			// 사용자 클릭에 의해 선택된 내비게이션 아이템(li)요소에
+			// active 클래스를 추가하고
+			// 그 외의 모든 내비게이션 아이템의
+			// active 클래스를 제거함
+			function activate({ target }) {
+				[...$fruits.children].forEach(($fruit) => {
+					$fruit.classList.toggle('active', $fruit == target);
+					$msg.textContent = target.id;
+				});
+			}
+
+			// 모든 내비에게이션 아이템에 이벤트 핸들러를 등록함
+			document.getElementById('apple').onclick = activate;
+			document.getElementById('banana').onclick = activate;
+			document.getElementById('orange').onclick = activate;
+		</script>
+	</body>
+</html>
+```
