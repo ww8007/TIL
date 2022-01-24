@@ -1,40 +1,3 @@
-function _filter(users, predict) {
-	var new_list = [];
-	_each(list, function (val) {
-		if (predict(val)) new_list.push(val);
-	});
-	return new_list; // 부수 효과를 없앰
-}
-
-function _map(list, mapper) {
-	var new_list = [];
-	_each(list, function (val) {
-		new_list.push(mapper(val));
-	});
-	return new_list;
-}
-
-// 완전하게 iter를 위임
-function _each(list, iter) {
-	for (var i = 0; i < list.length; i++) {
-		iter(list[i]);
-	}
-	return list;
-}
-
-var _get = _curryr(function (obj, key) {
-	return obj === null ? undefined : obj[key];
-});
-
-var _length = _get('length');
-
-function _each(list, iter) {
-	for (var i = 0, len = _length(list); i < len; i++) {
-		iter(list[i]);
-	}
-	return list;
-}
-
 function _curry(fn) {
 	return function (a, b) {
 		return arguments.length == 2
@@ -47,7 +10,7 @@ function _curry(fn) {
 
 function _curryr(fn) {
 	return function (a, b) {
-		return argument.length === 2
+		return arguments.length == 2
 			? fn(a, b)
 			: function (b) {
 					return fn(b, a);
@@ -55,9 +18,59 @@ function _curryr(fn) {
 	};
 }
 
+var _get = _curryr(function (obj, key) {
+	return obj == null ? undefined : obj[key];
+});
+
+function _filter(list, predi) {
+	var new_list = [];
+	_each(list, function (val) {
+		if (predi(val)) new_list.push(val);
+	});
+	return new_list;
+}
+
+function _map(list, mapper) {
+	var new_list = [];
+	_each(list, function (val, key) {
+		new_list.push(mapper(val, key));
+	});
+	return new_list;
+}
+
+function _is_object(obj) {
+	return typeof obj == 'object' && !!obj;
+}
+
+function _keys(obj) {
+	return _is_object(obj) ? Object.keys(obj) : [];
+}
+
+var _length = _get('length');
+
+function _each(list, iter) {
+	var keys = _keys(list);
+	for (var i = 0, len = keys.length; i < len; i++) {
+		iter(list[keys[i]], keys[i]);
+	}
+	return list;
+}
+
+var _map = _curryr(_map),
+	_each = _curryr(_each),
+	_filter = _curryr(_filter);
+
+var _pairs = _map(function (val, key) {
+	return [key, val];
+});
+
+var slice = Array.prototype.slice;
+function _rest(list, num) {
+	return slice.call(list, num || 1);
+}
+
 function _reduce(list, iter, memo) {
-	// iter(iter(iter(iter(0, 1), 2), 3), 4);
-	if (arguments.length === 2) {
+	if (arguments.length == 2) {
 		memo = list[0];
 		list = _rest(list);
 	}
@@ -67,10 +80,20 @@ function _reduce(list, iter, memo) {
 	return memo;
 }
 
-function _go(arg) {
-	var fns = _rest(arguments); // ArrayLike -> fns 하나 제거
-	_pipe.apply(null, fns)(arg);
+function _pipe() {
+	var fns = arguments;
+	return function (arg) {
+		return _reduce(
+			fns,
+			function (arg, fn) {
+				return fn(arg);
+			},
+			arg
+		);
+	};
 }
 
-var _map = _curryr(_map),
-	_filter = _curryr(_filter);
+function _go(arg) {
+	var fns = _rest(arguments);
+	return _pipe.apply(null, fns)(arg);
+}
