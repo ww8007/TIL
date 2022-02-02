@@ -63,6 +63,13 @@ for (var i =0; i< user.length; i++){
 
 ## 위 함수들을 함수형 프로그래밍으로 변경
 
+- 함수형 프로그래밍의 특징
+- ┣ `변형된 새로운 값`을
+- ┗ `return 하는 식`으로 코드가 구성됨
+
+- `_filter` 같은 함수를
+- ┗ `응용형`, `적용형` 함수라고 말함
+
 ```js
 function _filter(users, predict) {
 	// 원래 값을 변경하지 않고
@@ -72,7 +79,7 @@ function _filter(users, predict) {
 		// 조건에 대한 함수를 설정
 		// 바깥 함수에 위임
 		if (predict(users[i])) {
-			temp_users.push(users[i]);
+			new_list.push(users[i]);
 		}
 	}
 	return new_list; // 부수 효과를 없앰
@@ -98,32 +105,40 @@ _filter(users, function (user) {
 });
 ```
 
-- 추상화의 단위를 함수로 하는 것이
-- ┗ 함수형 프로그래밍으로 대체함
+- `추상화의 단위`를 `함수`로 하는 것이
+- ┗ `함수형 프로그래밍으로 대체`함
 
 - 새로운 predict 함수를 넘겨주어
 - ┣ 함수가 함수를 받아서
 - ┣ 원하는 결과 값을 반환 하도록 설정하는 것이
 - ┣ filter : 응용형 함수, → 응용형 프로그래밍
 
-- 고차 함수
-- ┣ 1. 함수 return
-- ┗ 2. 함수 실행
+- `고차 함수`
+- ┣ 1. 함수를 `인자로 받음`
+- ┣ 2. `함수 return`
+- ┗ 3. `함수 실행`
 
 > 재활용성이 높음
 
-    users.list 일반화 해도 무관함
+    users → list 일반화 해도 무관함
+
+## `_map` 함수
+
+- mapper라는 함수를 받아서
+- ┣ `무엇을 수집해서 넣을 것 인지`
+- ┣ 대한 조건을 정하는 것이
+- ┗ `_map 함수의 특징`
 
 ```js
 // 데이터가 어떻게 생겼는지
 // 즉 타입이 중요하지 않음
 // 재사용성이 극대화 됨
-function _map(list) {
+function _map(list, mapper) {
 	var new_list = [];
 	for (var i = 0; i < list.length; i++) {
-		names.push(mapper(list[i].name));
-		return new_list;
+		new_list.push(mapper(list[i]));
 	}
+	return new_list;
 }
 
 var over_30 = _filter(users, function(user) {return user.age >=30;});
@@ -146,9 +161,46 @@ console.log(_map(_filter(users, function(user) {return user.age <30;}), function
 - ┣ 중간에 대입이 없고
 - ┗ 테스트가 쉬운 코드를 완성이 가능함
 
-- \_map, \_filter 함수 새로 만들기
+> 그러나 아직까지 map, filter에 대해 중복되는 코드가 있음
+
+- `_map`, `_filter` 함수 새로 만들기
+
+## `_each` 함수 - map, filter 중복 제거
+
+```js
+function _each(list, iter) {
+	for (let i = 0; i < list.length; i++) {
+		iter(list[i]);
+	}
+	// 받은 값을 그대로 return
+	return list;
+}
+```
+
+### `_each`를 통한 리펙터링
+
+```js
+function _map(list, mapper) {
+	const new_list = [];
+	_each(list, function (val) {
+		new_list.push(mapper(val));
+	});
+	return new_list;
+}
+
+function _filter(list, predi) {
+	const new_list = [];
+	_each(list, function (val) {
+		if (predi(val)) new_list.push(val);
+	});
+	return new_list;
+}
+```
 
 ## 다향성
+
+- `map, filter, each`는 이미 존재하는 헬퍼 함수임
+- ┗ 아래 예제와 같음
 
 ```js
 // 이미 존재하는 헬퍼 함수임
@@ -165,8 +217,9 @@ console.log(
 ```
 
 - 그렇다면 굳이 이렇게 만든 이유:
-- ┣ JS의 map, filter는 `메서드`임
-- ┣ `메서드` : `객체의 상태에 따라`
+- ┣ JS의 `map, filter`는 `메서드`임
+- ┣ 1. `순수 함수가 아니고`
+- ┣ 2. `메서드` : `객체의 상태에 따라`
 - ┗ `결과가 달라지게 됨`
 
 > map, filter, `_map`, `_filter`
@@ -198,16 +251,31 @@ console.log(
 - ┣ `고로 Key, Value 쌍으로 존재하면`
 - ┗ `사용이 가능하게 됨`
 
-- 함수가 먼저 나오는 프로그래밍
+### 함수가 먼저 나오는 프로그래밍
+
+- `객체 지향에 비해서 유연성을 가짐`
+- ┣ `객체`는 데이터가 먼저 있어야만
+- ┗ 코드의 실행이 가능해짐
+
+- `함수가 먼저 나오는 프로그래밍`
 - ┣ `데이터가 나오기 전 함수가 존재`
 - ┣ `함수형 프로그래밍` :
 - ┣ 혼자 먼저 존재하기 때문에
 - ┣ `데이터가 생기지 않더라도 함수가 존재`하여
 - ┗ `평가 시점이 상대적으로 유연해짐`
 
-> 메서드 보다 다양성, 실용성 부분에서 유리
+> 메서드 보다 `다양성`, `실용성` 부분에서 유리
 
 ### 응용형 함수의 장점
+
+- predi, iter, mapper 함수
+- ┣ 함수의 두 번째 함수를 콜백 함수로 부르는 경향이 있음
+- ┣ 콜백 함수 : `어떤 일들을 다 수행`하고
+- ┣ `돌려 줄 때 라는 의미로 콜백 함수`로 말한다면
+
+- predicate : `어떤 조건을 return` 하는 함수
+- ┣ iter : `돌면서 반복적으로 실행`
+- ┗ mapper : `돌면서 mapping 실행`
 
 ```js
 // 두번 째 함수를 콜백 함수로 부르는 경향이 있음
@@ -234,6 +302,11 @@ _map([1, 2, 3, 4], function (v) {
 - ┗ 편의성을 가질 수 있음
 
 ## 커링
+
+- JS 에는 커링이 지원되지 않지만
+- ┣ 1. 일급 함수가 지원되고
+- ┣ 2. 평가 시점을 자유롭게 다룰 수 있다는 점에서
+- ┗ 커링과 같은 기법을 얼마든지 구현이 가능함
 
 - 함수와 인자를 다루는 기법
 - ┣ 함수 `인자가 다 채워지면`
