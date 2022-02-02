@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<script>
+			function _curry(fn) {
+				return function (a) {
+					return function (b) {
+						return fn(a, b);
+					};
+				};
+			}
+			const add = _curry(function (a, b) {
+				return a + b;
+			});
+
+			const add5 = add(5);
+			console.log(add5);
+			console.log(add5(3));
+
+			function _curryr(fn) {
+				return function (a, b) {
+					return arguments.length === 2
+						? fn(a, b)
+						: function (b) {
+								return fn(b, a);
+						  };
+				};
+			}
+
+			const _sub = _curryr(function (a, b) {
+				return a - b;
+			});
+			const sub10 = _sub(10);
+			console.log(sub10(5));
+		</script>
+	</body>
+</html>
