@@ -313,6 +313,24 @@ _map([1, 2, 3, 4], function (v) {
 - ┗ `함수를 실행하는 기법`
 
 ```js
+// 인자로 함수를 받음
+function _curry(fn) {
+	// 실행하는 즉시 함수를 return
+	// 이 첫번째 함수는 인자를
+	return function (a) {
+		// 또 다시 함수를 실행
+
+		return function (b) {
+			// 내부 안쪽에서 함수를 실행
+			return fn(a, b);
+		};
+	};
+}
+```
+
+### 커링으로 add 함수 만들기
+
+```js
 function _curry(fn) {
 	return function (a) {
 		return function (b) {
@@ -320,12 +338,17 @@ function _curry(fn) {
 		};
 	};
 }
+
+const add = _curry(function (a, b) {
+	return a + b;
+});
 ```
 
 - 일반적으로 함수를 정의하지만
-- ┣ 커링이 적용 되도록 만들어줌
+- ┗ 커링이 적용 되도록 만들어줌
 
 ```js
+// 원래의 구현
 var add = function (a, b) {
 	return a + b;
 };
@@ -342,6 +365,10 @@ console.log(add(5)(3));
 console.log(add5(3));
 ```
 
+- `본체 함수를 값으로 들고 있다가`
+- ┣ 모든 인자가 들어오고
+- ┗ `마지막에 최초 함수로 함수를 구동`시킴
+
 - 고로 `첫 생성된 함수`를
 - ┣ `맨 마지막에 실행` 시키고
 - ┣ 받는 인자들을 기억하여서
@@ -353,11 +380,24 @@ console.log(add5(3));
 - ┣ 2. `함수가 함수를 return` 하는 것이
 - ┗ `함수형 프로그래밍임`
 
+### 지금 커링의 문제점
+
+- 지금 다음과 같은 코드는 동작하지 않음
+
+```js
+const add(5, 3);
+```
+
+- 인자가 두개 들어오면 즉시 함수를
+- ┗ `실행 시키도록 변경 시키면 됨`
+
 ```js
 // 지금은 이 코드가 동작하면
 // 함수를 return 하게 됨
 console.log(add(1, 2));
 
+// 인자의 숫자에 따라서 실행을
+// 달리 하도록 아래와 같이 설정
 function _curry(fn) {
 	return function (a, b) {
 		if (arguments.length == 2) return fn(a, b);
@@ -392,6 +432,8 @@ function _curry(fn) {
     ┣ 원하는 함수를 실행 시키지 않고
     ┗ 클로저 형식으로 동작함
 
+### 커리를 통한 빼기 함수
+
 ```js
 var sub = _curry(function (a, b) {
 	return a - b;
@@ -401,10 +443,26 @@ console.log(sub(10, 5));
 // 5 빼기 10이 되어야
 // 구조상으로 맞음
 var sub10 = sub(10);
-console.log(sub10(5));
+console.log(sub10(5)); // 10에 5를 뺀다는 느낌이 강함
 ```
 
+### `_curryr` 함수
+
+- 기존의 curry는 `왼쪽에서 부터 인자`를
+- ┣ 적용 시켜 나가는데
+- ┣ `오른쪽에서 부터 인자를 적용 시켜 나가면`
+- ┗ 어떨까 하는 관점에서 `_curryr`이라는 함수가 탄생
+
 - 고로 curryr 이라는 반대 함수가 존재
+
+> curryr
+
+    curryRight
+
+- `인자가 두개` 들어 온다면
+- ┣ `그대로 실행` 시키지만
+- ┣ `인자가 하나씩` 들어오면
+- ┗ `실행 순서를 변경`시킴
 
 ```js
 function _curryr(fn) {
@@ -422,11 +480,13 @@ console.log(sub10(5));
 
 ## get 함수
 
-- 안전하게 get 해오는 함수
+- `obj`의 `값을 안전하게 get 해오는 함수`
 - ┗ 오류 형식에 대한 안전장치를 제공해줌
 
 ```js
 // obj가 null 인 경우 안전하게 오류 처리
+// 프로그램이 종료 되지 않도록 하는 것이
+// 다음과 같은 안정장치를 둠
 function _get(obj, key) {
 	return obj === null ? undefined : obj[key];
 }
@@ -437,7 +497,12 @@ console.log(users[10].name); // Cannot read undefined property
 console.log(_get(users[10].name)); // undefined
 ```
 
+### `_get`에 `_curryr` 적용
+
 - curry를 이용한 리펙터링
+- ┣ `평가 순서를 커링을 통해 뒤집어서`
+- ┣ 인자를 `맨 오른쪽을 먼저 부터 적용 시키도록`
+- ┗ 사용이 가능함
 
 ```js
 var _get = _curryr(function (obj, key) {
@@ -449,6 +514,8 @@ var _get = _curryr(function (obj, key) {
 
 console.log(_get('name')(users1));
 
+// 다음과 같이 name을 꺼낼 수 있는
+// 함수가 만들어짐
 var get_name = _get('name');
 
 console.log(get_name(user1));
