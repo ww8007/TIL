@@ -536,13 +536,24 @@ console.log(
 
 ## reduce 리듀서
 
+- 동작 : 리듀스를 실행 하면서
+- ┣ 1. `배열로 값을 전달`하고
+- ┣ 2. 두 번째 인자에 `함수를 전달`
+- ┗ 3. 마지막에 `초기값` 설정
+
+- reduce의 경우 `기존의 자료구조`를
+- ┣ `모든 iter 순회문`을 돌아서
+- ┣ `새로운 자료구조를 만들어내는 목적`으로
+- ┗ `많이 사용하게 됨`
+
+- filter, map : array를 array
+- ┗ reduce : array를 객체로, 또는 숫자를 뽑아냄
+
+> 결국 하나의 값으로 축약해 나간다고 생각하면됨
+
 ```js
 function _reduce(list, iter, memo) {
-	// iter(iter(iter(iter(0, 1), 2), 3), 4);
-    if (arguments.length === 2) {
-        memo = list[0];
-        list = _rest(list);
-    }
+	// iter(iter(iter(iter(0, 1), 2), 3), 4)
     _each(list, function(val)) {
         memo = iter(memo, val);
     }
@@ -550,12 +561,13 @@ function _reduce(list, iter, memo) {
 }
 
 console.log(_reduce([1, 2, 3], add, 0)); // 6
-console.log(_reduce[1, 2, 3, 4], add, 0); // 10
+console.log(_reduce([1, 2, 3, 4], add, 0)); // 10
 // 6
 
 // 보통 다른 자료구조를 만들 때 많이 사용함
 
 // 아래와 같이 동작하게 됨
+// 재귀적으로 아래와 같이 동작함
 memo = add(0, 1);
 memo = add(memo, 2);
 memo = add(memo, 3);
@@ -563,6 +575,27 @@ return memo;
 
 add(add(add(0, 1), 2), 3);
 ```
+
+### `_reduce`의 3번째 인자 생략 - memo
+
+- `list의 첫번째 인자`가
+- ┗ `memo의 첫 역할`을 하게 된다는 의미
+
+```js
+function _reduce(list, iter, memo) {
+	if (arguments.length === 2) {
+		memo = list[0];
+		list = list.slice(1);
+	}
+}
+```
+
+### `_slice` 함수 - reduce 세번째 인자 생략
+
+- `slice 메서드`를 사용하게 되면
+- ┣ `reduce 함수가 array만을 사용하게 되도록`
+- ┣ 형식이 정해짐
+- ┗ `고로 다음과 같이 프로퍼티를 부여`
 
 - slice 사용법
 
@@ -573,6 +606,11 @@ slice.call(a, 2);
 // 이제 ArrayLike 객체와 와도 사용이 가능함
 ```
 
+> 사용법
+
+    1. Array.prototype.slice 를 사용
+    2. slice.call을 이용해서 사용
+
 ### slice rest 만들기
 
 ```js
@@ -582,12 +620,36 @@ function _rest(list, num) {
 }
 ```
 
-### 파이프라인, `_go`, `_pipe`, 화살표 함수
+- 이를 `_reduce` 함수에 이용
 
-- 두개의 함수를 연속적으로 실행 시켜줌
+```js
+function _reduce(list, itr, memo) {
+	if (arguments.length === 2) {
+		memo = list[0];
+		list = _rest(list);
+	}
+	_each(list, function (val) {
+		memo = iter(memo, val);
+	});
+	return memo;
+}
 
-- pipe : reduce 특화 함수
-- ┗ reduce 포괄적 함수
+console.log(_reduce([1, 2, 3, 4], add, 10));
+console.log(_reduce([1, 2, 3, 4], add));
+```
+
+## 파이프라인, `_go`, `_pipe`, 화살표 함수
+
+- 두개의 함수를 `연속적으로 실행` 시켜줌
+- ┗ `함수만 받는 함수`
+
+- `pipe` : reduce `특화 함수`
+- ┗ reduce `포괄적 함수`
+
+- 함수들이라는 배열을 통해서
+- ┗ 인자를 최종적으로 종합
+
+> arg : 인자
 
 ```js
 function _pipe() {
@@ -620,20 +682,22 @@ var f1 = _pipe(
 console.log(log(f1(1)));
 ```
 
-#### go 함수
+### go 함수
 
 - go : 파이프 함수 이지만
-- ┣ 즉시 실행되는 함수
-- ┣ pipe : 함수를 return
+- ┣ `즉시 실행되는 함수`
+- ┗ `pipe` : `함수를 return`
 
 ```js
 // apply?
 function _go(arg) {
+	// 첫번째 인자가 초기값이기 때문
 	var fns = _rest(arguments); // ArrayLike -> fns 하나 제거
 	_pipe.apply(null, fns)(arg);
 }
 
 _go(
+	1,
 	function (a) {
 		return a + 1;
 	},
@@ -647,7 +711,13 @@ _go(
 );
 ```
 
-#### 응용 명령형 -> 리펙터링
+### 응용 명령형 -> 함수형 리펙터링
+
+- `명령형`이 `코드 안쪽에서 시작`해서
+- ┣ `바깥쪽으로 탈출해 나가는 성질`을 가짐
+- ┣ 고로 `사람이 읽기가 힘든 코드임`
+- ┣ 하지만 `_go`를 이용하여 이 문제를 해결이
+- ┗ 가능하게됨
 
 ```js
 console.log(
@@ -676,7 +746,7 @@ _go(
 ```
 
 - 이를 더 간단하게 표현이 가능함
-- curryr을 사용하면 좀 더 쉽게 사용 가능
+- `curryr`을 사용하면 좀 더 쉽게 사용 가능
 
 ```js
 var _map = _curryr(_map),
