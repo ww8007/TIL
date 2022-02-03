@@ -122,3 +122,75 @@ const _get = _curryr(function (obj, key) {
 
 const get_name = _get('name'); // 다음과 같이 name을 꺼낼 수 있는
 // 함수가 만들어짐
+
+////////////////////////////////////////
+// _reduce 함수
+function _reduce(list, iter, memo) {
+	_each(list, function (val) {
+		memo = iter(memo, val);
+	});
+	return memo;
+}
+
+console.log(_reduce([1, 2, 3], add, 0));
+
+// 문제점 : memo의 초기값이 없으면 동작하지 않음
+// 고로 이를 slice를 통해 첫번째 인덱스를 사용하도록 설정
+const slice = Array.prototype.slice;
+
+function _rest(list, num) {
+	return slice.call(list, num || 1);
+}
+
+function _reduce(list, iter, memo) {
+	if (arguments.length === 2) {
+		memo = list[0];
+		list = _rest(list);
+	}
+	// memo를 덮어 쓴다고 생각하면 좋음
+	_each(list, function (val) {
+		memo = iter(memo, val);
+	});
+	return memo;
+}
+
+/////////////////////////////////////////////
+// _pipe, _go 함수
+function _pipe() {
+	const fns = arguments;
+	return function (arg) {
+		return (
+			_reduce(fns, function (arg, fn) {
+				return fn(arg);
+			}),
+			arg
+		);
+	};
+}
+
+function _go(arg) {
+	const fns = _rest(arguments);
+	_pipe.apply(null, fns)(arg);
+}
+
+// 사용법
+_pipe(
+	function (a) {
+		return a + 1;
+	},
+	function (a) {
+		return a * 2;
+	},
+	console.log
+);
+
+_go(
+	1,
+	function (a) {
+		return a + 1;
+	},
+	function (a) {
+		return a * 2;
+	},
+	console.log
+);
