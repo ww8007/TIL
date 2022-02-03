@@ -1,0 +1,12 @@
+{
+	"name": "section_4",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"dependencies": {
+		"@types/react": "^17.0.38",
+		"partial": "^0.0.7",
+		"partial-js": "^1.1.8"
+	},
+	"type": "module"
+}
