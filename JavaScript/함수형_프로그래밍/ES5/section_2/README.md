@@ -1,20 +1,32 @@
 # 목차
 
+- [목차](#%EB%AA%A9%EC%B0%A8)
 - [2. 함수형으로 전환하기](#2-%ED%95%A8%EC%88%98%ED%98%95%EC%9C%BC%EB%A1%9C-%EC%A0%84%ED%99%98%ED%95%98%EA%B8%B0)
   - [위 함수들을 함수형 프로그래밍으로 변경](#%EC%9C%84-%ED%95%A8%EC%88%98%EB%93%A4%EC%9D%84-%ED%95%A8%EC%88%98%ED%98%95-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D%EC%9C%BC%EB%A1%9C-%EB%B3%80%EA%B2%BD)
+  - [`_map` 함수](#_map-%ED%95%A8%EC%88%98)
+  - [`_each` 함수 - map, filter 중복 제거](#_each-%ED%95%A8%EC%88%98---map-filter-%EC%A4%91%EB%B3%B5-%EC%A0%9C%EA%B1%B0)
+    - [`_each`를 통한 리펙터링](#_each%EB%A5%BC-%ED%86%B5%ED%95%9C-%EB%A6%AC%ED%8E%99%ED%84%B0%EB%A7%81)
   - [다향성](#%EB%8B%A4%ED%96%A5%EC%84%B1)
+    - [함수가 먼저 나오는 프로그래밍](#%ED%95%A8%EC%88%98%EA%B0%80-%EB%A8%BC%EC%A0%80-%EB%82%98%EC%98%A4%EB%8A%94-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D)
     - [응용형 함수의 장점](#%EC%9D%91%EC%9A%A9%ED%98%95-%ED%95%A8%EC%88%98%EC%9D%98-%EC%9E%A5%EC%A0%90)
   - [커링](#%EC%BB%A4%EB%A7%81)
+    - [커링으로 add 함수 만들기](#%EC%BB%A4%EB%A7%81%EC%9C%BC%EB%A1%9C-add-%ED%95%A8%EC%88%98-%EB%A7%8C%EB%93%A4%EA%B8%B0)
+    - [지금 커링의 문제점](#%EC%A7%80%EA%B8%88-%EC%BB%A4%EB%A7%81%EC%9D%98-%EB%AC%B8%EC%A0%9C%EC%A0%90)
+    - [커리를 통한 빼기 함수](#%EC%BB%A4%EB%A6%AC%EB%A5%BC-%ED%86%B5%ED%95%9C-%EB%B9%BC%EA%B8%B0-%ED%95%A8%EC%88%98)
+    - [`_curryr` 함수](#_curryr-%ED%95%A8%EC%88%98)
   - [get 함수](#get-%ED%95%A8%EC%88%98)
+    - [`_get`에 `_curryr` 적용](#_get%EC%97%90-_curryr-%EC%A0%81%EC%9A%A9)
   - [reduce 리듀서](#reduce-%EB%A6%AC%EB%93%80%EC%84%9C)
+    - [`_reduce`의 3번째 인자 생략 - memo](#_reduce%EC%9D%98-3%EB%B2%88%EC%A7%B8-%EC%9D%B8%EC%9E%90-%EC%83%9D%EB%9E%B5---memo)
+    - [`_slice` 함수 - reduce 세번째 인자 생략](#_slice-%ED%95%A8%EC%88%98---reduce-%EC%84%B8%EB%B2%88%EC%A7%B8-%EC%9D%B8%EC%9E%90-%EC%83%9D%EB%9E%B5)
     - [slice rest 만들기](#slice-rest-%EB%A7%8C%EB%93%A4%EA%B8%B0)
-    - [파이프라인, `_go`, `_pipe`, 화살표 함수](#%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8-_go-_pipe-%ED%99%94%EC%82%B4%ED%91%9C-%ED%95%A8%EC%88%98)
-      - [go 함수](#go-%ED%95%A8%EC%88%98)
-      - [응용 명령형 -> 리펙터링](#%EC%9D%91%EC%9A%A9-%EB%AA%85%EB%A0%B9%ED%98%95---%EB%A6%AC%ED%8E%99%ED%84%B0%EB%A7%81)
+  - [파이프라인, `_go`, `_pipe`, 화살표 함수](#%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8-_go-_pipe-%ED%99%94%EC%82%B4%ED%91%9C-%ED%95%A8%EC%88%98)
+    - [go 함수](#go-%ED%95%A8%EC%88%98)
+    - [응용 명령형 -> 함수형 리펙터링](#%EC%9D%91%EC%9A%A9-%EB%AA%85%EB%A0%B9%ED%98%95---%ED%95%A8%EC%88%98%ED%98%95-%EB%A6%AC%ED%8E%99%ED%84%B0%EB%A7%81)
       - [부록 : 화살표 함수 사용](#%EB%B6%80%EB%A1%9D--%ED%99%94%EC%82%B4%ED%91%9C-%ED%95%A8%EC%88%98-%EC%82%AC%EC%9A%A9)
   - [다형성 높이기](#%EB%8B%A4%ED%98%95%EC%84%B1-%EB%86%92%EC%9D%B4%EA%B8%B0)
     - [`_keys` 만들기](#_keys-%EB%A7%8C%EB%93%A4%EA%B8%B0)
-    - [`_each` 외부 다향성 높이기](#_each-%EC%99%B8%EB%B6%80-%EB%8B%A4%ED%96%A5%EC%84%B1-%EB%86%92%EC%9D%B4%EA%B8%B0)
+    - [`_each` 외부 다향성 높이기](#_each-%EC%99%B8%EB%B6%80-%EB%8B%A4%ED%96%A5%EC%84%B1-%EB%86%92%EC%9D%B4%EA%B8%B0)%
 
 # 2. 함수형으로 전환하기
 
