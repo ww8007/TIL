@@ -194,3 +194,42 @@ _go(
 	},
 	console.log
 );
+
+////////////////////////////////////////////////
+// 다형성 높이기
+
+// _get을 이용한 list에 null이 들어와도
+// 오류가 나지 않도록 처리 가능
+
+function _get(obj, key) {
+	return obj === null ? undefined : obj[key];
+}
+
+var _length = _get('length');
+
+function _each(list, iter) {
+	for (let i = 0, len = _length(list); i < len; i++) {
+		iter(list[i]);
+	}
+	return list;
+}
+
+// keys 구하기
+
+function _is_object(obj) {
+	return typeof obj === 'object' && !!obj;
+}
+
+function _keys(obj) {
+	return _is_object(obj) ? Object.keys(obj) : [];
+}
+
+// each 외부 다향성 높이기
+
+function _each(list, iter) {
+	const keys = _keys(list);
+	for (let i = 0, len = keys.length; i < len; i++) {
+		iter(list[keys[i]]);
+	}
+	return list;
+}
