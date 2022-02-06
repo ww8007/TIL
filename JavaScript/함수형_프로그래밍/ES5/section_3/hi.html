@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<script>
+			var users = [
+				{ id: 1, name: 'ID', age: 36 },
+				{ id: 2, name: 'AD', age: 32 },
+				{ id: 3, name: 'PW', age: 32 },
+				{ id: 4, name: 'QW', age: 27 },
+				{ id: 5, name: 'ER', age: 25 },
+				{ id: 6, name: 'EF', age: 26 },
+				{ id: 7, name: 'GI', age: 31 },
+				{ id: 8, name: 'UI', age: 23 },
+			];
+
+			/////////////////////////////////
+			// 1. 수집하기 - map
+			function _keys(obj) {
+				return Object.keys(obj);
+			}
+
+			function _each(list, iter) {
+				const keys = _keys(list);
+				for (let i = 0, len = keys.length; i < len; i++) {
+					iter(list[keys[i]]);
+				}
+				return list;
+			}
+
+			function _map(list, mapper) {
+				const new_list = [];
+				_each(list, function (val) {
+					new_list.push(mapper(val));
+				});
+				return new_list;
+			}
+
+			function _curryr(fn) {
+				return function (a, b) {
+					return arguments.length == 2
+						? fn(a, b)
+						: function (b) {
+								return fn(b, a);
+						  };
+				};
+			}
+
+			const _mapR = _curryr(_map);
+
+			function _values(data) {
+				return _mapR(data, function (val) {
+					return val;
+				});
+			}
+			console.log(_values(users[0]));
+		</script>
+	</body>
+</html>
