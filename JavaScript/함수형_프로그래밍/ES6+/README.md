@@ -6,4 +6,6 @@
 
 - [ch02-순회와-이터러블](ch02_순회와_이터러블:이터레이블_프로토콜/README.md)
 
-- [ch03 제너레이터와 이터레이터](ch03_제너레이터와_이터레이터/README.md)
+- [ch03-제너레이터와 이터레이터](ch03_제너레이터와_이터레이터/README.md)
+
+- [ch04-map,filter,reduce](ch04_map_filter_reduce/README.md)
