@@ -1,0 +1,6 @@
+{
+  "name": "ch04_map_filter_reduce",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT"
+}
