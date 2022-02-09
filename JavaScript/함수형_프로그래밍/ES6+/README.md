@@ -11,3 +11,5 @@
 - [ch04-map,filter,reduce](ch04_map_filter_reduce/README.md)
 
 - [ch05-코드를 값으로 나누어 표현력 높이기](ch05_코드를_값으로_다루어_표현력_높이기/README.md)
+
+- [ch06-장바구니 예제](ch06_장바구니_예제/README.md)
