@@ -75,7 +75,7 @@ console.log(map((a) => a * a, gen()));
 
 - Map을 만든다고 했을 때
 - ┣ map을 이용해서 새로운 Map을 만들 때
-- ┣ 사용이 가능함
+- ┗ 사용이 가능함
 
 ```js
 let m = new Map();
