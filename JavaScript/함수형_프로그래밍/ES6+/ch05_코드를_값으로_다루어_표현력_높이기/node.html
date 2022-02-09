@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<script>
+			const curry =
+				(f) =>
+				(a, ..._) =>
+					_.length ? f(a, ..._) : (..._) => f(a, ..._);
+
+			const add = (a, b) => a + b;
+
+			const reduce = (f, acc, iter) => {
+				if (!iter) {
+					iter = acc[Symbol.iterator]();
+					acc = iter.next().value;
+				}
+				for (const a of iter) {
+					acc = f(acc, a);
+				}
+				return acc;
+			};
+
+			const go = (...args) =>
+				reduce(function (a, f) {
+					return f(a);
+				}, args);
+			go(
+				1,
+				(a) => a + 1,
+				(a) => a + 2,
+				console.log
+			);
+			const pipe =
+				(f, ...fs) =>
+				(...as) =>
+					go(f(...as), ...fs);
+		</script>
+	</body>
+</html>
