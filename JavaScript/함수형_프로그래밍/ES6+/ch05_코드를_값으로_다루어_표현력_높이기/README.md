@@ -27,10 +27,7 @@ const reduce = (f, acc, iter) => {
 	return acc;
 };
 
-const go = (...args) => {
-	reduce((a, f) => f(a), args);
-};
-
+const go = (...args) => reduce((a, f) => f(a), args);
 // 위와 같은 코드임
 
 const go = (...args) => {
