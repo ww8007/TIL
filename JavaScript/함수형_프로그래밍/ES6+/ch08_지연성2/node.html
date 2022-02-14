@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<script>
+			const curry =
+				(f) =>
+				(a, ..._) =>
+					_.length ? f(a, ..._) : (..._) => f(a, ..._);
+
+			const reduce = curry((f, acc, iter) => {
+				if (!iter) {
+					iter = acc[Symbol.iterator]();
+					acc = iter.next().value;
+				} else {
+					iter = iter[Symbol.iterator]();
+				}
+				let cur;
+				while (!(cur = iter.next()).done) {
+					const a = cur.value;
+					acc = f(acc, a);
+				}
+				return acc;
+			});
+
+			const go = (...args) => reduce((a, f) => f(a), args);
+
+			const pipe =
+				(f, ...fs) =>
+				(...as) =>
+					go(f(...as), ...fs);
+
+			const L = {};
+
+			L.map = curry(function* (f, iter) {
+				for (const a of iter) {
+					yield f(a);
+				}
+			});
+
+			L.filter = curry(function* (f, iter) {
+				for (const a of iter) {
+					if (f(a)) yield a;
+				}
+			});
+
+			//////////////////////////////////////////
+			// queryStr
+			const log = console.log;
+			// const queryStr = (obj) => obj;
+
+			// 일단 key value를 모두 추출
+			const _queryStr = (obj) =>
+				go(
+					obj,
+					Object.entries,
+					map(([k, v]) => `${k}=${v}`),
+					reduce((a, b) => `${a}&${b}`)
+				);
+
+			const join = curry((sep = ',', iter) =>
+				reduce((a, b) => `${a}${sep}${b}`, iter)
+			);
+
+			L.entries = function* (obj) {
+				for (const k in obj) {
+					yield [k, obj[k]];
+				}
+			};
+
+			const queryStr = pipe(
+				L.entries,
+				L.map(([k, v]) => `${k}=${v}`),
+				join('&')
+			);
+
+			log(queryStr({ limit: 10, offset: 10, type: 'notice' }));
+
+			//////////////////////////////////////////
+			// join
+
+			const _join = curry((sep = ',', iter) =>
+				reduce((a, b) => `${a}${sep}${b}`, iter)
+			);
+
+			function* a() {
+				yield 10;
+				yield 11;
+				yield 12;
+				yield 13;
+			}
+
+			log(join(' - ', a()));
+
+			/////////////////////////////////////////////////
+			// take, find
+
+			const users = [
+				{ age: 32 },
+				{ age: 31 },
+				{ age: 37 },
+				{ age: 32 },
+				{ age: 34 },
+				{ age: 25 },
+				{ age: 31 },
+				{ age: 37 }
+			];
+
+			const take = curry((l, iter) => {
+				let res = [];
+				iter = iter[Symbol.iterator]();
+				let cur;
+				while (!(cur = iter.next()).done) {
+					const a = cur.value;
+					res.push(a);
+					if (res.length == l) return res;
+				}
+				return res;
+			});
+
+			const find = curry((f, iter) =>
+				go(iter, L.filter(f), take(1), ([a]) => a)
+			);
+
+			log(find((u) => u.age < 30, users));
+
+			go(
+				users,
+				L.map((u) => u.age),
+				find((n) => n < 30),
+				log
+			);
+
+			/////////////////////////////////////////////////
+			// L.map, L.filter를 이용한 map, filter
+
+			L.map = curry((f, iter) => {
+				let res = [];
+				iter = iter[Symbol.iterator]();
+				let cur;
+				while (!(cur = iter.next().done)) {
+					const d = cur.value;
+					res.push(f(d));
+				}
+				return res;
+			});
+
+			// log(map((a) => a + 10, range(4)));
+
+			const _map = curry(pipe(L.map, take(Infinity)));
+
+			// filter
+			const _filter = curry(pipe(L.filter), take(Infinity));
+
+			// takeAll
+			const takeAll = take(Infinity);
+			const map = curry(pipe(L.map, takeAll));
+			const filter = curry(pipe(L.filter), takeAll);
+
+			/////////////////////////////////////////////////
+			// L.flatten
+
+			const isIterable = (a) => a && a[Symbol.iterator];
+			L.flatten = function* (iter) {
+				for (const a of iter) {
+					if (isIterable(a)) for (const b of a) yield b;
+					else yield a;
+				}
+			};
+
+			var it = L.flatten([[1, 2], 4, 5, [6, 7, 8], [9, 10]]);
+
+			const flatten = pipe(L.flatten, takeAll);
+			log(flatten([[1, 2], 4, 5, [6, 7, 8], [9, 10]]));
+
+			/////////////////////////////////////////////////
+			// L.flatten
+
+			L.flatMap = curry(pipe(L.map, L.flatten));
+			const flatMap = curry(pipe(L.map, flatten));
+
+			var it = L.flatMap(
+				(a) => a,
+				[
+					[1, 2],
+					[3, 4],
+					[5, 6, 7]
+				]
+			);
+			log([...it]);
+			// 응용
+
+			L.range = function* (l) {
+				let i = -1;
+				while (++i < l) yield i;
+			};
+
+			const range = (l) => {
+				let i = -1;
+				let res = [];
+				while (++i < l) {
+					res.push(i);
+				}
+				return res;
+			};
+
+			log(flatMap(range, [1, 2, 3]));
+		</script>
+	</body>
+</html>
