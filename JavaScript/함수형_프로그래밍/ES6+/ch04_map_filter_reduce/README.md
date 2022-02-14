@@ -3,13 +3,13 @@
 ## 목차
 
 - [ch03 map filter reduce](#ch03-map-filter-reduce)
-  - [목차](#목차)
-  - [map](#map)
-    - [이터러블 프로토콜을 따른 map의 다형성](#이터러블-프로토콜을-따른-map의-다형성)
-    - [이터러블 프로토콜을 따른 map의 다형성2](#이터러블-프로토콜을-따른-map의-다형성2)
-  - [filter](#filter)
-  - [reduce](#reduce)
-  - [map, filter, reduce를 중첩 사용](#map-filter-reduce를-중첩-사용)
+	- [목차](#목차)
+	- [map](#map)
+		- [이터러블 프로토콜을 따른 map의 다형성](#이터러블-프로토콜을-따른-map의-다형성)
+		- [이터러블 프로토콜을 따른 map의 다형성2](#이터러블-프로토콜을-따른-map의-다형성2)
+	- [filter](#filter)
+	- [reduce](#reduce)
+	- [map, filter, reduce를 중첩 사용](#map-filter-reduce를-중첩-사용)
 
 ## map
 
@@ -19,7 +19,7 @@ const products = [
 	{ name: '긴팔티', price: 20000 },
 	{ name: '핸드폰케이스', price: 15000 },
 	{ name: '후드티', price: 30000 },
-	{ name: '바지', price: 25000 },
+	{ name: '바지', price: 25000 }
 ];
 ```
 
@@ -44,7 +44,7 @@ const map = (f, iter) => {
 ### 이터러블 프로토콜을 따른 map의 다형성
 
 - 이터러블 프로토콜을 따라서
-- ┣ 다형성이 높음
+- ┗ 다형성이 높음
 
 ```js
 log(document.querySelector('*').map((el) => el.nodeName)); // 사용 불가
@@ -73,8 +73,8 @@ console.log(map((a) => a * a, gen()));
 
 ### 이터러블 프로토콜을 따른 map의 다형성2
 
-- Map을 만든다고 했을 때
-- ┣ map을 이용해서 새로운 Map을 만들 때
+- `Map을 만든다고` 했을 때
+- ┣ `map을 이용해서 새로운 Map을 만들 때`
 - ┗ 사용이 가능함
 
 ```js
@@ -120,7 +120,7 @@ console.log(
 ## reduce
 
 - `이터러블` 값을 하나로 `축약 시켜나감`
-- ┣ 재귀적으로 동작함
+- ┣ `재귀적`으로 동작함
 - ┗ `f 에게 평가 조건을 위임`
 
 ```js
