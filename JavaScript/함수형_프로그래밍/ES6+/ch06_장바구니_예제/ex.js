@@ -3,6 +3,20 @@ const curry =
 	(a, ..._) =>
 		_.length ? f(a, ..._) : (..._) => f(a, ..._);
 
+function curry(f) {
+	return function (a, ..._) {
+		if (_.length) {
+			return f(a, ..._);
+		} else {
+			return function (..._) {
+				return f(a, ..._);
+			};
+		}
+	};
+}
+
+const add = (a) => (b) => a + b;
+
 const reduce = curry((f, acc, iter) => {
 	if (!iter) {
 		iter = acc[Symbol.iterator]();
