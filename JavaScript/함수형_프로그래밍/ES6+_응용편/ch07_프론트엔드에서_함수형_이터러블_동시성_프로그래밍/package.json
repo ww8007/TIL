@@ -1,0 +1,11 @@
+{
+	"name": "ch07",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"type": "module",
+	"dependencies": {
+		"@fxts/core": "^0.5.0",
+		"fxjs": "^0.21.3"
+	}
+}
