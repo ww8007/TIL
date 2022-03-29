@@ -25,7 +25,7 @@ const solution2 = (input) => {
 
 const isPrime = (num) => {
 	if (num === 1) return false;
-	for (let i = 2; i < Math.floor(Math.sqrt(num)); i++) {
+	for (let i = 2; i <= Math.floor(Math.sqrt(num)); i++) {
 		if (!(num % i)) return false;
 	}
 	return true;
