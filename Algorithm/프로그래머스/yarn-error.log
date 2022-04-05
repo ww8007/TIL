@@ -1,0 +1,36 @@
+Arguments: 
+  /Users/ww8007/.nvm/versions/node/v14.17.4/bin/node /Users/ww8007/.yarn/bin/yarn.js init - y
+
+PATH: 
+  /Users/ww8007/.gem/ruby/2.6.0/bin:/Users/ww8007/.gem/bin:/Users/ww8007/.yarn/bin:/Users/ww8007/.config/yarn/global/node_modules/.bin:/Users/ww8007/.nvm/versions/node/v14.17.4/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:~/.dotnet/tools:/Library/Apple/usr/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Users/ww8007/.gem/ruby/2.6.0/bin:/Users/ww8007/.gem/bin:/Users/ww8007/.yarn/bin:/Users/ww8007/.config/yarn/global/node_modules/.bin:/Users/ww8007/.nvm/versions/node/v14.17.4/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/ww8007/Library/Android/sdk/emulator:/Users/ww8007/Library/Android/sdk/tools:/Users/ww8007/Library/Android/sdk/tools/bin:/Users/ww8007/Library/Android/sdk/platform-tools:/Users/ww8007/Library/Android/sdk/emulator:/Users/ww8007/Library/Android/sdk/tools:/Users/ww8007/Library/Android/sdk/tools/bin:/Users/ww8007/Library/Android/sdk/platform-tools
+
+Yarn version: 
+  1.22.15
+
+Node version: 
+  14.17.4
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: canceled
+      at Interface.<anonymous> (/Users/ww8007/.yarn/lib/cli.js:137145:13)
+      at Interface.emit (events.js:400:28)
+      at Interface._ttyWrite (readline.js:910:16)
+      at ReadStream.onkeypress (readline.js:235:10)
+      at ReadStream.emit (events.js:400:28)
+      at emitKeys (internal/readline/utils.js:358:14)
+      at emitKeys.next (<anonymous>)
+      at ReadStream.onData (readline.js:1179:36)
+      at ReadStream.emit (events.js:400:28)
+      at addChunk (internal/streams/readable.js:290:12)
+
+npm manifest: 
+  No manifest
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
