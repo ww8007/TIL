@@ -74,3 +74,19 @@ let tmp = new Set();
 tmp.add(card[i] + card[j] + card[k]);
 let ans = Array.from(tmp).sort((a, b) => b - a);
 ```
+
+## 효율성
+
+### 투포인터 알고리즘
+
+- 기존의 sort nlogn
+- 하지만 투 포인터 사용 -> n + m
+
+### 슬라이딩 윈도우
+
+- 쉽게 말해 옆으로 창문을 밀고 나간다고 생각
+
+### Hash
+
+- 객체의 key, value랑 같다고 생각
+- 이를 map, set을 이용
