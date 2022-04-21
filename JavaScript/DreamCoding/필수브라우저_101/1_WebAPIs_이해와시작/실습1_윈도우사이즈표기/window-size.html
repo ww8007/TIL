@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Window Size</title>
+		<style>
+			.tag {
+				display: inline-block;
+				background-color: thistle;
+				padding: 16px;
+				margin-top: 16px;
+				font-size: 48px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="tag">Window Size</div>
+		<script>
+			const tag = document.querySelector('.tag');
+			function updateTag() {
+				tag.innerHTML = `
+                    window.screen: ${window.screen.width}, ${window.screen.height} <br/>
+                    window.outer: ${window.outerWidth}, ${window.outerHeight} <br/>
+                    window.inner: ${window.innerWidth}, ${window.innerHeight} <br/>
+                    documentElement.clientWidth:${document.documentElement.clientWidth}, ${document.documentElement.clientHeight} <br/>
+                `;
+			}
+			window.addEventListener('resize', () => {
+				updateTag();
+			});
+			updateTag(); // 맨먼저 실행
+		</script>
+	</body>
+</html>
