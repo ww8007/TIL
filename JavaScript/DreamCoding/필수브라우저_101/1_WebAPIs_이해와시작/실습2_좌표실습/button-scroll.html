@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>button</title>
+		<style>
+			body {
+				background-color: black;
+			}
+			div {
+				width: 200px;
+				height: 200px;
+				background-color: orange;
+				margin-bottom: 4px;
+			}
+			.special {
+				background-color: tomato;
+			}
+			aside {
+				position: fixed;
+				top: 10px;
+				right: 200px;
+			}
+		</style>
+	</head>
+	<body>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div class="special"></div>
+		<div></div>
+		<div></div>
+		<aside>
+			<button class="scroll-by">Scroll by 100px(y)</button>
+			<button class="scroll-to">Scroll to 100px(y)</button>
+			<button class="scroll-into">Scroll by 100px(y)</button>
+		</aside>
+		<script>
+			const special = document.querySelector('.special');
+			special.addEventListener('click', (e) => {
+				const rect = special.getBoundingClientRect();
+				console.log(rect);
+				console.log(`client: ${e.clientX} ${e.clientY}`);
+				console.log(`page: ${e.pageX} ${e.pageY}`);
+			});
+
+			const scrollBy = document.querySelector('.scroll-by');
+			const scrollTo = document.querySelector('.scroll-to');
+			const scrollInto = document.querySelector('.scroll-into');
+
+			scrollBy.addEventListener('click', () => {
+				window.scrollBy({ top: 100, left: 0, behavior: 'smooth' });
+			});
+			scrollTo.addEventListener('click', () => {
+				window.scrollTo(0, 100);
+			});
+			scrollInto.addEventListener('click', () => {
+				special.scrollIntoView();
+			});
+		</script>
+	</body>
+</html>
