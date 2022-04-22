@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<style>
+			div {
+				width: 250px;
+				height: 250px;
+				background-color: yellow;
+				margin-bottom: 5px;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<input type="checkbox" />
+		</div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<script>
+			document.addEventListener(
+				'wheel',
+				(event) => {
+					console.log('scrolling');
+					event.preventDefault();
+				},
+				{ passive: false }
+			);
+			const checkbox = document.querySelector('input');
+			checkbox.addEventListener(
+				'click',
+				(event) => {
+					// long
+					console.log('checked');
+					event.preventDefault();
+				},
+				{ passive: true }
+			);
+		</script>
+	</body>
+</html>
