@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<style>
+			.selected {
+				background-color: yellow;
+			}
+		</style>
+	</head>
+	<body>
+		<ul>
+			<li>1</li>
+			<li>2</li>
+			<li>3</li>
+			<li>4</li>
+			<li>5</li>
+			<li>6</li>
+			<li>7</li>
+			<li>8</li>
+			<li>9</li>
+			<li>10</li>
+		</ul>
+		<script>
+			// Bad
+			// const lis = document.querySelectorAll('li');
+			// lis.forEach(li => {
+			//   li.addEventListener('click', () => {
+			//     li.classList.add('selected');
+			//   });
+			// });
+
+			// Coooooooool 🙌
+			const ul = document.querySelector('ul');
+			ul.addEventListener('click', (event) => {
+				if (event.target.tagName == 'li') {
+					if (event.target.classList.contains('selected'))
+						event.target.classList.remove('selected');
+					else event.target.classList.add('selected');
+				}
+			});
+		</script>
+	</body>
+</html>
