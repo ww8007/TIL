@@ -1,19 +1,23 @@
 function solution(arr) {
 	let answer = 'NO';
+	let flag = 0;
 	let total = arr.reduce((a, b) => a + b);
 
-	function DFS(v, sum) {
-		if (v === arr.length) {
+	function DFS(L, sum) {
+		if (L === arr.length) {
+			if (flag) return;
 			if (total - sum === sum) {
-				console.log(sum);
 				answer = 'YES';
+				flag = 1; // flag 설정 -> 더 이상 스택이 돌지 않도록
 			}
 		} else {
-			DFS(v + 1, sum + arr[v]);
-			DFS(v + 1, sum);
+			DFS(L + 1, sum + arr[L]); // 합을 더해서 다음으로
+			DFS(L + 1, sum); // 그냥 다음으로
 		}
 	}
+
 	DFS(0, 0);
+
 	return answer;
 }
 
