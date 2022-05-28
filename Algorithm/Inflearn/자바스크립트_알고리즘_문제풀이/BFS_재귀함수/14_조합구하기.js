@@ -15,4 +15,4 @@ function solution(n, m) {
 	return answer;
 }
 
-console.log(solution(4, 2));
+console.log(solution(3, 3));
