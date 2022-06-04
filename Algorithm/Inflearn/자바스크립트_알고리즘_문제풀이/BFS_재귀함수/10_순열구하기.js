@@ -15,6 +15,8 @@ function solution(m, arr) {
 					tmp[L] = arr[i]; // 사용할 tmp에 넣고
 					DFS(L + 1); // 탐색을 돌리고
 					check[i] = 0; // 체크 해제
+					tmp.pop();
+					DFS(L + 1);
 				}
 			}
 		}
