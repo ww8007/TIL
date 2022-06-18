@@ -20,11 +20,11 @@
 			});
 			// before unload
 			window.addEventListener('beforeunload', () => {
-				console.log('load');
+				console.log('beforeunload');
 			});
 			// resource is being unloaded
 			window.addEventListener('unload', () => {
-				console.log('load');
+				console.log('unload');
 			});
 		</script>
 	</body>
