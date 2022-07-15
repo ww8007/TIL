@@ -1,0 +1,13 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Flutter",
+			"request": "launch",
+			"type": "dart",
+			// "args": ["--enable-software-rendering"]
+			// "flutterMode": "profile", //debug //release
+			"program": "${workspaceFolder}/lib/main_dev.dart"
+		}
+	]
+}
