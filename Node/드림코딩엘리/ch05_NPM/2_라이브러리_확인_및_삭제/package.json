@@ -5,5 +5,8 @@
 	"license": "MIT",
 	"dependencies": {
 		"underscore": "^1.13.4"
+	},
+	"devDependencies": {
+		"nodemon": "^2.0.19"
 	}
 }
