@@ -1,0 +1,13 @@
+{
+	"name": "1",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"type": "module",
+	"scripts": {
+		"start": "nodemon app"
+	},
+	"dependencies": {
+		"express": "^4.18.1"
+	}
+}
