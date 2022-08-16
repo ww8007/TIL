@@ -8,6 +8,7 @@ import authRouter from './router/auth.js';
 import { config } from './config.js';
 
 import dotenv from 'dotenv';
+import { db } from './db/database.js';
 
 dotenv.config();
 
@@ -32,3 +33,4 @@ app.use((error, req, res, next) => {
 	res.sendStatus(500);
 });
 app.listen(config.host.port);
+db.connection().then((connection) => console.log(connection));

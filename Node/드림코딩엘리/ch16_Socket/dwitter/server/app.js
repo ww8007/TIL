@@ -8,6 +8,7 @@ import authRouter from './router/auth.js';
 import { config } from './config.js';
 import { initSocket } from './connection/socket.js';
 import { Server } from 'socket.io';
+import { db } from './db/database.js';
 
 const app = express();
 
@@ -27,6 +28,8 @@ app.use((error, req, res, next) => {
 	console.error(error);
 	res.sendStatus(500);
 });
+
+db.connection().then(console.log());
 
 const server = app.listen(config.host.port);
 // const socketIO = new Server(server);
