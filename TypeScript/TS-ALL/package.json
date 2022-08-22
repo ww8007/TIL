@@ -1,0 +1,10 @@
+{
+	"name": "TS-ALL",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {},
+	"license": "MIT",
+	"dependencies": {
+		"typescript": "^4.7.4"
+	}
+}
