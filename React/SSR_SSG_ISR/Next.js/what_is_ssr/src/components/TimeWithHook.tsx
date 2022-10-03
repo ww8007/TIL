@@ -1,18 +1,30 @@
 import { css } from '@emotion/react';
-import React from 'react';
-import colors from '../constants/colors';
+
+import { useEffect, useState } from 'react';
 import useGetTime from '../hooks/useGetTime';
 
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+dayjs.locale('ko');
+
 interface Props {
-	dateTime: string;
+	dateTime: any;
 	title: string;
 	description: string;
 }
 
 function TimeWithHook({ dateTime, title, description }: Props) {
-	const cleanDate = dateTime;
+	const [formedDate, setFormedDate] = useState('');
+	const [realTime, setRealTime] = useState('');
 
-	const realTime = useGetTime();
+	const realTimeHook = useGetTime();
+
+	useEffect(() => {
+		setFormedDate(dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss'));
+		setRealTime(realTimeHook);
+	}, [dateTime, realTimeHook]);
+
+	// const cleanDate = dateTime;
 
 	const flexStyle = css`
 		flex: 1;
@@ -28,7 +40,9 @@ function TimeWithHook({ dateTime, title, description }: Props) {
 			>
 				<li css={flexStyle}></li>
 				<li css={flexStyle}>
-					<h3>{cleanDate ? `${description} : ${cleanDate}` : 'LOADING...'}</h3>
+					<h3>
+						{formedDate ? `${description} : ${formedDate}` : 'LOADING...'}
+					</h3>
 				</li>
 				<li css={flexStyle}></li>
 			</ul>
@@ -39,7 +53,7 @@ function TimeWithHook({ dateTime, title, description }: Props) {
 			>
 				<li css={flexStyle}></li>
 				<li css={flexStyle}>
-					<h3>Real Time: {realTime}</h3>
+					<h3>Real Time: {realTime ? realTime : 'Loading'}</h3>
 				</li>
 				<li css={flexStyle}></li>
 			</ul>
