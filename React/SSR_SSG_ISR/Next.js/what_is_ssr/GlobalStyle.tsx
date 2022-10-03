@@ -102,7 +102,7 @@ const GlobalStyle = () => (
 			html {
 				font-size: 100%;
 				background-color: ${colors.mainColor};
-				margin-top: 20%;
+				margin-top: 10%;
 			}
 			ol,
 			ul {
