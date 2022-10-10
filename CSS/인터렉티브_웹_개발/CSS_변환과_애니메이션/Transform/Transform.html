@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+		<title>Document</title>
+		<link rel="stylesheet" href="css/reset.css" />
+		<style>
+			.box-container {
+				display: flex;
+			}
+			.box {
+				width: 100px;
+				height: 100px;
+				border: 2px solid black;
+				background-color: rgba(255, 255, 0, 0.7);
+			}
+			.box:hover {
+				/* transform: scale(2) rotate(45deg); */
+				/* transform: skewY(30deg); */
+				/* transform: translate(30px, 10px); */
+				/* transform: translateX(30px);
+				transform: translateY(-30px); */
+				transform: scale(1.5);
+				/* transform-origin: left top; */
+				transform-origin: 20% 80%;
+				transform: rotate(30deg);
+			}
+		</style>
+	</head>
+	<body>
+		<h1>CSS Transform</h1>
+		<p>
+			Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nobis cum a
+			commodi corporis. Delectus animi voluptatum veritatis quis obcaecati id
+			repudiandae suscipit, repellat, laborum deleniti recusandae distinctio
+			modi! Accusantium, voluptatum.
+		</p>
+		<div class="box-container">
+			<div class="box">A</div>
+			<div class="box">B</div>
+			<div class="box">C</div>
+			<div class="box">D</div>
+			<div class="box">E</div>
+		</div>
+		<p>
+			Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti
+			architecto delectus labore in? Error voluptatum quae fugit assumenda
+			deleniti commodi ratione necessitatibus dignissimos, deserunt tempora
+			doloribus quisquam, et inventore facere.
+		</p>
+	</body>
+</html>
