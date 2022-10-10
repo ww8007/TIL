@@ -1,0 +1,40 @@
+html,
+body {
+	margin: 0px;
+	background-color: #1e2027;
+}
+
+.App {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+	font-family: 'Avenir Next';
+}
+
+button {
+	padding: 1em;
+	margin: 10px;
+
+	outline: none;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+
+	color: white;
+	font-family: 'Avenir';
+	font-size: 1em;
+
+	font-weight: bolder;
+}
+
+#blue {
+	background: -webkit-linear-gradient(to right, #00c6ff, #0072ff);
+	background: linear-gradient(to right, #00c6ff, #0072ff);
+}
+
+#red {
+	background: -webkit-linear-gradient(to right, #ef473a, #cb2d3e);
+	background: linear-gradient(to right, #ef473a, #cb2d3e);
+}
