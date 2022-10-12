@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<style>
+			.flex-container {
+				display: flex;
+				flex-wrap: wrap;
+				/* flex-direction: row; */
+				/* flex-basis: 100px; */
+			}
+			.flex-item {
+				flex: 1 auto;
+			}
+			.flex-item:nth-child(1) {
+				/* flex: 1;
+				flex: 1 1 0; */
+				width: 30%;
+				/* overflow: hidden; */
+				/* flex: 0 1 20%; */
+			}
+			.flex-item:nth-child(2) {
+				/* flex: 3;
+				flex: 3 1 0; */
+				width: 40%;
+				/* flex: 0 1 40%; */
+			}
+			.flex-item:nth-child(3) {
+				/* flex: 1;
+				flex: 1 1 0; */
+				width: 30%;
+				/* flex: 0 1 20%; */
+			}
+			.flex-item p {
+				/* white-space: nowrap; */
+			}
+		</style>
+		<link rel="stylesheet" href="default.css" />
+	</head>
+	<body>
+		<div class="flex-container">
+			<div class="flex-item">
+				<p>
+					Lorem ipsum dolor sit, amet consectetur adipisicing elit. Corrupti qui
+					voluptas molestias excepturi doloribus necessitatibus unde quam porro
+				</p>
+			</div>
+			<div class="flex-item">BBBBBBBBB</div>
+			<div class="flex-item">CCCCCCCCCCCC</div>
+			<div class="flex-item">DDDDDDD</div>
+		</div>
+	</body>
+</html>
