@@ -1,0 +1,20 @@
+.search-form {
+	display: flex;
+	height: 40px;
+}
+
+.search-form input[type='search'] {
+	flex: 1;
+	border: 0;
+	border-radius: 0.3em;
+	font-size: 1rem;
+	margin-right: 10px;
+}
+
+.search-form input[type='submit'] {
+	width: 4em;
+	border: 0;
+	border-radius: 0.3em;
+	font-size: 1rem;
+	background: gold;
+}

@@ -1,0 +1,19 @@
+.user-item {
+	display: flex;
+}
+
+.user-photo {
+	flex-shrink: 0;
+	margin-right: 0.5em;
+	width: 50px;
+	height: 50px;
+	border: 2px solid #333;
+	border-radius: 50%;
+	background: gold;
+	background-color: gold;
+	/* 반복안함 */
+	background-repeat: no-repeat;
+	background-position: center;
+	/* 크게 */
+	background-size: 150%;
+}
