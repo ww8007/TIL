@@ -13,10 +13,12 @@
     "@emotion/styled": "^11.10.4",
     "next": "12.3.1",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "url-loader": "^4.1.1"
   },
   "devDependencies": {
     "@emotion/babel-plugin": "^11.10.2",
+    "@svgr/webpack": "^6.5.0",
     "@types/node": "18.11.0",
     "@types/prettier": "^2",
     "@types/react": "18.0.21",

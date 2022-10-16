@@ -14,15 +14,16 @@
 		"isolatedModules": true,
 		"jsx": "preserve",
 		"incremental": true,
-		"jsxImportSource": "@emotion/react"
+		"jsxImportSource": "@emotion/react",
+		"baseUrl": ".",
+		"paths": {
+			"@components/*": ["src/components/*"],
+			"@pages/*": ["pages/*"],
+			"@api/*": ["src/lib/api/*"],
+			"@assets/*": ["src/assets/*"]
+		}
 	},
-	"baseUrl": ".",
-	"paths": {
-		"@components/*": ["src/components/*"],
-		"@pages/*": ["pages/*"],
-		"@api/*": ["src/lib/api/*"],
-		"@assets/*": ["src/assets/*"]
-	},
+
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
 	"exclude": ["node_modules"]
 }
