@@ -53,7 +53,7 @@ export const getStaticProps: GetStaticProps = async () => {
 		props: {
 			dateTime: dateTime
 		},
-		revalidate: 10
+		revalidate: 5
 	};
 };
 
