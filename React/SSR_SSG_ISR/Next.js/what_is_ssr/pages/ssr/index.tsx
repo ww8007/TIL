@@ -46,16 +46,16 @@ function SSRPage({ dateTime, title }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-	const { data } = await axios.get(
-		'https://d66dbgb0z8.execute-api.ap-northeast-2.amazonaws.com/blah'
-	);
+	// const { data } = await axios.get(
+	// 	'https://d66dbgb0z8.execute-api.ap-northeast-2.amazonaws.com/blah'
+	// );
 
 	const dateTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
 
 	return {
 		props: {
 			dateTime: dateTime,
-			title: data
+			title: 'this is ssr page'
 		}
 	};
 };
