@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<input id="myInput" type="text" />
+		<script src="https://unpkg.com/@reactivex/rxjs/dist/global/rxjs.umd.js"></script>
+		<script>
+			const { fromEvent } = rxjs;
+
+			const obs1$ = fromEvent(document, "click");
+			const obs2$ = fromEvent(
+				document.getElementById("myInput"),
+				"keypress"
+			);
+
+			obs1$.subscribe((item) => console.log(item));
+			obs2$.subscribe((item) => console.log(item));
+		</script>
+	</body>
+</html>
