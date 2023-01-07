@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<script src="https://unpkg.com/@reactivex/rxjs/dist/global/rxjs.umd.js"></script>
+	</head>
+	<body>
+		<script>
+			const { interval, fromEvent } = rxjs;
+			const { switchMap, map, take } = rxjs.operators;
+
+			fromEvent(document, "click")
+				.pipe(
+					switchMap((e) =>
+						interval(1000).pipe(
+							map((i) => e.x + " : " + i),
+							take(5)
+						)
+					)
+				)
+				.subscribe(console.log);
+		</script>
+	</body>
+</html>

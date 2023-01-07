@@ -1,0 +1,19 @@
+{
+	"name": "2",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"scripts": {
+		"start": "yarn build:live",
+		"build": "tsc -p .",
+		"build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
+	},
+	"devDependencies": {
+		"nodemon": "^2.0.20",
+		"xmlhttprequest": "^1.8.0"
+	},
+	"dependencies": {
+		"rxjs": "^7.8.0",
+		"xhr2": "^0.2.1"
+	}
+}
