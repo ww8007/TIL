@@ -32,3 +32,10 @@ const v3 = {
 
 const a1 = [1, 2, 3]; // 타입은 number[]
 const a2 = [1, 2, 3] as const; // 타입은 readonly [1, 2, 3]
+
+const pt = { x: 3, y: 4 };
+const id = { name: "Jang" };
+let namedPoint = {};
+
+Object.assign(namedPoint, pt, id);
+namedPoint;
