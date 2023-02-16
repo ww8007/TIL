@@ -49,7 +49,7 @@ async function changePage(state: State, newPage: string) {
 		const pageText = await response.text();
 		state.request[newPage] = { state: "success", pageText };
 	} catch (e) {
-		state.request[newPage] = { state: "error", error: e.message };
+		state.request[newPage] = { state: "error", error: e };
 	}
 }
 
