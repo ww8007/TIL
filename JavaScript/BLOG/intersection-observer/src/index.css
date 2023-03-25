@@ -1,0 +1,71 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+.box_wrapper {
+  display: flex;
+  flex-direction: column;
+  row-gap: 2rem;
+  
+}
+
+.box1 {
+  height: 20vh;
+  width: 40vw;
+  border-radius: 1rem;
+  background-color: #ff1744;
+  transition: opacity 1.5s ease;
+}
+
+.box2 {
+  height: 20vh;
+  width: 40vw;
+  border-radius: 1rem;
+  background-color: #ff9800;
+  transition: opacity 1.5s ease;
+}
+
+.box3 {
+  height: 20vh;
+  width: 40vw;
+  border-radius: 1rem;
+  background-color: #ffeb3b;
+  transition: opacity 1.5s ease;
+}
+
+.box4 {
+  height: 20vh;
+  width: 40vw;
+  border-radius: 1rem;
+  background-color: #4caf50;
+  transition: opacity 1.5s ease;
+}
+
+.box5 {
+  height: 20vh;
+  width: 40vw;
+  border-radius: 1rem;
+  background-color: #3f51b5;
+  transition: opacity 1.5s ease;
+}
+
+.box6 {
+  height: 20vh;
+  width: 40vw;
+  border-radius: 1rem;
+  background-color: #673ab7;
+  transition: opacity 1.5s ease;
+}
+
