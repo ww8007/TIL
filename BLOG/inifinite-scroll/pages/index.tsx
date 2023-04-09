@@ -1,7 +1,5 @@
+import PokeList from "@/src/pokemon/ui/PokeList";
+
 export default function Home() {
-	return (
-		<>
-			<div>hi</div>
-		</>
-	);
+	return <PokeList />;
 }
