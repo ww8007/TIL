@@ -1,0 +1,13 @@
+{
+	"presets": [
+		"@babel/preset-env",
+		[
+			"@babel/preset-react",
+			{
+				"pragma": "createElement"
+			}
+		],
+		"@babel/preset-typescript"
+	],
+	"plugins": []
+}
