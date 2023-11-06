@@ -1,4 +1,9 @@
-const getTodoElement = (todo) => {
+interface Todo {
+	text: string;
+	completed: boolean;
+}
+
+export const getTodoElement = (todo: Todo) => {
 	const { text, completed } = todo;
 
 	return `
@@ -15,7 +20,7 @@ const getTodoElement = (todo) => {
 	</li>`;
 };
 
-const getTodoCount = (todos) => {
+export const getTodoCount = (todos: Todo[]) => {
 	const notCompleted = todos.filter((todo) => !todo.completed);
 
 	const { length } = notCompleted;
@@ -26,14 +31,18 @@ const getTodoCount = (todos) => {
 	return `${length} Items left`;
 };
 
-export default (targetElement, state) => {
+interface State {
+	todos: Todo[];
+	currentFilter: string;
+}
+
+const view = (targetElement: Element, state: State) => {
 	const { currentFilter, todos } = state;
 
-	const element = targetElement.cloneNode(true);
-
-	const list = element.querySelector(".todo-list");
-	const counter = element.querySelector(".todo-count");
-	const filters = element.querySelector(".filters");
+	const element = targetElement as Element;
+	const list = element.querySelector(".todo-list")!;
+	const counter = element.querySelector(".todo-count")!;
+	const filters = element.querySelector(".filters")!;
 
 	list.innerHTML = todos.map(getTodoElement).join("");
 	counter.textContent = getTodoCount(todos);
@@ -48,3 +57,5 @@ export default (targetElement, state) => {
 
 	return element;
 };
+
+export default view;

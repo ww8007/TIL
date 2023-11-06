@@ -1,5 +1,5 @@
-import getTodos from "./getTodos.js";
-import view from "./view.js";
+import getTodos from "./getTodos";
+import view from "./view";
 
 const state = {
 	todos: getTodos(),
@@ -7,6 +7,10 @@ const state = {
 };
 
 const main = document.querySelector(".todoapp");
+
+if (!main) {
+	throw new Error("No .todoapp element");
+}
 
 window.requestAnimationFrame(() => {
 	const newMain = view(main, state);
