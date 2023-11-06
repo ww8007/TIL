@@ -1,3 +1,5 @@
+import { Todo } from "./type";
+
 const { faker } = window;
 
 const createElement = () => ({
@@ -5,7 +7,7 @@ const createElement = () => ({
 	completed: faker.random.boolean()
 });
 
-const repeat = (elementFactory, number) => {
+const repeat = (elementFactory: () => Todo, number: number) => {
 	const array = [];
 	for (let index = 0; index < number; index++) {
 		array.push(elementFactory());

@@ -1,4 +1,6 @@
-const getTodoElement = (todo) => {
+import { State, Todo } from "../type";
+
+const getTodoElement = (todo: Todo) => {
 	const { text, completed } = todo;
 
 	return `
@@ -15,8 +17,8 @@ const getTodoElement = (todo) => {
       </li>`;
 };
 
-export default (targetElement, { todos }) => {
-	const newTodoList = targetElement.cloneNode(true);
+export default (targetElement: HTMLElement, { todos }: State) => {
+	const newTodoList = targetElement.cloneNode(true) as HTMLElement;
 	const todosElements = todos.map(getTodoElement).join("");
 	newTodoList.innerHTML = todosElements;
 	return newTodoList;

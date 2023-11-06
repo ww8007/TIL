@@ -1,4 +1,6 @@
-const getTodoCount = (todos) => {
+import { State, Todo } from "../type";
+
+const getTodoCount = (todos: Todo[]) => {
 	const notCompleted = todos.filter((todo) => !todo.completed);
 
 	const { length } = notCompleted;
@@ -9,10 +11,10 @@ const getTodoCount = (todos) => {
 	return `${length} Items left`;
 };
 
-export default (targetElement, { todos }) => {
+export default (targetElement: HTMLElement, { todos }: State) => {
 	const newCounter = targetElement.cloneNode(true);
-	
+
 	newCounter.textContent = getTodoCount(todos);
 	console.log("newCounter", newCounter);
-	return newCounter;
+	return newCounter as HTMLElement;
 };
