@@ -1,4 +1,4 @@
-import { Todo } from "./type";
+import { Todo } from "./core/type";
 
 const { faker } = window;
 

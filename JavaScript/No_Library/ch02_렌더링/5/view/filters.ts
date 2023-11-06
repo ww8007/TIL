@@ -1,4 +1,4 @@
-import { State } from "../type";
+import { State } from "../core/type";
 
 export default (targetElement: HTMLElement, { currentFilter }: State) => {
 	const newCounter = targetElement.cloneNode(true) as HTMLElement;

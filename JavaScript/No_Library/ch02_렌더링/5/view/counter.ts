@@ -1,4 +1,4 @@
-import { State, Todo } from "../type";
+import { State, Todo } from "../core/type";
 
 const getTodoCount = (todos: Todo[]) => {
 	const notCompleted = todos.filter((todo) => !todo.completed);

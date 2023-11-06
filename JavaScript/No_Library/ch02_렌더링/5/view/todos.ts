@@ -1,4 +1,4 @@
-import { State, Todo } from "../type";
+import { State, Todo } from "../core/type";
 
 const getTodoElement = (todo: Todo) => {
 	const { text, completed } = todo;
