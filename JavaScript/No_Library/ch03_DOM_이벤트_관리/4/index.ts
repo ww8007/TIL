@@ -27,6 +27,19 @@ const events: CustomEvents = {
 			completed: false
 		});
 		render();
+	},
+	toggleItemCompleted: (index: number) => {
+		const newState = state.todos.map((todo, i) => {
+			if (i === index) {
+				return {
+					...todo,
+					completed: !todo.completed
+				};
+			}
+			return todo;
+		});
+		state.todos = newState;
+		render();
 	}
 };
 

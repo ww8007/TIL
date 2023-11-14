@@ -26,6 +26,7 @@ const getTodoElement = (todo: Todo, index: number) => {
 
 	if (completed) {
 		element.classList.add("completed");
+		console.log(element);
 		const input = element.querySelector("input.toggle") as HTMLInputElement;
 		input.checked = true;
 	}
@@ -36,6 +37,13 @@ const getTodoElement = (todo: Todo, index: number) => {
 	) as HTMLButtonElement;
 	if (destroyButton) {
 		destroyButton.dataset.index = index.toString();
+	}
+
+	const toggleButton = element.querySelector(
+		"input.toggle"
+	) as HTMLInputElement;
+	if (toggleButton) {
+		toggleButton.dataset.index = index.toString();
 	}
 
 	return element as Node;
@@ -63,6 +71,12 @@ export default (
 			const index = target.dataset.index;
 			if (index) {
 				events && events.deleteItem(parseInt(index));
+			}
+		}
+		if (target.matches("input.toggle")) {
+			const index = target.dataset.index;
+			if (index) {
+				events && events.toggleItemCompleted(parseInt(index));
 			}
 		}
 	});
