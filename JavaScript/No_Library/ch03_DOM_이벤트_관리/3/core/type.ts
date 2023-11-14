@@ -29,12 +29,12 @@ export type Component = (
 	state: State
 ) => HTMLElement;
 
-export type Events = {
+export type CustomEvents = {
 	addItem: (text: string) => void;
-	updateItem: (index: number, text: string) => void;
+	updateItem?: (index: number, text: string) => void;
 	deleteItem: (index: number) => void;
-	toggleItemCompleted: (index: number) => void;
-	completeAll: () => void;
-	clearCompleted: () => void;
-	changeFilter: (filter: string) => void;
+	toggleItemCompleted?: (index: number) => void;
+	completeAll?: () => void;
+	clearCompleted?: () => void;
+	changeFilter?: (filter: string) => void;
 };
