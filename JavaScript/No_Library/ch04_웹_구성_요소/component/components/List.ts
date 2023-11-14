@@ -20,7 +20,6 @@ export default class List extends HTMLElement {
 
 	constructor() {
 		super();
-
 		this.list = document.createElement("ul");
 		this.itemTemplate = document.createElement("template");
 	}

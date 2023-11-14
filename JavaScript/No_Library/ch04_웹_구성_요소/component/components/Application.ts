@@ -17,8 +17,8 @@ export default class App extends HTMLElement {
 
 		this.template = document.getElementById("todo-app") as HTMLTemplateElement;
 
-		this.list = new List();
-		this.footer = new Footer();
+		this.list = document.querySelector("todomvc-list") as List;
+		this.footer = document.querySelector("todomvc-footer") as Footer;
 	}
 
 	deleteItem(index: number) {
