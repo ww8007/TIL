@@ -11,7 +11,11 @@ declare global {
 }
 
 export interface Registry {
-	[key: string]: (targetElement: HTMLElement, state: State) => HTMLElement;
+	[key: string]: (
+		targetElement: HTMLElement,
+		state: State,
+		events?: CustomEvents
+	) => HTMLElement;
 }
 
 export interface Todo {
@@ -26,7 +30,8 @@ export interface State {
 
 export type Component = (
 	targetElement: HTMLElement,
-	state: State
+	state: State,
+	events?: CustomEvents
 ) => HTMLElement;
 
 export type CustomEvents = {

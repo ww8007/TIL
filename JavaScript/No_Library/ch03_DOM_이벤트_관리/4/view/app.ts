@@ -24,12 +24,14 @@ const addEvents = (targetElement: HTMLElement, events: CustomEvents) => {
 export default (
 	targetElement: HTMLElement,
 	state: State,
-	events: CustomEvents
+	events?: CustomEvents
 ) => {
 	const newApp = targetElement.cloneNode(true) as HTMLElement;
+
 	newApp.innerHTML = "";
 	newApp.appendChild(getTemplate());
 
-	addEvents(newApp, events);
+	events && addEvents(newApp, events);
+
 	return newApp;
 };

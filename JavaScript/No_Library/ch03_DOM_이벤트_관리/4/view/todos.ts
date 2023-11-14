@@ -7,9 +7,7 @@ const createNewTodoNode = () => {
 		template = document.getElementById("todo-item") as HTMLTemplateElement;
 	}
 
-	return template.content.firstElementChild?.cloneNode(
-		true
-	) as HTMLInputElement;
+	return template.content.firstElementChild?.cloneNode(true) as HTMLElement;
 };
 
 const getTodoElement = (todo: Todo, index: number) => {
@@ -21,7 +19,6 @@ const getTodoElement = (todo: Todo, index: number) => {
 		const input = element.querySelector("input.edit") as HTMLInputElement;
 		input.value = text;
 	}
-
 	if (element.querySelector("label")) {
 		const label = element.querySelector("label") as HTMLLabelElement;
 		label.textContent = text;
@@ -37,10 +34,11 @@ const getTodoElement = (todo: Todo, index: number) => {
 	const destroyButton = element.querySelector(
 		"button.destroy"
 	) as HTMLButtonElement;
+	if (destroyButton) {
+		destroyButton.dataset.index = index.toString();
+	}
 
-	destroyButton.dataset.index = index.toString();
-
-	return element;
+	return element as Node;
 };
 
 export default (
@@ -52,7 +50,6 @@ export default (
 
 	newTodoList.innerHTML = "";
 
-	if (!events) return newTodoList;
 	todos
 		.map((todo, index) => getTodoElement(todo, index))
 		.forEach((element) => {
@@ -65,7 +62,7 @@ export default (
 		if (target.matches("button.destroy")) {
 			const index = target.dataset.index;
 			if (index) {
-				events.deleteItem(parseInt(index));
+				events && events.deleteItem(parseInt(index));
 			}
 		}
 	});

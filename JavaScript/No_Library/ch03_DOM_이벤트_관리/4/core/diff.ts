@@ -4,12 +4,12 @@ export const applyDiff = (
 	virtualNode: HTMLElement
 ) => {
 	// 새 노드가 없으면 기존 노드를 삭제
-	if (!virtualNode) {
+	if (!virtualNode && realNode) {
 		realNode.remove();
 		return;
 	}
 	// 실제 노드가 없지만 가상 노드가 있으면 부모 노드에 추가
-	if (!realNode) {
+	if (!realNode && virtualNode) {
 		parentNode.appendChild(virtualNode);
 		return;
 	}
@@ -19,8 +19,8 @@ export const applyDiff = (
 		return;
 	}
 
-	const realChildren = Array.from(realNode.childNodes);
-	const virtualChildren = Array.from(virtualNode.childNodes);
+	const realChildren = Array.from(realNode.children);
+	const virtualChildren = Array.from(virtualNode.children);
 
 	const max = Math.max(realChildren.length, virtualChildren.length);
 
@@ -35,13 +35,7 @@ export const applyDiff = (
 
 const isNodeChanged = (realNode: HTMLElement, virtualNode: HTMLElement) => {
 	const realAttributes = realNode.attributes;
-	console.log("realAttributes", realAttributes);
 	const virtualAttributes = virtualNode.attributes;
-	console.log("virtualAttributes", virtualAttributes);
-
-	if (!realAttributes && !virtualAttributes) {
-		return false;
-	}
 
 	// 속성의 개수가 다르면 노드가 변경된 것으로 간주
 	if (realAttributes?.length !== virtualAttributes?.length) {
@@ -68,4 +62,6 @@ const isNodeChanged = (realNode: HTMLElement, virtualNode: HTMLElement) => {
 	) {
 		return true;
 	}
+
+	return false;
 };
