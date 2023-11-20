@@ -6,7 +6,7 @@ export interface Todo {
 	id: string;
 }
 
-const HEADERS = {
+const HEADERS: HeadersInit = {
 	"Content-Type": "application/json"
 };
 

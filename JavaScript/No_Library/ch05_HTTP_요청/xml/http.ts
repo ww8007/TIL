@@ -1,11 +1,7 @@
-interface Headers {
-	[key: string]: string;
-}
-
 interface RequestParams {
 	method?: string;
 	url: string;
-	headers?: Headers;
+	headers?: HeadersInit;
 	body?: unknown;
 }
 
@@ -14,7 +10,7 @@ interface Response<T> {
 	data: T;
 }
 
-const setHeaders = (xhr: XMLHttpRequest, headers: Headers) => {
+const setHeaders = (xhr: XMLHttpRequest, headers: HeadersInit) => {
 	Object.entries(headers).forEach((entry) => {
 		const [name, value] = entry;
 
@@ -60,7 +56,7 @@ const request = <T>(params: RequestParams): Promise<Response<T>> => {
 	});
 };
 
-const get = async (url: string, headers?: Headers) => {
+const get = async (url: string, headers?: HeadersInit) => {
 	const response = await request({
 		url,
 		headers,
@@ -70,7 +66,7 @@ const get = async (url: string, headers?: Headers) => {
 	return response.data;
 };
 
-const post = async (url: string, body: unknown, headers?: Headers) => {
+const post = async (url: string, body: unknown, headers?: HeadersInit) => {
 	const response = await request({
 		url,
 		headers,
@@ -80,7 +76,7 @@ const post = async (url: string, body: unknown, headers?: Headers) => {
 	return response.data;
 };
 
-const put = async (url: string, body: unknown, headers?: Headers) => {
+const put = async (url: string, body: unknown, headers?: HeadersInit) => {
 	const response = await request({
 		url,
 		headers,
@@ -90,7 +86,7 @@ const put = async (url: string, body: unknown, headers?: Headers) => {
 	return response.data;
 };
 
-const patch = async (url: string, body: unknown, headers?: Headers) => {
+const patch = async (url: string, body: unknown, headers?: HeadersInit) => {
 	const response = await request({
 		url,
 		headers,
@@ -100,7 +96,7 @@ const patch = async (url: string, body: unknown, headers?: Headers) => {
 	return response.data;
 };
 
-const deleteRequest = async (url: string, headers?: Headers) => {
+const deleteRequest = async (url: string, headers?: HeadersInit) => {
 	const response = await request({
 		url,
 		headers,
