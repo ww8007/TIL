@@ -16,7 +16,6 @@ export default class App extends HTMLElement {
 		};
 
 		this.template = document.getElementById("todo-app") as HTMLTemplateElement;
-
 		this.list = document.querySelector("todomvc-list") as List;
 		this.footer = document.querySelector("todomvc-footer") as Footer;
 	}
@@ -59,7 +58,6 @@ export default class App extends HTMLElement {
 			});
 
 			this.footer = this.querySelector("todomvc-footer") as Footer;
-
 			this.list = this.querySelector("todomvc-list") as List;
 
 			this.list.addEventListener(EVENTS.DELETE_ITEM, (e) => {

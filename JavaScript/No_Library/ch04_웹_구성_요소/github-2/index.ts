@@ -14,6 +14,7 @@ document.querySelectorAll("github-avatar").forEach((avatar) => {
 	});
 
 	avatar.addEventListener(EventMap.AVATAR_LOAD_ERROR, (e) => {
+		Event;
 		if (isAvatarLoadErrorEvent(e)) {
 			console.log("Avatar Load Error", e.detail.error);
 		}

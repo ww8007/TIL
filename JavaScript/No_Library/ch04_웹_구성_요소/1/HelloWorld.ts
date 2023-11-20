@@ -11,7 +11,6 @@ export default class HelloWorld extends HTMLElement {
 	private div: HTMLDivElement | null = null;
 	constructor() {
 		super();
-		this.div = null;
 	}
 	static get observedAttributes() {
 		return ["color"];
@@ -27,7 +26,7 @@ export default class HelloWorld extends HTMLElement {
 
 	attributeChangedCallback(name: string, oldValue: string, newValue: string) {
 		if (!this.div) return;
-
+		console.log(name, oldValue, newValue);
 		if (name === "color") {
 			this.div.style.color = newValue;
 		}
@@ -36,6 +35,7 @@ export default class HelloWorld extends HTMLElement {
 	connectedCallback() {
 		window.requestAnimationFrame(() => {
 			this.appendChild(createDomElement(this.color));
+			this.div = this.firstElementChild as HTMLDivElement;
 		});
 	}
 }
