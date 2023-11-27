@@ -40,11 +40,6 @@ export type CustomEvents = ReturnType<
 	(typeof eventCreators)[keyof typeof eventCreators]
 >;
 
-export interface Event {
-	type: [keyof typeof eventCreators];
-	payload?: any;
-}
-
 export interface EventHandler<
 	State,
 	EventCreator extends (...args: any[]) => CustomEvents
