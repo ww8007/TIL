@@ -20,7 +20,7 @@ const render = (state: State) => {
 	window.requestAnimationFrame(() => {
 		const main = document.querySelector("#root") as HTMLElement;
 
-		const newMain = registry.renderRoot(main, state, eventBus.dispatch as any);
+		const newMain = registry.renderRoot(main, state, eventBus.dispatch);
 
 		applyDiff(document.body, main, newMain);
 	});
