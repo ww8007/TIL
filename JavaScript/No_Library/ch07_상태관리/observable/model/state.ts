@@ -1,10 +1,10 @@
 import { State } from "../core/types";
 
-const cloneDeep = (x: any) => {
-	return JSON.parse(JSON.stringify(x));
+const cloneDeep = <T>(x: T) => {
+	return JSON.parse(JSON.stringify(x)) as T;
 };
 
-const freeze = (x: any) => Object.freeze(cloneDeep(x));
+const freeze = <T>(x: T) => Object.freeze(cloneDeep(x)) as T;
 
 const INITIAL_STATE: State = {
 	todos: [],
@@ -13,21 +13,22 @@ const INITIAL_STATE: State = {
 
 export default (initialState = INITIAL_STATE) => {
 	const state = cloneDeep(initialState) as State;
-	let listeners: Function[] = [];
+	const listeners = new Set<Function>();
 
 	const addChangeListener = (listener: Function) => {
-		listeners.push(listener);
+		listeners.add(listener);
 
 		listener(freeze(state));
 
 		return () => {
-			listeners = listeners.filter((l) => l !== listener);
+			listeners.delete(listener);
 		};
 	};
 
 	const invokeListeners = () => {
 		const data = freeze(state);
 		listeners.forEach((l) => l(data));
+		console.log(listeners);
 	};
 
 	const addItem = (text: string) => {
@@ -69,6 +70,8 @@ export default (initialState = INITIAL_STATE) => {
 		}
 
 		state.todos.splice(index, 1);
+
+		invokeListeners();
 	};
 
 	const toggleItemCompleted = (index: number) => {
